@@ -213,12 +213,12 @@ resnet = create_resnet((3, 32, 32), n_classes=10)
 # Features
 
 - [x] Multiple outputs
-- [ ] Multiple inputs
 - [x] Pruning of unused layers
 - [x] Reusing layers
 - [x] Complex topologies
-- [ ] Built-in graph plotting
 - [ ] Stability (yes, it is a feature)
+- [ ] Multiple inputs
+- [ ] Built-in graph plotting
 - [ ] Non-deterministic graphs
 
 # References
