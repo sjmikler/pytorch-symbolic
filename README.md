@@ -1,25 +1,26 @@
 Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/functional
+
 I make it easy in PyTorch as well.
 
 # Functional API for model creation
 
-Deep learning models can be often presented as directed acyclic graphs, with intermediate outputs as nodes and layers (
-aka. transformations, functions) as edges. In this graph, there exist nonempty set of **input nodes**, which in fact are
-nodes without any predecessors. Also, there exists nonempty set of **output nodes**, so nodes without any successors.
+Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers 
+(aka. transformations, functions) as edges. In this graph, there exists a nonempty set of **input nodes**, which in fact are
+nodes without any predecessors. Also, there exists a nonempty set of **output nodes**, which are nodes without any successors.
 
 If your neural network meets the above conditions, it can be created in a functional manner.
 
-# How do we usually define an architecture?
+# Model definition in PyTorch
 
-A usual way to define a model in PyTorch is an objective one. Steps:
+An usual way to define a model in PyTorch is an objective one. Steps:
 
 1. define a class that inherits from `nn.Module`
-2. define all the layers in `__init__` method
-3. define order in which layers are used in `forward` method
+2. define all the layers, including shapes, in `__init__` method
+3. define an order in which layers are used in `forward` method
 
 The separation of step 2 and 3 makes network creation more difficult than it should be. Why?
 
-* We have to create know the exact input of the layer for creating its predecessors
+* We have to know the exact shape of the input for each layer
 * In more complicated networks, we have to create the model virtually twice: in `__init__` and in `forward`
 
 Example (ResNet definition):
@@ -133,14 +134,14 @@ resnet = ResNet(input_shape=(1, 3, 32, 32), n_classes=10)
 # Advantages of Functional API
 
 In functional API, we create the neural network more naturally, as we would create a graph. Instead of defining layers
-first to later decide how to connect intermediate states; we do it all at once. For example, after creating input node
-and a layer, we can instantly tell what shape will be the output of the layer and use this shape for creating next
-layer.
+just to later decide how to connect intermediate states, we do it all at once. For example, after creating an input node
+and a layer, we can instantly tell what shape will be the output of that layer and use this shape for creating next
+layers.
 
 Doing this we:
 
 * Write less code
-* Write neural networks easier
+* Write easier code
 
 Functional API example (ResNet definition):
 
@@ -211,12 +212,13 @@ resnet = create_resnet((3, 32, 32), n_classes=10)
 
 # Features
 
-- [x] Multiple outputs/inputs
+- [x] Multiple outputs
+- [ ] Multiple inputs
 - [x] Pruning of unused layers
 - [x] Reusing layers
 - [x] Complex topologies
 - [ ] Built-in graph plotting
-- [ ] Stability testing
+- [ ] Stability (yes, it is a feature)
 - [ ] Non-deterministic graphs
 
 # References
