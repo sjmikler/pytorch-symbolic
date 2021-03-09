@@ -2,6 +2,8 @@ Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/fu
 
 I make it easy in PyTorch as well.
 
+> Early version of the repo
+
 # Functional API for model creation
 
 Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers 
@@ -208,6 +210,45 @@ def create_resnet(
     return model
 
 resnet = create_resnet((3, 32, 32), n_classes=10)
+```
+
+# Manual
+
+The main thing to keep in mind is that `__call__` method on the placeholder variables (nodes of the graph)
+takes a layer as an argument and returns the next placeholder variable (newly created node in the graph).
+
+Steps:
+1. Create an instance of the model `my_model = FunctionalModel(input_shape)`
+2. Get input variable placeholder `x = my_model.get_input()`
+3. Create your layer using x shape `l = nn.Linear(x.features)`
+4. To add a layer: `x = x.apply_layer(l)` or just use `x(l)`
+5. When all the layers are added, add output `my_model.add_output(x)`
+6. Use `my_model` as a normal PyTorch model
+
+Simple example:
+```
+model = FunctionalModel(input_shape=(3, 128, 128))
+x = model.get_input()
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=16, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=32, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=64, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=64, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Flatten())
+x_outs = x(nn.Linear(in_features=x.features, out_features=10))
+model.add_output(output=x_outs, assert_shape=(10,))
 ```
 
 # Features
