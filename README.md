@@ -6,7 +6,7 @@ I make it easy in PyTorch as well.
 
 # Functional API for model creation
 
-Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers
+Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers 
 (aka. transformations, functions) as edges. In this graph, there exists a nonempty set of **input nodes**, which in fact are
 nodes without any predecessors. Also, there exists a nonempty set of **output nodes**, which are nodes without any successors.
 
