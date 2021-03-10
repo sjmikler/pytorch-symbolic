@@ -1,16 +1,41 @@
-Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/functional
-
-I make it easy in PyTorch as well.
-
 > Early version of the repo
+
+Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/functional \
+This makes it just as easy in PyTorch.
 
 # Functional API for model creation
 
-Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers 
-(aka. transformations, functions) as edges. In this graph, there exists a nonempty set of **input nodes**, which in fact are
-nodes without any predecessors. Also, there exists a nonempty set of **output nodes**, which are nodes without any successors.
+Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers (aka. transformations, functions) as edges. In this graph, there exists a nonempty set of input nodes, which in fact are nodes without any predecessors. Also, there exists a nonempty set of output nodes, which are nodes without any successors. 
 
 If your neural network meets the above conditions, it can be created in a functional manner.
+
+TensorFlow functional example (toy ResNet from https://www.tensorflow.org/guide/keras/functional):
+```
+import tensorflow as tf
+from tensorflow.keras import layers
+
+inputs = tf.keras.Input(shape=(32, 32, 3))
+x = layers.Conv2D(32, 3, activation="relu")(inputs)
+x = layers.Conv2D(64, 3, activation="relu")(x)
+block_1_output = layers.MaxPooling2D(3)(x)
+
+x = layers.Conv2D(64, 3, activation="relu", padding="same")(block_1_output)
+x = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
+block_2_output = layers.add([x, block_1_output])
+
+x = layers.Conv2D(64, 3, activation="relu", padding="same")(block_2_output)
+x = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
+block_3_output = layers.add([x, block_2_output])
+
+x = layers.Conv2D(64, 3, activation="relu")(block_3_output)
+x = layers.GlobalAveragePooling2D()(x)
+x = layers.Dense(256, activation="relu")(x)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(10)(x)
+
+model = tf.keras.Model(inputs, outputs)
+```
+This took 16 lines of code.
 
 # Model definition in PyTorch
 
@@ -25,210 +50,81 @@ The separation of step 2 and 3 makes network creation more difficult than it sho
 * We have to know the exact shape of the input for each layer
 * In more complicated networks, we have to create the model virtually twice: in `__init__` and in `forward`
 
-Example (ResNet definition):
-
-```
-import torch
-from torch import nn
-from torch.nn import functional as F
-
-class SimpleResBlock(nn.Module):
-    def __init__(
-            self,
-            input_shape,
-            stride,
-            channels,
-    ):
-        super().__init__()
-        x = torch.randn(*input_shape)
-
-        self.conv0 = nn.Conv2d(
-            in_channels=x.shape[1],
-            out_channels=channels,
-            kernel_size=(3, 3),
-            stride=stride,
-            padding=(1, 1),
-            bias=False,
-        )
-        x = self.conv0.forward(x)
-
-        self.bn0 = nn.BatchNorm2d(num_features=x.shape[1])
-        x = self.bn0.forward(x)
-
-        self.conv1 = nn.Conv2d(
-            in_channels=x.shape[1],
-            out_channels=channels,
-            kernel_size=(3, 3),
-            stride=(1, 1),
-            padding=(1, 1),
-            bias=False
-        )
-        x = self.conv1.forward(x)
-
-    def forward(self, x):
-        flow = x
-        flow = self.conv0(flow)
-        flow = self.bn0(flow)
-        flow = F.relu(flow)
-        flow = self.conv1(flow)
-        return flow
-
-
-class ResNet(nn.Module):
-    def __init__(
-            self,
-            input_shape,
-            n_classes,
-            strides=(1, 2, 2),
-            group_sizes=(2, 2, 2),
-            features=(16, 32, 64),
-    ):
-        super().__init__()
-        x = torch.randn(*input_shape)
-        self.head = nn.Conv2d(in_channels=x.shape[1], out_channels=16,
-                              kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        x = self.head.forward(x)
-
-        self.shortcut_convs = []
-        self.blocks = []
-        for stride, group_size, channels in zip(strides, group_sizes, features):
-            for _ in range(group_size):
-                block = SimpleResBlock(
-                    stride=stride, channels=channels, input_shape=x.shape)
-
-                self.add_module(name=f'block{len(self.blocks)}', module=block)
-                self.blocks.append(block)
-
-                if stride != 1 or x.shape[1] != channels:
-                    shortcut_conv = nn.Conv2d(
-                        in_channels=x.shape[1],
-                        out_channels=channels,
-                        kernel_size=(1, 1),
-                        stride=stride,
-                        bias=False
-                    )
-                    self.shortcut_convs.append(shortcut_conv)
-                else:
-                    shortcut_conv = nn.Identity()
-                    self.shortcut_convs.append(shortcut_conv)
-                self.add_module(
-                    name=f"shortcut{len(self.shortcut_convs)}", module=shortcut_conv)
-
-                x = block.forward(x)
-                stride = 1
-        self.flatten = nn.Flatten()
-        x = self.flatten.forward(x)
-        self.classifier = nn.Linear(in_features=x.shape[1],
-                                    out_features=n_classes)
-
-    def forward(self, x):
-        flow = self.head.forward(x)
-        for block, shortcut_func in zip(self.blocks, self.shortcut_convs):
-            outs = block.forward(flow)
-            flow = shortcut_func(flow) + outs
-        flow = self.flatten(flow)
-        flow = self.classifier(flow)
-        return flow
-
-resnet = ResNet(input_shape=(1, 3, 32, 32), n_classes=10)
-```
+PyTorch non-functional example (toy ResNet equivalent):
+[too long for README](examples/pytorch_non_functional_toy_resnet.py)
 
 # Advantages of Functional API
 
 In functional API, we create the neural network more naturally, as we would create a graph. Instead of defining layers
-just to later decide how to connect intermediate states, we do it all at once. For example, after creating an input node
-and a layer, we can instantly tell what shape will be the output of that layer and use this shape for creating next
-layers.
+just to later decide how to connect intermediate states, we do it all at once. For example, after creating an input node and a layer, we can instantly tell what shape will be the output of that layer and use this shape for creating next layers.
 
 Doing this we:
 
 * Write less code
 * Write easier code
 
-Functional API example (ResNet definition):
 
+PyTorch functional example (exact equivalent of toy ResNet):
 ```
 from torch import nn
-from pytorch_functional import FunctionalModel
+from pytorch_functional import Input, FunctionalModel
 
-def create_resnet(
-        input_shape,
-        n_classes,
-        strides=(1, 2, 2),
-        group_sizes=(2, 2, 2),
-        features=(16, 32, 64),
-):
-    model = FunctionalModel(input_shape=input_shape)
-    x = model.get_input()
+inputs = Input(shape=(3, 32, 32))
+x = inputs(nn.Conv2d(inputs.channels, 32, 3))(nn.ReLU())
+x = x(nn.Conv2d(x.channels, 64, 3))(nn.ReLU())
+block_1_output = x(nn.MaxPool2d(3))
 
-    def create_block(x,
-                     stride,
-                     channels):
-        x = x(nn.Conv2d(
-            x.channels,
-            out_channels=channels,
-            kernel_size=(3, 3),
-            stride=stride,
-            padding=(1, 1),
-            bias=False
-        ))
-        x = x(nn.BatchNorm2d(num_features=x.features))
-        x = x(nn.ReLU())
-        x = x(nn.Conv2d(
-            x.channels,
-            out_channels=channels,
-            kernel_size=(3, 3),
-            padding=(1, 1),
-            bias=False))
-        return x
+x = block_1_output(nn.Conv2d(block_1_output.channels, 64, 3, padding=1))(nn.ReLU())
+x = x(nn.Conv2d(x.channels, 64, 3, padding=1))(nn.ReLU())
+block_2_output = x + block_1_output
 
-    x = x(nn.Conv2d(
-        x.channels,
-        out_channels=16,
-        kernel_size=(3, 3),
-        padding=(1, 1)))
-    x = x(nn.ReLU())
+x = block_2_output(nn.Conv2d(block_2_output.channels, 64, 3, padding=1))(nn.ReLU())
+x = x(nn.Conv2d(x.channels, 64, 3, padding=1))(nn.ReLU())
+block_3_output = x + block_2_output
 
-    for stride, group_size, channels in zip(strides, group_sizes, features):
-        for _ in range(group_size):
-            x_main = create_block(x, stride, channels)
+x = block_3_output(nn.Conv2d(x.channels, 64, 3))(nn.ReLU())
+x = x(nn.AvgPool2d(kernel_size=(x.H, x.W)))(nn.Flatten())
+x = x(nn.Linear(x.features, 256))(nn.ReLU())
+x = x(nn.Dropout(0.5))
+outputs = x(nn.Linear(x.features, 10))
 
-            if stride != 1 or channels != x.channels:
-                x_short = x(nn.Conv2d(
-                    x.channels,
-                    out_channels=channels,
-                    kernel_size=(1, 1),
-                    stride=stride,
-                    bias=False))
-            else:
-                x_short = x
-            x = x_main + x_short
-            stride = 1
-    x = x(nn.Flatten())
-    x = x(nn.Linear(x.features, out_features=n_classes))
-    model.add_output(x, assert_shape=[n_classes])
-    return model
-
-resnet = create_resnet((3, 32, 32), n_classes=10)
+model = FunctionalModel(inputs, outputs)
 ```
+This took 16 lines of code.
 
-# Manual
+### More functional API examples:
+* [VGG]()
+* [Full ResNet definition]()
+* [Encoder-Decoder architecture]()
+* [EfficientNet]()
 
-The main thing to keep in mind is that `__call__` method on the placeholder variables (nodes of the graph)
-takes a layer as an argument and returns the next placeholder variable (newly created node in the graph).
+# Quick Start
 
-Steps:
-1. Create an instance of the model `my_model = FunctionalModel(input_shape)`
-2. Get input variable placeholder `x = my_model.get_input()`
-3. Create your layer using x shape `l = nn.Linear(x.features)`
-4. To add a layer: `x = x.apply_layer(l)` or just use `x(l)`
-5. When all the layers are added, add output `my_model.add_output(x)`
-6. Use `my_model` as a normal PyTorch model
+The main difference between TensorFlow and PyTorch functional API is registering a new layer.
+* In TensorFlow you apply `layer` on a placeholder node, like `layer(placeholder) -> placeholder`
+* In PyTorch you apply placeholder on a `layer`, like `placeholder(layer) -> placeholder`
 
-Simple example:
+They both return the resulting placeholder as the output.
+
+
+### Creating a functional model:
+1. Get input variable placeholder `inputs = Input(shape)`, where `shape` is in (C, H, W) format
+2. Placeholders have useful properties:
+    * `.channels` for number of channels
+    * `.features` for number of features
+    * `.H` for height of the image
+    * `.W` for width of the image
+    * `.shape` for shape of the intermediate variable, omitting batch dimensions
+    * Placeholders have defined standard operations: `+`, `-`, `*`, `/`, `**`, and `abs`
+    * Concatenate or stack placeholders using `layers.ConcatOpLayer` and `layers.StackOpLayer`
+3. To add a `nn.Module` transformation use: `x_outs = x.apply_layer(l)` or just use `x(l)`
+4. When all the layers are added, define `my_model = FunctionalModel(inputs, outputs)`
+5. Use `my_model` as a normal PyTorch model
+
+### Simple, linear topology example:
 ```
-model = FunctionalModel(input_shape=(3, 128, 128))
-x = model.get_input()
+inputs = Input((3, 128, 128))
+x = inputs
 
 x = x(nn.Conv2d(in_channels=x.channels, out_channels=16, kernel_size=3))
 x = x(nn.MaxPool2d(kernel_size=2))
@@ -247,18 +143,55 @@ x = x(nn.MaxPool2d(kernel_size=2))
 x = x(nn.ReLU())
 
 x = x(nn.Flatten())
-x_outs = x(nn.Linear(in_features=x.features, out_features=10))
-model.add_output(output=x_outs, assert_shape=(10,))
+outputs = x(nn.Linear(in_features=x.features, out_features=10))
+model = FunctionalModel(inputs=inputs, outputs=outputs, assert_output_shape=(10,))
+```
+
+### Multiple inputs example (just for showcase, network itself might not make much sense):
+```
+task1_input = Input(shape=(1, 28, 28))
+task2_input = Input(shape=(3, 32, 32))
+
+x = task1_input
+x = x(nn.Conv2d(x.channels, 16, 3))
+x = x(nn.MaxPool2d(3))(nn.ReLU())
+x = x(nn.Flatten())
+head1_out = x(nn.Linear(x.features, 200))
+
+x = task2_input
+x = x(nn.Conv2d(x.channels, 16, 3))
+x = x(nn.MaxPool2d(3))(nn.ReLU())
+x = x(nn.Flatten())
+head2_out = x(nn.Linear(x.features, 200))
+
+x = head1_out + head2_out
+x = x(nn.Linear(x.features, 400))(nn.ReLU())
+task1_outputs = x(nn.Linear(x.features, 10))
+task2_outputs = x(nn.Linear(x.features, 10))
+
+model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
+```
+
+### If a layer takes more than 1 input, you can pass them after the layer.
+```
+from pytorch_functional import Input, FunctionalModel, layers
+
+x1 = Input(shape=(5, 6, 7))
+x2 = Input(shape=(3, 6, 7))
+
+x = x1(layers.ConcatOpLayer(dim=0), x2)
+x.shape # = (8, 6, 7)
 ```
 
 # Features
 
+- [x] TF like API
 - [x] Multiple outputs
+- [x] Multiple inputs
 - [x] Pruning of unused layers
-- [x] Reusing layers
+- [x] Reusing layers option
 - [x] Complex topologies
 - [ ] Stability (yes, it is a feature)
-- [ ] Multiple inputs
 - [ ] Built-in graph plotting
 - [ ] Non-deterministic graphs
 
