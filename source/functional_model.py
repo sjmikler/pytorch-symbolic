@@ -11,7 +11,7 @@ class FMGraphNode:
         self.children = []
         self.layer = layer
         self.depth = depth
-        self.real_inputs = []
+        self._parents_outputs = []
 
     @property
     def channels(self):
@@ -80,13 +80,13 @@ class FMGraphNode:
             for child in self.children:
                 child._forward_edge(x)
 
-        self.real_inputs.append(x)
+        self._parents_outputs.append(x)
 
-        if len(self.real_inputs) == len(self.parents):
-            self.outs = self.layer.forward(*self.real_inputs)
-            self.real_inputs = []
+        if len(self._parents_outputs) == len(self.parents):
+            self._outs = self.layer.forward(*self._parents_outputs)
+            self._parents_outputs = []
             for child in self.children:
-                child._forward_edge(self.outs)
+                child._forward_edge(self._outs)
 
     def __call__(self, *args):
         return self.apply_layer(*args)
@@ -119,7 +119,9 @@ class FMGraphNode:
 
 
 class Input(FMGraphNode):
-    def __init__(self, shape, batch_size=1, dtype=torch.float32, min_value=0., max_value=1.):
+    def __init__(
+            self, shape, batch_size=1, dtype=torch.float32, min_value=0.0, max_value=1.0
+    ):
         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
         super().__init__(value=value)
@@ -143,22 +145,18 @@ class FunctionalModel(nn.Module):
         self._prune_unused_layers()
         self._register_reachable_modules()
 
-    def forward(self, *args):
+    def forward(self, inputs):
         if len(self.inputs) == 1:
-            self.inputs[0]._forward_edge(*args)
+            self.inputs[0]._forward_edge(inputs)
         else:
-            assert len(args) == 1, "Pass multiple inputs in a tuple!"
-            assert len(args[0]) == len(self.inputs), "Numbers of inputs don't match!"
-            for root, arg in zip(self.inputs, args[0]):
-                if isinstance(arg, tuple):
-                    root._forward_edge(*arg)
-                else:
-                    root._forward_edge(arg)
+            assert len(inputs) == len(self.inputs), "Numbers of inputs don't match!"
+            for root, arg in zip(self.inputs, inputs):
+                root._forward_edge(arg)
 
         if len(self.outputs) == 1:
-            return self.outputs[0].outs
+            return self.outputs[0]._outs
         else:
-            return tuple(output_leaf.outs for output_leaf in self.outputs)
+            return tuple(output_leaf._outs for output_leaf in self.outputs)
 
     def _register_module(self, node):
         if node.layer in self._registered_modules or node.layer is None:
