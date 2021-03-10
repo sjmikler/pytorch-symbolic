@@ -149,7 +149,7 @@ Functional API example (ResNet definition):
 
 ```
 from torch import nn
-from pycharm.functional.FunctionalModel import FunctionalModel
+from pytorch_functional import FunctionalModel
 
 def create_resnet(
         input_shape,
