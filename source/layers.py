@@ -34,3 +34,11 @@ class StackOpLayer(nn.Module):
     def forward(self, a, b):
         return torch.stack((a, b), dim=self.dim)
 
+
+class Reshape(nn.Module):
+    def __init__(self, shape):
+        super().__init__()
+        self.shape = (-1, *shape)
+
+    def forward(self, x):
+        return torch.reshape(x, self.shape)

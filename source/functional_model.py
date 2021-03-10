@@ -119,8 +119,9 @@ class FMGraphNode:
 
 
 class Input(FMGraphNode):
-    def __init__(self, shape, batch_size=1, dtype=None):
-        value = torch.rand(batch_size, *shape).to(dtype)
+    def __init__(self, shape, batch_size=1, dtype=torch.float32, min_value=0., max_value=1.):
+        value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+        value = value.to(dtype)
         super().__init__(value=value)
 
 
