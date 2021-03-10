@@ -1,25 +1,28 @@
 Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/functional
+
 I make it easy in PyTorch as well.
+
+> Early version of the repo
 
 # Functional API for model creation
 
-Deep learning models can be often presented as directed acyclic graphs, with intermediate outputs as nodes and layers (
-aka. transformations, functions) as edges. In this graph, there exist nonempty set of **input nodes**, which in fact are
-nodes without any predecessors. Also, there exists nonempty set of **output nodes**, so nodes without any successors.
+Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers
+(aka. transformations, functions) as edges. In this graph, there exists a nonempty set of **input nodes**, which in fact are
+nodes without any predecessors. Also, there exists a nonempty set of **output nodes**, which are nodes without any successors.
 
 If your neural network meets the above conditions, it can be created in a functional manner.
 
-# How do we usually define an architecture?
+# Model definition in PyTorch
 
-A usual way to define a model in PyTorch is an objective one. Steps:
+An usual way to define a model in PyTorch is an objective one. Steps:
 
 1. define a class that inherits from `nn.Module`
-2. define all the layers in `__init__` method
-3. define order in which layers are used in `forward` method
+2. define all the layers, including shapes, in `__init__` method
+3. define an order in which layers are used in `forward` method
 
 The separation of step 2 and 3 makes network creation more difficult than it should be. Why?
 
-* We have to create know the exact input of the layer for creating its predecessors
+* We have to know the exact shape of the input for each layer
 * In more complicated networks, we have to create the model virtually twice: in `__init__` and in `forward`
 
 Example (ResNet definition):
@@ -133,14 +136,14 @@ resnet = ResNet(input_shape=(1, 3, 32, 32), n_classes=10)
 # Advantages of Functional API
 
 In functional API, we create the neural network more naturally, as we would create a graph. Instead of defining layers
-first to later decide how to connect intermediate states; we do it all at once. For example, after creating input node
-and a layer, we can instantly tell what shape will be the output of the layer and use this shape for creating next
-layer.
+just to later decide how to connect intermediate states, we do it all at once. For example, after creating an input node
+and a layer, we can instantly tell what shape will be the output of that layer and use this shape for creating next
+layers.
 
 Doing this we:
 
 * Write less code
-* Write neural networks easier
+* Write easier code
 
 Functional API example (ResNet definition):
 
@@ -209,14 +212,54 @@ def create_resnet(
 resnet = create_resnet((3, 32, 32), n_classes=10)
 ```
 
+# Manual
+
+The main thing to keep in mind is that `__call__` method on the placeholder variables (nodes of the graph)
+takes a layer as an argument and returns the next placeholder variable (newly created node in the graph).
+
+Steps:
+1. Create an instance of the model `my_model = FunctionalModel(input_shape)`
+2. Get input variable placeholder `x = my_model.get_input()`
+3. Create your layer using x shape `l = nn.Linear(x.features)`
+4. To add a layer: `x = x.apply_layer(l)` or just use `x(l)`
+5. When all the layers are added, add output `my_model.add_output(x)`
+6. Use `my_model` as a normal PyTorch model
+
+Simple example:
+```
+model = FunctionalModel(input_shape=(3, 128, 128))
+x = model.get_input()
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=16, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=32, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=64, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Conv2d(in_channels=x.channels, out_channels=64, kernel_size=3))
+x = x(nn.MaxPool2d(kernel_size=2))
+x = x(nn.ReLU())
+
+x = x(nn.Flatten())
+x_outs = x(nn.Linear(in_features=x.features, out_features=10))
+model.add_output(output=x_outs, assert_shape=(10,))
+```
+
 # Features
 
-- [x] Multiple outputs/inputs
+- [x] Multiple outputs
 - [x] Pruning of unused layers
 - [x] Reusing layers
 - [x] Complex topologies
+- [ ] Stability (yes, it is a feature)
+- [ ] Multiple inputs
 - [ ] Built-in graph plotting
-- [ ] Stability testing
 - [ ] Non-deterministic graphs
 
 # References

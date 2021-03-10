@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from layers import SummingLayer
+from pytorch_functional.layers import SummingLayer
 
 
 class FunctionalModel(nn.Module):
