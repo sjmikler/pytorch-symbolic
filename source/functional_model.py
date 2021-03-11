@@ -11,6 +11,7 @@ class FMGraphNode:
         self.children = []
         self.layer = layer
         self.depth = depth
+        self._output = None
         self._parents_outputs = []
 
     @property
@@ -23,17 +24,17 @@ class FMGraphNode:
 
     @property
     def H(self):
-        assert len(self.shape) == 3, "Variable is not an image!"
+        assert len(self._v.shape) == 4, "Variable is not an image!"
         return self._v.shape[2]
 
     @property
     def W(self):
-        assert len(self.shape) == 3, "Variable is not an image!"
+        assert len(self._v.shape) == 4, "Variable is not an image!"
         return self._v.shape[3]
 
     @property
     def shape(self):
-        return tuple(self._v.shape[1:])
+        return (None, *self._v.shape[1:])
 
     def apply_layer(self, layer, *others):
         if others:
@@ -79,14 +80,19 @@ class FMGraphNode:
         if len(self.parents) == 0:
             for child in self.children:
                 child._forward_edge(x)
+            return
 
         self._parents_outputs.append(x)
 
         if len(self._parents_outputs) == len(self.parents):
-            self._outs = self.layer.forward(*self._parents_outputs)
+            self._output = self.layer.forward(*self._parents_outputs)
             self._parents_outputs = []
             for child in self.children:
-                child._forward_edge(self._outs)
+                child._forward_edge(self._output)
+
+    def _clear_memory(self):
+        self._parents_outputs = []
+        self._output = None
 
     def __call__(self, *args):
         return self.apply_layer(*args)
@@ -120,9 +126,19 @@ class FMGraphNode:
 
 class Input(FMGraphNode):
     def __init__(
-            self, shape, batch_size=1, dtype=torch.float32, min_value=0.0, max_value=1.0
+        self,
+        shape,
+        dtype=torch.float32,
+        min_value=0.0,
+        max_value=1.0,
+        _batch_size=1,
+        _use_tensor=None,
     ):
-        value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+        if _use_tensor is not None:
+            super().__init__(value=_use_tensor)
+            return
+
+        value = torch.rand(_batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
         super().__init__(value=value)
 
@@ -141,25 +157,44 @@ class FunctionalModel(nn.Module):
         assert all(isinstance(x, FMGraphNode) for x in outputs)
         self.outputs = outputs
 
+        self._has_single_input = len(self.inputs) == 1
+        self._has_single_output = len(self.outputs) == 1
         self._registered_modules = []
         self._prune_unused_layers()
         self._register_reachable_modules()
 
     def forward(self, inputs):
-        if len(self.inputs) == 1:
+        if self._has_single_input:
             self.inputs[0]._forward_edge(inputs)
         else:
             assert len(inputs) == len(self.inputs), "Numbers of inputs don't match!"
             for root, arg in zip(self.inputs, inputs):
                 root._forward_edge(arg)
 
-        if len(self.outputs) == 1:
-            return self.outputs[0]._outs
+        if self._has_single_output:
+            return self.outputs[0]._output
         else:
-            return tuple(output_leaf._outs for output_leaf in self.outputs)
+            return tuple(output_leaf._output for output_leaf in self.outputs)
+
+    @property
+    def input_shape(self):
+        if self._has_single_input:
+            return self.inputs[0].shape
+        else:
+            return tuple(node.shape for node in self.inputs)
+
+    @property
+    def output_shape(self):
+        if self._has_single_output:
+            return self.outputs[0].shape
+        else:
+            return tuple(node.shape for node in self.outputs)
 
     def _register_module(self, node):
-        if node.layer in self._registered_modules or node.layer is None:
+        if (
+            not isinstance(node.layer, nn.Module)
+            or node.layer in self._registered_modules
+        ):
             return False
 
         num_modules = len(self._registered_modules)
@@ -183,6 +218,10 @@ class FunctionalModel(nn.Module):
         logging.info(f"Pruning {len(reachable_nodes) - len(used_nodes)} modules!")
         for root in self.inputs:
             root._remove_outsiders_below(insiders=used_nodes)
+
+    def _clear_nodes_memory(self):
+        for node in self._reachable_nodes:
+            node._clear_memory()
 
     @property
     def _reachable_nodes(self):

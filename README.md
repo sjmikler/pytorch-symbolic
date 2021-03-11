@@ -99,7 +99,6 @@ class ToyResNet(nn.Module):
 
 model = ToyResNet()
 ```
-
 This took over 30 lines of code.
 
 # Advantages of Functional API
