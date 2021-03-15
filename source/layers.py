@@ -18,9 +18,9 @@ class AnyOpLayer(nn.Module):
 
 
 class ConcatOpLayer(nn.Module):
-    def __init__(self, dim=1):
+    def __init__(self, dim):
         super().__init__()
-        self.dim = dim - 1
+        self.dim = dim
 
     def forward(self, a, b):
         return torch.cat((a, b), dim=self.dim)

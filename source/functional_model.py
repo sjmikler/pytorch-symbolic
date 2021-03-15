@@ -54,8 +54,8 @@ class FMGraphNode:
     def _get_all_nodes_below(self, layer_list):
         if self in layer_list:
             return layer_list
-
         layer_list.append(self)
+
         for child in self.children:
             child._get_all_nodes_below(layer_list)
         return layer_list
@@ -63,16 +63,20 @@ class FMGraphNode:
     def _get_all_nodes_above(self, layer_list):
         if self in layer_list:
             return layer_list
-
         layer_list.append(self)
+
         for child in self.parents:
             child._get_all_nodes_above(layer_list)
         return layer_list
 
-    def _remove_outsiders_below(self, insiders):
+    def _remove_outsiders_below(self, insiders, already_called):
+        if self in already_called:
+            return None
+        already_called.append(self)
+
         for child in self.children.copy():
             if child in insiders:
-                child._remove_outsiders_below(insiders)
+                child._remove_outsiders_below(insiders, already_called)
             else:
                 self.children.remove(child)
 
@@ -126,13 +130,13 @@ class FMGraphNode:
 
 class Input(FMGraphNode):
     def __init__(
-        self,
-        shape,
-        dtype=torch.float32,
-        min_value=0.0,
-        max_value=1.0,
-        _batch_size=1,
-        _use_tensor=None,
+            self,
+            shape,
+            dtype=torch.float32,
+            min_value=0.0,
+            max_value=1.0,
+            _batch_size=1,
+            _use_tensor=None,
     ):
         if _use_tensor is not None:
             super().__init__(value=_use_tensor)
@@ -192,8 +196,8 @@ class FunctionalModel(nn.Module):
 
     def _register_module(self, node):
         if (
-            not isinstance(node.layer, nn.Module)
-            or node.layer in self._registered_modules
+                not isinstance(node.layer, nn.Module)
+                or node.layer in self._registered_modules
         ):
             return False
 
@@ -215,9 +219,14 @@ class FunctionalModel(nn.Module):
     def _prune_unused_layers(self):
         used_nodes = self._used_nodes
         reachable_nodes = self._reachable_nodes
+
+        # TODO: This is wrong if there's unreachable but used node??
         logging.info(f"Pruning {len(reachable_nodes) - len(used_nodes)} modules!")
+
+        already_called = []
         for root in self.inputs:
-            root._remove_outsiders_below(insiders=used_nodes)
+            root._remove_outsiders_below(insiders=used_nodes,
+                                         already_called=already_called)
 
     def _clear_nodes_memory(self):
         for node in self._reachable_nodes:
