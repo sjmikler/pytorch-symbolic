@@ -14,6 +14,39 @@ def classifier(flow, n_classes, pooling="avgpool"):
     return flow(nn.Linear(flow.features, n_classes))
 
 
+def shortcut_func(x, channels, stride):
+    if x.channels != channels or stride != 1:
+        return x(nn.Conv2d(x.channels,
+                           channels,
+                           kernel_size=1,
+                           bias=False,
+                           stride=stride))
+    else:
+        return x
+
+
+def ToyResNet(input_shape, n_classes):
+    """A basic example of ResNet with low degree of customizability."""
+
+    inputs = Input(input_shape)
+    flow = inputs(nn.Conv2d(inputs.channels, 16, 3, 1, 1))
+
+    for group_size, width, stride in zip((2, 2, 2), (16, 32, 64), (1, 2, 2)):
+        for _ in range(group_size):
+            shortcut = shortcut_func(flow, width, stride)
+            flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+            flow = flow(nn.Conv2d(flow.channels, width, 3, stride, 1))
+            flow = flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+            flow = flow(nn.Conv2d(flow.channels, width, 3, 1, 1))
+
+            flow = flow + shortcut
+            stride = 1
+    flow = flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+    outs = classifier(flow, n_classes, pooling="avgpool")
+    model = FunctionalModel(inputs=inputs, outputs=outs)
+    return model
+
+
 def ResNet(
         input_shape,
         n_classes,
@@ -56,19 +89,8 @@ def ResNet(
             channels = tuple(c * K for c in channels)
         else:
             raise NotImplementedError(f"Unkown version={version}!")
-
     if kwargs:
         print(f"ResNet: unknown parameters: {kwargs.keys()}")
-
-    def shortcut_func(x, channels, stride):
-        if x.channels != channels or stride != 1:
-            return x(nn.Conv2d(x.channels,
-                               channels,
-                               kernel_size=1,
-                               bias=False,
-                               stride=stride))
-        else:
-            return x
 
     def simple_block(flow, channels, stride):
         if preactivate_block:
@@ -112,13 +134,11 @@ def ResNet(
     flow = inputs(nn.Conv2d(inputs.channels, 16, 3, 1, 1))
 
     # BUILD THE RESIDUAL BLOCKS
-    layer_idx, num_layers = 0, sum(group_sizes)
     for group_size, width, stride in zip(group_sizes, channels, strides):
         flow = flow(nn.BatchNorm2d(flow.features))(activation)
         preactivate_block = False
 
         for _ in range(group_size):
-            layer_idx += 1
             residual = block(flow, width, stride)
             shortcut = shortcut_func(flow, width, stride)
             flow = residual + shortcut

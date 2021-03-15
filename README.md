@@ -1,15 +1,15 @@
-> Early version of the repo
-
-Defining models in tensorflow is easy: https://www.tensorflow.org/guide/keras/functional \
+Defining models in tensorflow is easier: https://www.tensorflow.org/guide/keras/functional \
 This makes it just as easy in PyTorch.
 
 # Functional API for model creation
 
-Deep learning models can be often presented as directed acyclic graphs with intermediate outputs as nodes and layers (aka. transformations, functions) as edges. In this graph, there exists a nonempty set of input nodes, which in fact are nodes without any predecessors. Also, there exists a nonempty set of output nodes, which are nodes without any successors. 
-
-If your neural network meets the above conditions, it can be created in a functional manner.
+Deep neural networks can be usually presented as directed acyclic graphs where nodes are intermediate outputs and edges
+are layers (so transformations, functions). In this graph, there exists a nonempty set of input nodes, which are nodes
+without any predecessors and there exists a nonempty set of output nodes, which are nodes without any successors. If
+your neural network meets the above conditions, it can be created in a functional manner.
 
 TensorFlow functional example (toy ResNet from https://www.tensorflow.org/guide/keras/functional):
+
 ```
 import tensorflow as tf
 from tensorflow.keras import layers
@@ -35,20 +35,24 @@ outputs = layers.Dense(10)(x)
 
 model = tf.keras.Model(inputs, outputs)
 ```
+
 This took 16 lines of code.
 
 # Model definition in PyTorch
 
 An usual way to define a model in PyTorch is an objective one. Steps:
+
 1. define a class that inherits from `nn.Module`
-2. define all the layers, including their input shapes, in `__init__` method
+2. define all the layers, knowing their input shapes in advance, in `__init__` method
 3. define the order in which layers are used in `forward` method
 
-The separation of steps 2 and 3 makes network creation more difficult than it should be. Why?
+The separation of steps 2 and 3 makes network creation more difficult than it could be.
+
 * We have to know the exact shape of the input for each layer, sometimes non-trivial, e.g. if we use strides
-* In case of complicated networks, we create the model virtually twice: in `__init__` and in `forward`
+* In case of complicated networks, we define the model virtually twice: in `__init__` and in `forward`
 
 PyTorch non-functional example (toy ResNet equivalent):
+
 ```
 from torch import nn
 from torch.nn import functional as F
@@ -99,18 +103,23 @@ class ToyResNet(nn.Module):
 
 model = ToyResNet()
 ```
+
 This took over 30 lines of code.
 
 # Advantages of Functional API
 
-In functional API, we create the neural network naturally, as we would create a graph: node by node. Instead of defining layers in one place just to decide later how to connect them, we can do it all at once. For example, with functional API, after creating an input node and a layer, we can instantly tell what shape the output of that layer is and use this shape for creating next layers.
+In functional API, we add layers to the network as an operation on a placeholder input and they are automatically
+registered by the network. The objective alternative is to instead define layers in one place and later decide how to
+connect them. Thanks to that, with functional API, after creating an input node and a layer that transforms it, we can
+instantly tell what shape the output of that layer is and use this shape as input shape for next layer.
 
 Doing this, we:
+
 * Write less code
 * Write easier code
 
-
 PyTorch functional example (exact equivalent of toy ResNet):
+
 ```
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
@@ -136,23 +145,28 @@ outputs = x(nn.Linear(x.features, 10))
 
 model = FunctionalModel(inputs, outputs)
 ```
+
 This took 16 lines of code.
 
 ### More functional API examples:
+
 * [simple Encoder-Decoder architecture](examples/encoder_decoder.py) - shows coupling multiple FunctionalModels
+* [VGG](examples/vgg.py)
+* [ResNet](examples/resnet.py)
 
 # Quick Start
 
 The main difference between tensorflow functional API and `pytorch_functional` is how new layers are registered.
-* In TensorFlow you apply `layer` on a placeholder node, like `layer(placeholder) -> placeholder`
-* In PyTorch you apply placeholder on a `layer`, like `placeholder(layer) -> placeholder`
+
+* In TensorFlow you apply `layer` on a placeholder node, like `layer(placeholder) -> new_placeholder`
+* In PyTorch you apply placeholder on a `layer`, like `placeholder(layer) -> new_placeholder`
 
 They both return the resulting placeholder as an output.
 
-
 ### Creating a functional model:
-1. Get input variable placeholder `inputs = Input(shape)`, where `shape` is in `(C, H, W)` format (no batch dimension)
-2. Placeholders have useful properties:
+
+1. Get placeholder inputs `inputs = Input(shape)`, where `shape` is in `(C, H, W)` format (no batch dimension)
+2. Use placeholders' properties:
     * `.channels` for number of channels
     * `.features` for number of features
     * `.H` for height of the image
@@ -160,11 +174,12 @@ They both return the resulting placeholder as an output.
     * `.shape` for shape of the intermediate variable, omitting batch dimensions
     * Placeholders have standard operations defined: `+`, `-`, `*`, `/`, `**`, and `abs`
     * Concatenate or stack placeholders using `layers.ConcatOpLayer` and `layers.StackOpLayer`
-3. To add a `nn.Module` as a transformation, use: `x_outs = x.apply_layer(l)` or just `x(l)`
+3. To add a `nn.Module` to the graph, use: `layer_outs = inputs(l)`
 4. When all the layers are added, define `my_model = FunctionalModel(inputs, outputs)`
-5. Use `my_model` as a normal PyTorch model
+5. Use `my_model` as you would a normal PyTorch model
 
 ### Simple, linear topology example:
+
 ```
 inputs = Input((3, 128, 128))
 x = inputs
@@ -190,7 +205,8 @@ outputs = x(nn.Linear(in_features=x.features, out_features=10))
 model = FunctionalModel(inputs=inputs, outputs=outputs, assert_output_shape=(10,))
 ```
 
-### Multiple inputs example (just for showcase, network itself might not make much sense):
+### Multiple inputs example (dummy model):
+
 ```
 task1_input = Input(shape=(1, 28, 28))
 task2_input = Input(shape=(3, 32, 32))
@@ -215,7 +231,8 @@ task2_outputs = x(nn.Linear(x.features, 10))
 model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
 ```
 
-### If a layer takes more than 1 input, pass them with the layer:
+### If a layer takes more than 1 input, pass them after the layer:
+
 ```
 from pytorch_functional import Input, FunctionalModel, layers
 
@@ -233,10 +250,6 @@ x.shape # = (8, 6, 7)
 - [x] Multiple inputs
 - [x] Pruning of unused layers
 - [x] Reusing layers option
-- [x] Complex topologies
-- [ ] Many examples
-- [ ] Stability (yes, it is a feature)
-- [ ] Built-in graph plotting
 - [ ] Non-deterministic graphs
 
 # References
