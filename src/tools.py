@@ -16,6 +16,8 @@ def get_parameter_shapes(model):
 
 
 def models_equal(a, b):
+    print("Warning! Function not implemented yet.")
+
     if get_parameter_count(a) != get_parameter_count(b):
         return False
 
