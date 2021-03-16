@@ -232,7 +232,7 @@ task2_outputs = x(nn.Linear(x.features, 10))
 model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
 ```
 
-### To use function in symbolic operations...
+### To use a function on a symbolic variable...
 
 If you want to use torch functions on placeholder symbolic variable, please create a `nn.Module` to wrap it up. Examples are `ConcatLayer` and `StackLayer` in `pytorch_functional.layers`.
 
@@ -258,9 +258,9 @@ x.shape # = (6, 2, 3)
 
 # Limitations
 
-* You cannot create a graph (model) with cycles. But if you can close such model in nn.Module, you can use this module in functional API.
+* You cannot create a graph (model) with cycles. But if you can enclose such model in nn.Module, you can use it in functional API.
 
-* You cannot use standard functions or expressions on a symbolic tensor. Example of forbidden code: `x = Input((1, 2, 3)); x = torch.abs(x);`. In this case, you can use `abs(x)` instead or create a `nn.Module` wrapper for `torch.abs`.
+* You cannot use standard functions or expressions on a symbolic variable. Example of forbidden code: `x = Input((1, 2, 3)); x = torch.abs(x);`. In this case, you can use `abs(x)` instead or create a `nn.Module` wrapper for `torch.abs`.
 
 # References
 
