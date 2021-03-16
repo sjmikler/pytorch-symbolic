@@ -21,7 +21,4 @@ def models_equal(a, b):
 
     if sorted(get_parameter_shapes(a)) != sorted(get_parameter_shapes(b)):
         return False
-
     return True
-
-

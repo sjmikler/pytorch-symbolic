@@ -1,7 +1,9 @@
-import torch
-from torch import nn
-from pytorch_functional.src import layers
 import logging
+from collections.abc import Iterable
+
+import torch
+from pytorch_functional.src import layers
+from torch import nn
 
 
 class FMGraphNode:
@@ -46,9 +48,6 @@ class FMGraphNode:
         else:
             new_depth = self.depth + 1
 
-        if not hasattr(layer, 'forward'):
-            layer = self._op_to_layer(layer)
-
         new_output = layer.forward(self._v, *(o._v for o in others))
 
         new_layer_node = FMGraphNode(
@@ -58,11 +57,6 @@ class FMGraphNode:
         for other in others:
             other.children.append(new_layer_node)
         return new_layer_node
-
-    @staticmethod
-    def _op_to_layer(op):
-        layer = layers.AnyOpLayer(op=lambda *args: op(*args))
-        return layer
 
     def _get_all_nodes_below(self, layer_list):
         if self in layer_list:

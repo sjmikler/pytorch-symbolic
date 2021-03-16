@@ -172,7 +172,7 @@ They both return the resulting placeholder as an output.
     * `.H` for height of the image
     * `.W` for width of the image
     * `.shape` for shape of the intermediate variable, omitting batch dimensions
-    * Placeholders have standard operations defined: `+`, `-`, `*`, `/`, `**`, and `abs`
+    * Placeholders have standard operations defined: `+`, `-`, `*`, `/`, `**`, and `abs`. For example, `x = 2 + inputs` or `x = inputs / y` will work as expected.
     * Concatenate or stack placeholders using `layers.ConcatOpLayer` and `layers.StackOpLayer`
 3. To add a `nn.Module` to the graph, use: `layer_outs = inputs(l)`
 4. When all the layers are added, define `my_model = FunctionalModel(inputs, outputs)`
@@ -231,20 +231,19 @@ task2_outputs = x(nn.Linear(x.features, 10))
 model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
 ```
 
-### You can use a function instead of nn.Module
+### To use function in symbolic operations...
 
-A layer will be created for you.
-
-```
-x = Input(shape=(5, 6, 7))
-x = x(torch.abs)
-```
-
-If you need to pass more arguments to your function, create a lambda function instead.
-> Leads to errors
+If you want to use torch functions on placeholder symbolic variable, please create a `nn.Module` to wrap it up. Examples are `ConcatLayer` and `StackLayer` in `pytorch_functional.layers`.
 
 ### If a layer takes more than 1 input, pass them after the layer:
+```
+from pytorch_functional import layers
 
+x1 = Input(shape=(1, 2, 3))
+x2 = Input(shape=(5, 2, 3))
+x = x1(layers.ConcatLayer, x2)
+x.shape # = (6, 2, 3)
+```
 
 # Features
 
@@ -253,7 +252,14 @@ If you need to pass more arguments to your function, create a lambda function in
 - [x] Multiple inputs
 - [x] Pruning of unused layers
 - [x] Reusing layers option
+- [ ] Using arbitral function on symbolic variable
 - [ ] Non-deterministic graphs
+
+# Limitations
+
+* You cannot create a graph (model) with cycles. But if you can close such model in nn.Module, you can use this module in functional API.
+
+* You cannot use standard functions or expressions on a symbolic tensor. Example of forbidden code: `x = Input((1, 2, 3)); x = torch.abs(x);`. In this case, you can use `abs(x)` instead or create a `nn.Module` wrapper for `torch.abs`.
 
 # References
 

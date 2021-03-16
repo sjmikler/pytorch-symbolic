@@ -43,3 +43,20 @@ class AnyOpLayer(nn.Module):
         super().__init__()
         self.forward = op
 
+
+class ConcatLayer(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, *elements):
+        return torch.cat(tensors=elements, dim=self.dim)
+
+
+class StackLayer(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, *elements):
+        return torch.stack(tensors=elements, dim=self.dim)
