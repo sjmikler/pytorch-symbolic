@@ -231,17 +231,20 @@ task2_outputs = x(nn.Linear(x.features, 10))
 model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
 ```
 
+### You can use a function instead of nn.Module
+
+A layer will be created for you.
+
+```
+x = Input(shape=(5, 6, 7))
+x = x(torch.abs)
+```
+
+If you need to pass more arguments to your function, create a lambda function instead.
+> Leads to errors
+
 ### If a layer takes more than 1 input, pass them after the layer:
 
-```
-from pytorch_functional import Input, FunctionalModel, layers
-
-x1 = Input(shape=(5, 6, 7))
-x2 = Input(shape=(3, 6, 7))
-
-x = x1(layers.ConcatOpLayer(dim=0), x2)
-x.shape # = (8, 6, 7)
-```
 
 # Features
 

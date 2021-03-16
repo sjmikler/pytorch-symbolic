@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from pytorch_functional.source import layers
+from pytorch_functional.src import layers
 import logging
 
 
@@ -34,7 +34,11 @@ class FMGraphNode:
 
     @property
     def shape(self):
-        return (None, *self._v.shape[1:])
+        return None, *self._v.shape[1:]
+
+    @property
+    def numel(self):
+        return self._v.shape[1:].numel()
 
     def apply_layer(self, layer, *others):
         if others:
@@ -42,7 +46,11 @@ class FMGraphNode:
         else:
             new_depth = self.depth + 1
 
+        if not hasattr(layer, 'forward'):
+            layer = self._op_to_layer(layer)
+
         new_output = layer.forward(self._v, *(o._v for o in others))
+
         new_layer_node = FMGraphNode(
             value=new_output, parents=(self, *others), layer=layer, depth=new_depth
         )
@@ -50,6 +58,11 @@ class FMGraphNode:
         for other in others:
             other.children.append(new_layer_node)
         return new_layer_node
+
+    @staticmethod
+    def _op_to_layer(op):
+        layer = layers.AnyOpLayer(op=lambda *args: op(*args))
+        return layer
 
     def _get_all_nodes_below(self, layer_list):
         if self in layer_list:
@@ -98,34 +111,85 @@ class FMGraphNode:
         self._parents_outputs = []
         self._output = None
 
-    def __call__(self, *args):
-        return self.apply_layer(*args)
+    def __call__(self, *args, **kwargs):
+        return self.apply_layer(*args, **kwargs)
 
     def __abs__(self):
         return self.apply_layer(layers.AnyOpLayer(lambda x: abs(x)))
 
     def __add__(self, other):
-        assert self.shape == other.shape, "Shapes do not match for the operation!"
-        return self.apply_layer(layers.AddOpLayer(), other)
+        if isinstance(other, FMGraphNode):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.AddOpLayer(), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x + other))
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def __mul__(self, other):
-        assert self.shape == other.shape, "Shapes do not match for the operation!"
-        return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x * y), other)
+        if isinstance(other, FMGraphNode):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.MulOpLayer(), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x - other))
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __neg__(self):
-        return self.apply_layer(layers.AnyOpLayer(lambda x: -x))
+        return self.apply_layer(layers.AnyOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
-        assert self.shape == other.shape, "Shapes do not match for the operation!"
-        return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+        if isinstance(other, FMGraphNode):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
+
+    def __rpow__(self, other):
+        if isinstance(other, FMGraphNode):
+            return other.__pow__(self)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
-        assert self.shape == other.shape, "Shapes do not match for the operation!"
-        return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x - y), other)
+        if isinstance(other, FMGraphNode):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.SubOpLayer(), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x - other))
+
+    def __rsub__(self, other):
+        if isinstance(other, FMGraphNode):
+            return other.__sub__(self)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other - x))
 
     def __truediv__(self, other):
-        assert self.shape == other.shape, "Shapes do not match for the operation!"
-        return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x / y), other)
+        if isinstance(other, FMGraphNode):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x / y), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x / other))
+
+    def __rtruediv__(self, other):
+        if isinstance(other, FMGraphNode):
+            return other.__truediv__(self)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other / x))
+
+    def __matmul__(self, other):
+        if isinstance(other, FMGraphNode):
+            return self.apply_layer(layers.MatmulOpLayer(), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x @ other))
+
+    def __rmatmul__(self, other):
+        if isinstance(other, FMGraphNode):
+            return other.__matmul__(self)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other @ x))
 
 
 class Input(FMGraphNode):
@@ -218,10 +282,11 @@ class FunctionalModel(nn.Module):
 
     def _prune_unused_layers(self):
         used_nodes = self._used_nodes
-        reachable_nodes = self._reachable_nodes
+        used_nodes_ids = {id(node) for node in used_nodes}
+        reachable_nodes_ids = {id(node) for node in self._reachable_nodes}
+        to_prune = reachable_nodes_ids.difference(used_nodes_ids)
 
-        # TODO: This is wrong if there's unreachable but used node??
-        logging.info(f"Pruning {len(reachable_nodes) - len(used_nodes)} modules!")
+        logging.info(f"Pruning {len(to_prune)} modules!")
 
         already_called = []
         for root in self.inputs:
