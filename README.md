@@ -202,7 +202,8 @@ x = x(nn.ReLU())
 
 x = x(nn.Flatten())
 outputs = x(nn.Linear(in_features=x.features, out_features=10))
-model = FunctionalModel(inputs=inputs, outputs=outputs, assert_output_shape=(10,))
+model = FunctionalModel(inputs=inputs, outputs=outputs)
+assert model.output_shape == (None, 10)
 ```
 
 ### Multiple inputs example (dummy model):
