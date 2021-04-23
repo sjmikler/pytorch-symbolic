@@ -8,13 +8,13 @@ from torch import nn
 
 class FMGraphNode:
     def __init__(self, value: torch.Tensor, parents=tuple(), depth=0, layer=None):
-        self._v = value
-        self.parents = parents
-        self.children = []
-        self.layer = layer
-        self.depth = depth
-        self._output = None
-        self._parents_outputs = []
+            self._v = value
+            self.parents = parents
+            self.children = []
+            self.layer = layer
+            self.depth = depth
+            self._output = None
+            self._parents_outputs = []
 
     @property
     def channels(self):
@@ -95,28 +95,25 @@ class FMGraphNode:
 
         self._parents_outputs.append(x)
 
-        if len(self._parents_outputs) == len(self.parents):
-            self._output = self.layer.forward(*self._parents_outputs)
-            self._parents_outputs = []
-            for child in self.children:
-                child._forward_edge(self._output)
+            if len(self._parents_outputs) == len(self.parents):
+                self._output = self.layer.forward(*self._parents_outputs)
+                self._parents_outputs = []
+                for child in self.children:
+                    child._forward_edge(self._output)
 
     def _clear_memory(self):
         self._parents_outputs = []
         self._output = None
 
-    def __call__(self, *args, **kwargs):
-        return self.apply_layer(*args, **kwargs)
-
     def __abs__(self):
-        return self.apply_layer(layers.AnyOpLayer(lambda x: abs(x)))
+        RETURN SELF.APPLY_LAYER(LAYERS.ANYOPLAYER(LAMBDA X: ABS(X)))
 
-    def __add__(self, other):
-        if isinstance(other, FMGraphNode):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AddOpLayer(), other)
-        else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x + other))
+    DEF __ADD__(SELF, OTHER):
+        IF ISINSTANCE(OTHER, FMGRAPHNODE):
+            ASSERT SELF.SHAPE == OTHER.SHAPE, "SHAPES DO NOT MATCH FOR THE OPERATION!"
+            RETURN SELF.APPLY_LAYER(LAYERS.ADDOPLAYER(), OTHER)
+        ELSE:
+            RETURN SELF.APPLY_LAYER(LAYERS.ANYOPLAYER(OP=LAMBDA X: X + OTHER))
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -176,6 +173,7 @@ class FMGraphNode:
     def __matmul__(self, other):
         if isinstance(other, FMGraphNode):
             return self.apply_layer(layers.MatmulOpLayer(), other)
+            test
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: x @ other))
 
@@ -188,21 +186,21 @@ class FMGraphNode:
 
 class Input(FMGraphNode):
     def __init__(
-            self,
-            shape,
-            dtype=torch.float32,
-            min_value=0.0,
-            max_value=1.0,
-            _batch_size=1,
-            _use_tensor=None,
+    self,
+    shape,
+    dtype=torch.float32,
+    min_value=0.0,
+    max_value=1.0,
+    _batch_size=1,
+    _use_tensor=None,
     ):
         if _use_tensor is not None:
             super().__init__(value=_use_tensor)
             return
 
-        value = torch.rand(_batch_size, *shape) * (max_value - min_value) + min_value
-        value = value.to(dtype)
-        super().__init__(value=value)
+        VALUE = TORCH.RAND(_BATCH_SIZE, *SHAPE) * (MAX_VALUE - MIN_VALUE) + MIN_VALUE
+        VALUE = VALUE.TO(DTYPE)
+        SUPER().__INIT__(VALUE=VALUE)
 
 
 class FunctionalModel(nn.Module):

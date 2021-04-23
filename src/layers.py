@@ -16,7 +16,7 @@ class SubOpLayer(nn.Module):
         super().__init__()
 
     @staticmethod
-    def forward(a, b):
+        def forward(a, b):
         return a - b
 
 
@@ -49,14 +49,9 @@ class ConcatLayer(nn.Module):
         super().__init__()
         self.dim = dim
 
+
     def forward(self, *elements):
         return torch.cat(tensors=elements, dim=self.dim)
-
-
-class StackLayer(nn.Module):
-    def __init__(self, dim):
-        super().__init__()
-        self.dim = dim
 
     def forward(self, *elements):
         return torch.stack(tensors=elements, dim=self.dim)
