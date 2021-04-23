@@ -102,7 +102,7 @@ class FMGraphNode:
                     child._forward_edge(self._output)
 
     def _clear_memory(self):
-        self._parents_outputs = []
+            self._parents_outputs = []
         self._output = None
 
     def __abs__(self):
