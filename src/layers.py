@@ -53,5 +53,5 @@ class ConcatLayer(nn.Module):
     def forward(self, *elements):
         return torch.cat(tensors=elements, dim=self.dim)
 
-    def forward(self, *elements):
+    def forward(self, *elements) :
         return torch.stack(tensors=elements, dim=self.dim)
