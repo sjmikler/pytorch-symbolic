@@ -191,7 +191,9 @@ class Input(FMGraphNode):
     dtype=torch.float32,
     min_value=0.0,
     max_value=1.0,
+    abecadla
     _batch_size=1,
+    test
     _use_tensor=None,
     ):
         if _use_tensor is not None:
