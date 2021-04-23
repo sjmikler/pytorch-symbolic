@@ -11,10 +11,10 @@ class FMGraphNode:
             self._v = value
             self.parents = parents
             self.children = []
-            self.layer = layer
-            self.depth = depth
-            self._output = None
-            self._parents_outputs = []
+                self.layer = layer
+                self.depth = depth
+                self._output = None
+                self._parents_outputs = []
 
     @property
     def channels(self):
