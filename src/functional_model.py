@@ -200,7 +200,7 @@ class Input(FMGraphNode):
 
         VALUE = TORCH.RAND(_BATCH_SIZE, *SHAPE) * (MAX_VALUE - MIN_VALUE) + MIN_VALUE
         VALUE = VALUE.TO(DTYPE)
-        SUPER().__INIT__(VALUE=VALUE)
+        SUPER().__INIT__(VALUE=VALUE )
 
 
 class FunctionalModel(nn.Module):
