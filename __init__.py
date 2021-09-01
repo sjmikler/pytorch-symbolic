@@ -1,2 +1,2 @@
-from pytorch_functional.src import layers, tools
-from pytorch_functional.src.functional_model import Input, FunctionalModel
+from .src import layers, tools
+from .src.functional_model import Input, FunctionalModel

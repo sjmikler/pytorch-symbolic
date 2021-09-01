@@ -1,5 +1,6 @@
 from torch import nn
-from pytorch_functional import Input, FunctionalModel, layers
+
+from pytorch_functional import FunctionalModel, Input, layers
 
 
 def classifier(flow, n_classes, pooling="avgpool"):

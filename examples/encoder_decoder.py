@@ -31,7 +31,8 @@ autoencoder.summary()
 """
 
 from torch import nn
-from pytorch_functional import Input, FunctionalModel, layers
+
+from pytorch_functional import FunctionalModel, Input, layers
 
 
 def simple_encoder_decoder(input_shape=(1, 28, 28)):

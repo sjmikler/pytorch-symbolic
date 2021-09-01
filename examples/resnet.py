@@ -1,5 +1,6 @@
 from torch import nn
-from pytorch_functional import Input, FunctionalModel, layers
+
+from pytorch_functional import FunctionalModel, Input, layers
 
 
 def classifier(flow, n_classes, pooling="avgpool"):
@@ -48,18 +49,18 @@ def ToyResNet(input_shape, n_classes):
 
 
 def ResNet(
-        input_shape,
-        n_classes,
-        version=None,
-        bootleneck=False,
-        strides=(1, 2, 2),
-        group_sizes=(2, 2, 2),
-        channels=(16, 32, 64),
-        activation=nn.ReLU(),
-        final_pooling='avgpool',
-        dropout=0,
-        bn_ends_block=False,
-        **kwargs
+    input_shape,
+    n_classes,
+    version=None,
+    bootleneck=False,
+    strides=(1, 2, 2),
+    group_sizes=(2, 2, 2),
+    channels=(16, 32, 64),
+    activation=nn.ReLU(),
+    final_pooling='avgpool',
+    dropout=0,
+    bn_ends_block=False,
+    **kwargs
 ):
     if version:
         if version == 20:

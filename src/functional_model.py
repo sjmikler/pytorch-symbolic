@@ -1,9 +1,9 @@
 import logging
-from collections.abc import Iterable
 
 import torch
-from pytorch_functional.src import layers
 from torch import nn
+
+from . import layers
 
 
 class FMGraphNode:
@@ -188,13 +188,13 @@ class FMGraphNode:
 
 class Input(FMGraphNode):
     def __init__(
-            self,
-            shape,
-            dtype=torch.float32,
-            min_value=0.0,
-            max_value=1.0,
-            _batch_size=1,
-            _use_tensor=None,
+        self,
+        shape,
+        dtype=torch.float32,
+        min_value=0.0,
+        max_value=1.0,
+        _batch_size=1,
+        _use_tensor=None,
     ):
         if _use_tensor is not None:
             super().__init__(value=_use_tensor)
