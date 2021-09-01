@@ -1,6 +1,10 @@
 Defining models in tensorflow is easier: https://www.tensorflow.org/guide/keras/functional \
 This makes it just as easy in PyTorch.
 
+Links:
+* https://github.com/gahaalt/pytorch-functional
+* https://pypi.org/project/pytorch-functional
+
 # Functional API for model creation
 
 Deep neural networks can be usually presented as directed acyclic graphs where nodes are intermediate outputs and edges
