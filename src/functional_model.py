@@ -229,7 +229,7 @@ class FunctionalModel(nn.Module):
         if self._has_single_input:
             self.inputs[0]._forward_edge(inputs)
         else:
-            assert len(inputs) == len(self.inputs), "Numbers of inputs don't match!"
+            assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
             for root, arg in zip(self.inputs, inputs):
                 root._forward_edge(arg)
 
