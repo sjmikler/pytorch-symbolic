@@ -63,9 +63,12 @@ class StackLayer(nn.Module):
 
 
 class ReshapeLayer(nn.Module):
-    def __init__(self, shape):
+    def __init__(self, shape, batch_size_included=False):
         super().__init__()
-        self.shape = shape
+        if not batch_size_included:
+            self.shape = (-1, *shape)
+        else:
+            self.shape = shape
 
     def forward(self, input):
         return torch.reshape(input=input, shape=self.shape)
