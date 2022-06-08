@@ -185,6 +185,9 @@ They both return the resulting placeholder as an output.
 ### Simple, linear topology example:
 
 ```
+from torch import nn
+from pytorch_functional import Input, FunctionalModel
+
 inputs = Input((3, 128, 128))
 x = inputs
 
@@ -213,6 +216,9 @@ assert model.output_shape == (None, 10)
 ### Multiple inputs example (dummy model):
 
 ```
+from torch import nn
+from pytorch_functional import Input, FunctionalModel
+
 task1_input = Input(shape=(1, 28, 28))
 task2_input = Input(shape=(3, 32, 32))
 
@@ -246,7 +252,7 @@ from pytorch_functional import layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
-x = x1(layers.ConcatLayer, x2)
+x = x1(layers.ConcatLayer(dim=1), x2)
 x.shape # = (6, 2, 3)
 ```
 

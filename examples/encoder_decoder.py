@@ -49,7 +49,7 @@ def simple_encoder_decoder(input_shape=(1, 28, 28)):
     encoder = FunctionalModel(inputs=encoder_input, outputs=encoder_output)
 
     decoder_input = Input(shape=(encoder_output.features,))
-    x = decoder_input(layers.Reshape((1, 4, 4)))
+    x = decoder_input(layers.ReshapeLayer((1, 4, 4)))
     x = x(nn.ConvTranspose2d(x.channels, 16, 3))(relu)
     x = x(nn.ConvTranspose2d(x.channels, 32, 3))(relu)
     x = x(nn.Upsample(3))

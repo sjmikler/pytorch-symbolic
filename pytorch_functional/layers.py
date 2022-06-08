@@ -70,5 +70,5 @@ class ReshapeLayer(nn.Module):
         else:
             self.shape = shape
 
-    def forward(self, input):
-        return torch.reshape(input=input, shape=self.shape)
+    def forward(self, inputs):
+        return torch.reshape(input=inputs, shape=self.shape)
