@@ -1,0 +1,1 @@
+from pytorch_functional.functional_model import Input, FunctionalModel
