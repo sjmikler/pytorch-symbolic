@@ -1,1 +1,3 @@
-__pycache__
+*
+!pytorch-functional
+!README.md
