@@ -1,9 +1,7 @@
 Defining models in tensorflow is easier: https://www.tensorflow.org/guide/keras/functional \
 This makes it just as easy in PyTorch.
 
-Links:
-* https://github.com/gahaalt/pytorch-functional
-* https://pypi.org/project/pytorch-functional
+[![PyPI version](https://badge.fury.io/py/pytorch-functional.svg)](https://badge.fury.io/py/pytorch-functional)
 
 # Functional API for model creation
 
@@ -248,7 +246,7 @@ If you want to use torch functions on placeholder symbolic variable, please crea
 
 ### If a layer takes more than 1 input, pass them after the layer:
 ```
-from pytorch_functional import layers
+from pytorch_functional import Input, FunctionalModel, layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
@@ -263,12 +261,12 @@ x.shape # = (6, 2, 3)
 - [x] Multiple inputs
 - [x] Pruning of unused layers
 - [x] Reusing layers option
-- [ ] Using arbitral function on symbolic variable
+- [ ] Using arbitrary function on symbolic variable
 - [ ] Non-deterministic graphs
 
 # Limitations
 
-* You cannot create a graph (model) with cycles. But if you can enclose such model in nn.Module, you can use it in functional API.
+* You cannot create a graph (model) with cycles. But if you can enclose such model in nn.Module, you can use this module in functional API.
 
 * You cannot use standard functions or expressions on a symbolic variable. Example of forbidden code: `x = Input((1, 2, 3)); x = torch.abs(x);`. In this case, you can use `abs(x)` instead or create a `nn.Module` wrapper for `torch.abs`.
 

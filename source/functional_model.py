@@ -3,7 +3,7 @@ import logging
 import torch
 from torch import nn
 
-from pytorch_functional import layers
+from . import layers
 
 
 class FMGraphNode:
