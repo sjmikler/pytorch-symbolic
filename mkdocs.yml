@@ -1,0 +1,45 @@
+site_name: pytorch-functional
+repo_url: https://github.com/gahaalt/pytorch-functional
+
+nav:
+    - Home: README.md
+    - quick_start.md
+
+copyright:
+    Copyright @ 2022 Szymon Mikler
+
+extra:
+    social:
+        - icon: fontawesome/brands/linkedin
+          link: https://www.linkedin.com/in/szymon-mikler/
+        - icon: fontawesome/brands/twitter
+          link: https://twitter.com/gahaalternative
+        - icon: fontawesome/brands/github
+          link: https://github.com/gahaalt
+    generator: false
+
+plugins:
+    - search
+    - autorefs
+    - mkdocstrings:
+        default_handler: python
+        handlers:
+            python:
+                options:
+                    docstring_style: numpy
+
+theme:
+    name: material
+
+    palette:
+        # Palette toggle for light mode
+        -   scheme: default
+            toggle:
+                icon: material/brightness-7
+                name: Switch to dark mode
+
+        # Palette toggle for dark mode
+        -   scheme: slate
+            toggle:
+                icon: material/brightness-4
+                name: Switch to light mode
