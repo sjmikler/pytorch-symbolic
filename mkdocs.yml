@@ -30,16 +30,20 @@ plugins:
 
 theme:
     name: material
-
     palette:
         # Palette toggle for light mode
         -   scheme: default
+            primary: white
+            accent: deep purple
             toggle:
-                icon: material/brightness-7
+                icon: material/weather-night
                 name: Switch to dark mode
 
         # Palette toggle for dark mode
         -   scheme: slate
+            primary: black
+            accent: purple
             toggle:
-                icon: material/brightness-4
+                icon: material/weather-sunny
                 name: Switch to light mode
+ 
