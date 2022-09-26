@@ -164,18 +164,18 @@ They both return the resulting placeholder as an output.
 
 ### Creating a functional model step by step
 
-1. Get placeholder inputs `inputs = Input(shape)`, where `shape` is in `(C, H, W)` format (no batch dimension)
-2. Use placeholders' properties:
+1. Get placeholder input `inputs = Input(shape)`, where `shape` is in `(C, H, W)` format without batch dimension
+2. To define the model, you can use placeholder's properties:
     * `.channels` for number of channels
     * `.features` for number of features
     * `.H` for height of the image
     * `.W` for width of the image
     * `.shape` for shape of the intermediate variable, omitting batch dimensions
     * Placeholders have standard operations defined: `+`, `-`, `*`, `/`, `**`, and `abs`. For example, `x = 2 + inputs` or `x = inputs / y` will work as expected.
-    * Concatenate or stack placeholders using `layers.ConcatOpLayer` and `layers.StackOpLayer`
-3. To add a `nn.Module` to the graph, use: `layer_outs = inputs(l)`
+    * Concatenate or stack placeholders using `pytorch_functional.layers.ConcatOpLayer` and `pytorch_functional.layers.StackOpLayer`
+3. To add a new module `layer` to the network, use: `layer_output = inputs(layer)`
 4. When all the layers are added, define `my_model = FunctionalModel(inputs, outputs)`
-5. Use `my_model` as you would a normal PyTorch model
+5. Use `my_model` as you would use a normal PyTorch module
 
 ### Sequential topology example
 
