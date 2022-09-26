@@ -4,14 +4,16 @@
 [![PyPI license](https://img.shields.io/badge/dynamic/json?label=license&query=info.license&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpytorch-functional%2Fjson)](https://pypi.org/project/pytorch-functional)
 [![Documentation Status](https://readthedocs.org/projects/slicemap/badge/?version=latest)](https://pytorch-functional.readthedocs.io/en/latest/?badge=latest)
 
-Defining complex models in PyTorch requires creating a class.
-Defining models in [tensorflow is easier](https://www.tensorflow.org/guide/keras/functional).
+Package pytorch-functional adds functional API for model creation to PyTorch.
+
+Defining complex models in PyTorch requires creating classes.
+[Defining models in tensorflow is easier](https://www.tensorflow.org/guide/keras/functional).
 This makes it just as easy in PyTorch.
 
 * Small extension to PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
-* Reduces the amount of code
+* Reduces the amount of code that you need to write
 
 ## Installation
 
