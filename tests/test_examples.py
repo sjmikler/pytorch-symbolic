@@ -1,6 +1,6 @@
 import torch
 
-from .. import tools, examples
+from .. import examples, tools
 
 
 def test_toy_resnet():
