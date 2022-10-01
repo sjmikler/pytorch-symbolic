@@ -1,11 +1,9 @@
-from .. import tools
+from torch import nn
+
+from .. import FunctionalModel, Input, layers, tools
 
 
 def test_1():
-    from torch import nn
-
-    from pytorch_functional import FunctionalModel, Input
-
     inputs = Input(shape=(3, 32, 32))
     x = inputs(nn.Conv2d(inputs.channels, 32, 3))(nn.ReLU())
     x = x(nn.Conv2d(x.channels, 64, 3))(nn.ReLU())
@@ -30,10 +28,6 @@ def test_1():
 
 
 def test_2():
-    from torch import nn
-
-    from pytorch_functional import FunctionalModel, Input
-
     inputs = Input((3, 128, 128))
     x = inputs
 
@@ -61,10 +55,6 @@ def test_2():
 
 
 def test_3():
-    from torch import nn
-
-    from pytorch_functional import FunctionalModel, Input
-
     task1_input = Input(shape=(1, 28, 28))
     task2_input = Input(shape=(3, 32, 32))
 
@@ -92,8 +82,6 @@ def test_3():
 
 
 def test_4():
-    from pytorch_functional import Input, layers
-
     x1 = Input(shape=(1, 2, 3))
     x2 = Input(shape=(5, 2, 3))
     x = x1(layers.ConcatLayer(dim=1), x2)
