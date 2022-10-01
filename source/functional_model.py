@@ -205,7 +205,7 @@ class Input(FMGraphNode):
     def __init__(
         self,
         shape,
-        dtype="float32",
+        dtype=torch.float32,
         min_value=0.0,
         max_value=1.0,
         _batch_size=1,
