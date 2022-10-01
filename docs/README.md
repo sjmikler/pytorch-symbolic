@@ -6,7 +6,7 @@
 [![Python 3.7](https://github.com/gahaalt/pytorch-functional/actions/workflows/python37.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python37.yaml)
 [![Python 3.8](https://github.com/gahaalt/pytorch-functional/actions/workflows/python38.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python38.yaml)
 [![Python 3.9](https://github.com/gahaalt/pytorch-functional/actions/workflows/python39.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python39.yaml)
-[![Python 3.10](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml)
+[![Python 3.10](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml)
 
 Package pytorch-functional adds functional API for model creation to PyTorch.
 
