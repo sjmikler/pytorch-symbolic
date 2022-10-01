@@ -23,13 +23,6 @@ Install easily with pip:
 pip install pytorch-functional
 ```
 
-Or download from source and install locally:
-
-```
-git clone https://github.com/gahaalt/pytorch-functional.git
-cd pytorch-functional && pip install -e .
-```
-
 ## Links
 
 * [See Documentation](https://pytorch-functional.readthedocs.io/)
