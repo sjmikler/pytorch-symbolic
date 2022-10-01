@@ -5,7 +5,7 @@ name: Python 3.9
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "pytest" ]
   pull_request:
     branches: [ "main" ]
 
