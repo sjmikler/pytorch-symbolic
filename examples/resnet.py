@@ -5,7 +5,7 @@ It allows for creation of standard ResNet v2 or Wide ResNet variants.
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input
+from .. import FunctionalModel, Input
 
 from .common import classifier
 

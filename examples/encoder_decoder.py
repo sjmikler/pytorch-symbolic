@@ -5,7 +5,7 @@ https://www.tensorflow.org/guide/keras/functional
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, layers
+from .. import FunctionalModel, Input, layers
 
 
 def simple_encoder_decoder(input_shape=(1, 28, 28)):
