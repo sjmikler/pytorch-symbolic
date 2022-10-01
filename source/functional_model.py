@@ -213,9 +213,9 @@ class Input(FMGraphNode):
     ):
         """Input to the Functional Model.
 
-        It should be treated as a placeholder value, that will be replaced with data
-        after the model is created.
-        But for calculation purposes, it can be treated as a normal numerical object,
+        It should be treated as a placeholder value that will be replaced with
+        real data after the model is created.
+        For calculation purposes, it can be treated as a normal numerical object,
         which means it can be added, subtracted, multiplied, taken absolute value of,
         etc.
 
@@ -226,11 +226,11 @@ class Input(FMGraphNode):
         dtype
             Dtype of the real data that will be the input of the network.
         min_value
-            If the data is very specific, this is the minimal value that will be
-            allowed to appear in the real data.
+            In rare cases, if real world data is very specific and some values
+            cannot not work with the model, this should be used to set the
+            reasonable minimal value that the model will work on.
         max_value
-            If the data is very specific, this is the maximal value that will be
-            allowed to appear in the real data.
+            As above, but the maximal value.
         """
         if _use_tensor is not None:
             super().__init__(value=_use_tensor)
@@ -243,10 +243,10 @@ class Input(FMGraphNode):
 
 class FunctionalModel(nn.Module):
     def __init__(self, inputs, outputs):
-        """A PyTorch model that applies operations defined by the placeholder values.
+        """A PyTorch model that applies operations defined by the graph.
 
-        All operations that made ``inputs`` change into ``outputs`` will be applied
-        on the real data that will be fed into this model.
+        All operations that changed ``inputs`` into ``outputs`` will be applied
+        in the same order on the real data that will be fed into this model.
 
         Parameters
         ----------
