@@ -227,7 +227,7 @@ class Input(FMGraphNode):
             Dtype of the real data that will be the input of the network.
         min_value
             In rare cases, if real world data is very specific and some values
-            cannot not work with the model, this should be used to set the
+            cannot work with the model, this should be used to set the
             reasonable minimal value that the model will work on.
         max_value
             As above, but the maximal value.
