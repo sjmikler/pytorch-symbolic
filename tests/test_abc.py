@@ -1,4 +1,5 @@
 import torch
+from .. import FunctionalModel
 
 
 def test_aa():
