@@ -8,6 +8,21 @@ from . import layers
 
 class FMGraphNode:
     def __init__(self, value: torch.Tensor, parents=tuple(), depth=0, layer=None):
+        """Node of a Functional Model.
+
+        This might represent input or intermediate values of the neural network.
+
+        Parameters
+        ----------
+        value
+            Tensor object representing value of the node.
+        parents
+            Tuple of parent nodes.
+        depth
+            How deep the node is in the tree.
+        layer
+            nn.Module object that transformed parents.
+        """
         self._v = value
         self.parents = parents
         self.children = []
@@ -137,15 +152,15 @@ class FMGraphNode:
     def __pow__(self, other):
         if isinstance(other, FMGraphNode):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
 
     def __rpow__(self, other):
         if isinstance(other, FMGraphNode):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
         if isinstance(other, FMGraphNode):
@@ -190,12 +205,33 @@ class Input(FMGraphNode):
     def __init__(
         self,
         shape,
-        dtype=torch.float32,
+        dtype="float32",
         min_value=0.0,
         max_value=1.0,
         _batch_size=1,
         _use_tensor=None,
     ):
+        """Input to the Functional Model.
+
+        It should be treated as a placeholder value, that will be replaced with data
+        after the model is created.
+        But for calculation purposes, it can be treated as a normal numerical object,
+        which means it can be added, subtracted, multiplied, taken absolute value of,
+        etc.
+
+        Parameters
+        ----------
+        shape
+            Shape of the real data. Should NOT include the batch dimension.
+        dtype
+            Dtype of the real data that will be the input of the network.
+        min_value
+            If the data is very specific, this is the minimal value that will be
+            allowed to appear in the real data.
+        max_value
+            If the data is very specific, this is the maximal value that will be
+            allowed to appear in the real data.
+        """
         if _use_tensor is not None:
             super().__init__(value=_use_tensor)
             return
@@ -207,6 +243,18 @@ class Input(FMGraphNode):
 
 class FunctionalModel(nn.Module):
     def __init__(self, inputs, outputs):
+        """A PyTorch model that applies operations defined by the placeholder values.
+
+        All operations that made ``inputs`` change into ``outputs`` will be applied
+        on the real data that will be fed into this model.
+
+        Parameters
+        ----------
+        inputs
+            FMGraphNode object or a tuple of them.
+        outputs
+            FMGraphNode object or a tuple of them.
+        """
         super().__init__()
 
         if isinstance(inputs, FMGraphNode):

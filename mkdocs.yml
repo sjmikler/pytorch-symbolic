@@ -4,6 +4,7 @@ repo_url: https://github.com/gahaalt/pytorch-functional
 nav:
     - Home: README.md
     - quick_start.md
+    - api.md
 
 copyright:
     Copyright @ 2022 Szymon Mikler
