@@ -37,9 +37,11 @@ def simple_encoder_decoder(input_shape=(1, 28, 28)):
 
 
 if __name__ == "__main__":
+    from logging import DEBUG, basicConfig
+
     import torch
+
     from pytorch_functional import tools
-    from logging import basicConfig, DEBUG
 
     basicConfig(level=DEBUG)
 
