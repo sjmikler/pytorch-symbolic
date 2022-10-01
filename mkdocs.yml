@@ -17,7 +17,6 @@ extra:
           link: https://twitter.com/gahaalternative
         - icon: fontawesome/brands/github
           link: https://github.com/gahaalt
-    generator: false
 
 plugins:
     - search
