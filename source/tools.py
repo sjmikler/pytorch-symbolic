@@ -1,6 +1,3 @@
-import torch
-
-
 def get_parameter_count(model):
     cnt = 0
     for param in model.parameters():
@@ -15,9 +12,7 @@ def get_parameter_shapes(model):
     return shapes
 
 
-def models_equal(a, b):
-    print("Warning! Function not implemented properly yet.")
-
+def model_similar(a, b):
     if get_parameter_count(a) != get_parameter_count(b):
         return False
 

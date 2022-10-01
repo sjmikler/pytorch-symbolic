@@ -1,2 +1,4 @@
 from .source.functional_model import Input, FunctionalModel
-from .source import layers
+from .source import layers, tools
+
+from . import examples

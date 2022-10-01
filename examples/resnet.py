@@ -1,27 +1,19 @@
+"""
+This is a flexible implementation of ResNet architecture.
+It allows for creation of standard ResNet v2 or Wide ResNet variants.
+"""
+
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, layers
-
-
-def classifier(flow, n_classes, pooling="avgpool"):
-    if pooling == 'catpool':
-        maxp = flow(nn.MaxPool2d(kernel_size=(flow.H, flow.W)))
-        avgp = flow(nn.AvgPool2d(kernel_size=(flow.H, flow.W)))
-        flow = maxp(layers.ConcatOpLayer(dim=1), avgp)(nn.Flatten())
-    if pooling == 'avgpool':
-        flow = flow(nn.AvgPool2d(kernel_size=(flow.H, flow.W)))(nn.Flatten())
-    if pooling == 'maxpool':
-        flow = flow(nn.MaxPool2d(kernel_size=(flow.H, flow.W)))(nn.Flatten())
-    return flow(nn.Linear(flow.features, n_classes))
+from pytorch_functional import FunctionalModel, Input
+from .common import classifier
 
 
 def shortcut_func(x, channels, stride):
     if x.channels != channels or stride != 1:
-        return x(nn.Conv2d(x.channels,
-                           channels,
-                           kernel_size=1,
-                           bias=False,
-                           stride=stride))
+        return x(
+            nn.Conv2d(x.channels, channels, kernel_size=1, bias=False, stride=stride)
+        )
     else:
         return x
 
@@ -57,10 +49,10 @@ def ResNet(
     group_sizes=(2, 2, 2),
     channels=(16, 32, 64),
     activation=nn.ReLU(),
-    final_pooling='avgpool',
+    final_pooling="avgpool",
     dropout=0,
     bn_ends_block=False,
-    **kwargs
+    **kwargs,
 ):
     if version:
         if version == 20:
@@ -77,11 +69,6 @@ def ResNet(
             bootleneck = True
             channels = (64, 128, 256)
             group_sizes = (18, 18, 18)
-        elif version == 1001:
-            raise NotImplementedError(f"ResNet1001 doesn't work yet...")
-            bootleneck = True
-            channels = (64, 128, 256)
-            group_sizes = (111, 111, 111)
         elif isinstance(version, tuple) and version[0] == "WRN":
             _, N, K = version
             assert (N - 4) % 6 == 0, "N-4 has to be divisible by 6"
@@ -116,7 +103,8 @@ def ResNet(
         flow = flow(nn.BatchNorm2d(flow.features))(activation)
 
         flow = flow(
-            nn.Conv2d(flow.channels, channels // 4, 3, stride=stride, padding=1))
+            nn.Conv2d(flow.channels, channels // 4, 3, stride=stride, padding=1)
+        )
         flow = flow(nn.BatchNorm2d(flow.features))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels, 1))
@@ -151,21 +139,3 @@ def ResNet(
     outs = classifier(flow, n_classes, pooling=final_pooling)
     model = FunctionalModel(inputs=inputs, outputs=outs)
     return model
-
-
-if __name__ == "__main__":
-    import torch
-    from pytorch_functional import tools
-    from logging import basicConfig, DEBUG
-
-    basicConfig(level=DEBUG)
-
-    model = ResNet(
-        input_shape=(3, 32, 32),
-        n_classes=10,
-        version=("WRN", 16, 4),
-    )
-
-    input = torch.rand(1, 3, 32, 32)
-    outs = model.forward(input)
-    print(f"Parameters: {tools.get_parameter_count(model)}")
