@@ -1,4 +1,4 @@
-from pytorch_functional import tools
+from .. import tools
 
 
 def test_1():

@@ -1,6 +1,6 @@
 import torch
 
-from pytorch_functional import examples, tools
+from .. import examples, tools
 
 
 def test_toy_resnet():
