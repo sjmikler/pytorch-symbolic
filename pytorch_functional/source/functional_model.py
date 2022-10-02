@@ -52,7 +52,7 @@ class FMGraphNode:
 
     @property
     def shape(self):
-        return None, *self._v.shape[1:]
+        return (None, *self._v.shape[1:])
 
     @property
     def numel(self):
