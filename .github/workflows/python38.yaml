@@ -28,11 +28,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest mypy
         pip install pytorch-functional
-    - name: Rename the directory so relative imports works
-      run: |
-        cd ..
-        mv pytorch-functional pytorch_functional
-        ln -s pytorch_functional pytorch-functional
     - name: Lint with flake8
       run: |
         flake8 .
