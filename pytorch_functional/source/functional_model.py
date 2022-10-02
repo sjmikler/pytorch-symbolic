@@ -1,4 +1,5 @@
 import logging
+from typing import Any, List
 
 import torch
 from torch import nn
@@ -25,11 +26,11 @@ class FMGraphNode:
         """
         self._v = value
         self.parents = parents
-        self.children = []
+        self.children: List[FMGraphNode] = []
         self.layer = layer
         self.depth = depth
         self._output = None
-        self._parents_outputs = []
+        self._parents_outputs: List[Any] = []
 
     @property
     def channels(self):
@@ -51,7 +52,7 @@ class FMGraphNode:
 
     @property
     def shape(self):
-        return (None, *self._v.shape[1:])
+        return None, *self._v.shape[1:]
 
     @property
     def numel(self):
@@ -152,15 +153,15 @@ class FMGraphNode:
     def __pow__(self, other):
         if isinstance(other, FMGraphNode):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
         if isinstance(other, FMGraphNode):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, FMGraphNode):
