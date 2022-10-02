@@ -10,7 +10,7 @@ print("Packages found:", packages)
 
 setup(
     name="pytorch-functional",
-    version="0.2.10",
+    version="0.2.11",
     url="https://github.com/gahaalt/pytorch-functional.git",
     project_urls={
         "Documentation": "https://pytorch-functional.readthedocs.io/",
