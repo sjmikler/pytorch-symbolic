@@ -255,7 +255,7 @@ class FunctionalModel(nn.Module):
             FMGraphNode object or a tuple of them.
         """
         super().__init__()
-        logging.info(f"Creating a Functional Model!")
+        logging.info("Creating a Functional Model...")
 
         if isinstance(inputs, FMGraphNode):
             inputs = (inputs,)
