@@ -21,8 +21,34 @@ for value in layers.__dict__.values():
 logging.debug("DETECTING MODULES FINISHED")
 
 
+def enable_functional_api_for_package(pkg):
+    """Search through the package and enable functional API for every nn.Module."""
+    for value in pkg.__dict__.values():
+        if inspect.isclass(value) and issubclass(value, nn.Module):
+            logging.debug(f"DETECTED {value}")
+            enable_functional_api_for_module(value)
+
+
+def disable_functional_api_for_package(pkg):
+    """Search through the package and disable functional API for every nn.Module."""
+    for value in pkg.__dict__.values():
+        if inspect.isclass(value) and issubclass(value, nn.Module):
+            logging.debug(f"DETECTED {value}")
+            disable_functional_api_for_module(value)
+
+
 def enable_functional_api_for_module(module):
+    """Enable functional API.
+
+    This means:
+        * create __pytorch_functional_old_call__ that holds old call
+        * wrap __call__
+    """
     logging.debug(f"ENABLING EXPERIMENTAL API FOR {module}")
+
+    assert "__pytorch_functional_old_call__" not in vars(
+        module
+    ), f"Functional API already enabled for {module}!"
 
     __old_call__ = module.__call__
     module.__pytorch_functional_old_call__ = __old_call__
@@ -40,8 +66,9 @@ def enable_functional_api_for_module(module):
 def disable_functional_api_for_module(module):
     logging.debug(f"DISABLING EXPERIMENTAL API FOR {module}")
 
-    assert hasattr(module, "__pytorch_functional_old_call__"), "Functional API not enabled for this module!"
+    assert hasattr(module, "__pytorch_functional_old_call__"), f"Functional API not enabled for {module}!"
     module.__call__ = module.__pytorch_functional_old_call__
+    del module.__pytorch_functional_old_call__
 
 
 def enable_experimental_api_for_predefined_modules():
@@ -54,4 +81,5 @@ def disable_experimental_api_for_predefined_modules():
         disable_functional_api_for_module(module)
 
 
-enable_experimental_api_for_predefined_modules()
+def enable_experimental_api():
+    enable_experimental_api_for_predefined_modules()
