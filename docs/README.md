@@ -27,8 +27,8 @@ Features:
 
 ## New in 0.4.0
 
-Using new experimental API you can create functional model just like in tensorflow,
-by calling the layer with a placeholder as an argument.
+Using the new experimental API you can create functional model just like in tensorflow:
+by calling the layer with placeholders as arguments. Layer will be then automagically registered in your model.
 
 ```py
 from torch import nn
