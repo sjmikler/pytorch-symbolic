@@ -246,7 +246,7 @@ If you want to use torch functions on placeholder symbolic variable, please crea
 If a layer takes more than 1 argument, pass them after the layer argument, in ``*args``:
 
 ```py
-from pytorch_functional import Input, FunctionalModel, layers
+from pytorch_functional import Input, layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
@@ -257,7 +257,7 @@ x.shape  # (6, 2, 3)
 Alternatively, starting at version 0.4.0, you can do it in a more natural way:
 
 ```py
-from pytorch_functional import Input, FunctionalModel, layers
+from pytorch_functional import Input, layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
