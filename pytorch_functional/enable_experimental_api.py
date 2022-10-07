@@ -51,7 +51,7 @@ def enable_experimental_api_for_predefined_modules():
 
 def disable_experimental_api_for_predefined_modules():
     for module in predefined_modules:
-        module.__call__ = module.__old_call__
+        disable_functional_api_for_module(module)
 
 
 enable_experimental_api_for_predefined_modules()
