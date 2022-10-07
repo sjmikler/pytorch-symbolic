@@ -28,6 +28,9 @@ Features:
 
 ## Example
 
+To create a functional model, call a placeholder with the layer as an argument.
+This will return another placeholder, which you can use.
+
 ```py
 >>> from torch import nn
 >>> from pytorch_functional import Input, FunctionalModel
@@ -45,10 +48,13 @@ FunctionalModel(
 
 **See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/).**
 
-### New in 1.0.0:
+### New in 0.3.0:
 
 In the new API you can create functional model just like in tensorflow, 
-by calling a layer with a placeholder as an argument.
+by calling the layer with a placeholder as an argument.
+Works with multiple arguments as well!
+You can mix new and old API.
+
 ```py
 >>> from torch import nn
 >>> from pytorch_functional import Input, FunctionalModel
