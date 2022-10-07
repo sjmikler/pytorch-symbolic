@@ -24,9 +24,6 @@ logging.debug("DETECTING MODULES FINISHED")
 def enable_functional_api_for_module(module):
     logging.debug(f"ENABLING EXPERIMENTAL API FOR {module}")
 
-    assert not hasattr(
-        module, "__pytorch_functional_old_call__"
-    ), "Functional API already enabled for this module!"
     __old_call__ = module.__call__
     module.__pytorch_functional_old_call__ = __old_call__
 
