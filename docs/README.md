@@ -17,6 +17,7 @@ Defining complex models in PyTorch requires creating classes.
 This makes it just as easy in PyTorch.
 
 Features:
+
 * Small extension to PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
