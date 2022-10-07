@@ -24,7 +24,6 @@ Features:
 * Produces models entirely compatible with PyTorch
 * Reduces the amount of code that you need to write
 * Works well with complex architectures
-* Adds no overhead
 
 ## New in 0.4.0
 
