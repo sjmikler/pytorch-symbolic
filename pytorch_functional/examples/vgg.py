@@ -2,6 +2,8 @@
 This is a flexible implementation of VGG architecture.
 """
 
+#  Copyright (c) 2022 Szymon Mikler
+
 from torch import nn
 
 from .. import FunctionalModel, Input

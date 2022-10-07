@@ -1,3 +1,5 @@
+#  Copyright (c) 2022 Szymon Mikler
+
 import torch
 
 from .. import examples, tools

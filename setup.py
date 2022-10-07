@@ -1,3 +1,5 @@
+#  Copyright (c) 2022 Szymon Mikler
+
 from pathlib import Path
 
 from setuptools import find_packages, setup

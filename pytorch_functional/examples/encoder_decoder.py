@@ -3,6 +3,8 @@ CORRESPONDES TO THE EXAMPLE FROM TENSORFLOW GUIDE
 https://www.tensorflow.org/guide/keras/functional
 """
 
+#  Copyright (c) 2022 Szymon Mikler
+
 from torch import nn
 
 from .. import FunctionalModel, Input, layers

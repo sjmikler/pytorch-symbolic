@@ -1,3 +1,6 @@
+#  Copyright (c) 2022 Szymon Mikler
+
+
 def get_parameter_count(model):
     cnt = 0
     for param in model.parameters():

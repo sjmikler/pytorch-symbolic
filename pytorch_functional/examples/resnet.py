@@ -3,6 +3,8 @@ This is a flexible implementation of ResNet architecture.
 It allows for creation of standard ResNet v2 or Wide ResNet variants.
 """
 
+#  Copyright (c) 2022 Szymon Mikler
+
 from torch import nn
 
 from .. import FunctionalModel, Input
