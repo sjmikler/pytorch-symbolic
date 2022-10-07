@@ -27,7 +27,7 @@ Features:
 
 ## Example
 
-```python
+```py
 >>> from torch import nn
 >>> from pytorch_functional import Input, FunctionalModel
 >>> inputs = Input(shape=(1, 28, 28))
