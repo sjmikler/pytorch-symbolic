@@ -43,7 +43,7 @@ FunctionalModel(
 )
 ```
 
-**See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/)**
+**See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/).**
 
 ## Installation
 
