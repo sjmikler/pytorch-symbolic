@@ -9,7 +9,7 @@ your neural network meets the above conditions, it can be created in a functiona
 
 TensorFlow functional example (toy ResNet from [tensorflow guide](https://www.tensorflow.org/guide/keras/functional)):
 
-```
+```python
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -52,7 +52,7 @@ The separation of steps 2 and 3 makes network creation more difficult than it co
 
 PyTorch non-functional example (toy ResNet equivalent):
 
-```
+```python
 from torch import nn
 from torch.nn import functional as F
 
@@ -119,7 +119,7 @@ Doing this, we:
 
 PyTorch functional example (exact equivalent of toy ResNet):
 
-```
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -179,7 +179,7 @@ They both return the resulting placeholder as an output.
 
 ### Sequential topology example
 
-```
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -210,7 +210,7 @@ assert model.output_shape == (None, 10)
 
 ### Multiple inputs example
 
-```
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -243,7 +243,7 @@ If you want to use torch functions on placeholder symbolic variable, please crea
 
 ### Layer takes more than 1 argument
 If a layer takes more than 1 argument, pass them after the layer argument, in ``*args``:
-```
+```python
 from pytorch_functional import Input, FunctionalModel, layers
 
 x1 = Input(shape=(1, 2, 3))
