@@ -21,11 +21,11 @@ for module in predefined_modules:
         __old_call__ = module.__call__
         module.__old_call__ = __old_call__
 
-        def new_call(self, *args, **kwds):
+        def experimental_monkey_patch_call(self, *args, **kwds):
             if (
                 len(args) > 0
                 and len(kwds) == 0
-                and all([isinstance(x, FMGraphNode) for x in args])
+                and all((isinstance(x, FMGraphNode) for x in args))
             ):
                 node = args[0]
                 return node.apply_layer(self, *args[1:])
@@ -33,7 +33,7 @@ for module in predefined_modules:
                 local_value = module
                 return __old_call__(self, *args, **kwds)
 
-        module.__call__ = new_call
+        module.__call__ = experimental_monkey_patch_call
 
     replace_call(module)
 
