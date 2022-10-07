@@ -29,7 +29,7 @@ pip install pytorch-functional
 
 ## Links
 
-* [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/)
+* [**Quick Start**](https://pytorch-functional.readthedocs.io/en/latest/quick_start/)
 * [See Documentation](https://pytorch-functional.readthedocs.io/)
 * [See on GitHub](https://github.com/gahaalt/pytorch-functional/)
 * [See on PyPI](https://pypi.org/project/pytorch-functional/)
