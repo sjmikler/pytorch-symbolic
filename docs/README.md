@@ -32,18 +32,41 @@ Features:
 >>> from torch import nn
 >>> from pytorch_functional import Input, FunctionalModel
 >>> inputs = Input(shape=(1, 28, 28))
->>> x = inputs(nn.Flatten())(nn.ReLU())
->>> outputs = x(nn.Linear(x.shape[1], 10))
+>>> x = inputs(nn.Flatten())
+>>> outputs = x(nn.Linear(x.shape[1], 10))(nn.ReLU())
 >>> model = FunctionalModel(inputs, outputs)
 >>> model
 FunctionalModel(
   (module000_depth001): Flatten(start_dim=1, end_dim=-1)
-  (module001_depth002): ReLU()
-  (module002_depth003): Linear(in_features=784, out_features=10, bias=True)
+  (module001_depth002): Linear(in_features=784, out_features=10, bias=True)
+  (module002_depth003): ReLU()
 )
 ```
 
 **See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/).**
+
+### New in 1.0.0:
+
+In the new API you can create functional model just like in tensorflow, 
+by calling a layer with a placeholder as an argument.
+```py
+>>> from torch import nn
+>>> from pytorch_functional import Input, FunctionalModel
+
+>>> import pytorch_functional.enable_experimental_api  # JUST IMPORT THIS TO ENABLE NEW API
+
+>>> inputs = Input(shape=(1, 28, 28))
+>>> x = nn.Flatten()(inputs)
+>>> x = nn.Linear(x.shape[1], 10)(x)
+>>> outputs = nn.ReLU()(x)
+>>> model = FunctionalModel(inputs, outputs)
+>>> model
+FunctionalModel(
+  (module000_depth001): Flatten(start_dim=1, end_dim=-1)
+  (module001_depth002): Linear(in_features=784, out_features=10, bias=True)
+  (module002_depth003): ReLU()
+)
+```
 
 ## Installation
 

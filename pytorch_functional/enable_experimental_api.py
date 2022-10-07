@@ -1,19 +1,24 @@
 import inspect
+import logging
 
 from torch import nn
 
 from . import layers
 from .functional_model import FMGraphNode
 
+logging.debug("STARTING DETECTING MODULES")
+
 predefined_modules = []
 for value in nn.__dict__.values():
     if inspect.isclass(value) and issubclass(value, nn.Module):
-        print(value)
+        logging.debug(value)
         predefined_modules.append(value)
 for value in layers.__dict__.values():
     if inspect.isclass(value) and issubclass(value, nn.Module):
-        print(value)
+        logging.debug(value)
         predefined_modules.append(value)
+
+logging.debug("DETECTING MODULES FINISHED")
 
 for module in predefined_modules:
 
