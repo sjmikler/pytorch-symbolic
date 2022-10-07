@@ -2,7 +2,7 @@ site_name: pytorch-functional
 repo_url: https://github.com/gahaalt/pytorch-functional
 
 nav:
-    - README.md
+    - README: README.md
     - quick_start.md
     - api.md
 
