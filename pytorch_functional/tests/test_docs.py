@@ -75,9 +75,7 @@ def test_3():
     task1_outputs = x(nn.Linear(x.features, 10))
     task2_outputs = x(nn.Linear(x.features, 10))
 
-    model = FunctionalModel(
-        inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs)
-    )
+    model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
     assert tools.get_parameter_count(model) == 614228
 
 

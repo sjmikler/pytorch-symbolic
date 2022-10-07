@@ -11,9 +11,7 @@ from .common import classifier
 
 def shortcut_func(x, channels, stride):
     if x.channels != channels or stride != 1:
-        return x(
-            nn.Conv2d(x.channels, channels, kernel_size=1, bias=False, stride=stride)
-        )
+        return x(nn.Conv2d(x.channels, channels, kernel_size=1, bias=False, stride=stride))
     else:
         return x
 
@@ -102,9 +100,7 @@ def ResNet(
         flow = flow(nn.Conv2d(flow.channels, channels // 4, 1))
         flow = flow(nn.BatchNorm2d(flow.features))(activation)
 
-        flow = flow(
-            nn.Conv2d(flow.channels, channels // 4, 3, stride=stride, padding=1)
-        )
+        flow = flow(nn.Conv2d(flow.channels, channels // 4, 3, stride=stride, padding=1))
         flow = flow(nn.BatchNorm2d(flow.features))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels, 1))

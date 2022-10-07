@@ -66,9 +66,7 @@ class FMGraphNode:
 
         new_output = layer.forward(self._v, *(o._v for o in others))
 
-        new_layer_node = FMGraphNode(
-            value=new_output, parents=(self, *others), layer=layer, depth=new_depth
-        )
+        new_layer_node = FMGraphNode(value=new_output, parents=(self, *others), layer=layer, depth=new_depth)
         self.children.append(new_layer_node)
         for other in others:
             other.children.append(new_layer_node)
@@ -302,16 +300,11 @@ class FunctionalModel(nn.Module):
             return tuple(node.shape for node in self.outputs)
 
     def _register_module(self, node):
-        if (
-            not isinstance(node.layer, nn.Module)
-            or node.layer in self._registered_modules
-        ):
+        if not isinstance(node.layer, nn.Module) or node.layer in self._registered_modules:
             return False
 
         num_modules = len(self._registered_modules)
-        self.add_module(
-            name=f"module{num_modules:0>3}_depth{node.depth:0>3}", module=node.layer
-        )
+        self.add_module(name=f"module{num_modules:0>3}_depth{node.depth:0>3}", module=node.layer)
         self._registered_modules.append(node.layer)
         return True
 
@@ -333,9 +326,7 @@ class FunctionalModel(nn.Module):
 
         already_called = []
         for root in self.inputs:
-            root._remove_outsiders_below(
-                insiders=used_nodes, already_called=already_called
-            )
+            root._remove_outsiders_below(insiders=used_nodes, already_called=already_called)
 
     def _clear_nodes_memory(self):
         for node in self._reachable_nodes:
