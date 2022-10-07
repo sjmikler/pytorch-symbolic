@@ -54,7 +54,6 @@ PyTorch non-functional example (toy ResNet equivalent):
 
 ```py
 from torch import nn
-from torch.nn import functional as F
 
 
 class ToyResNet(nn.Module):
@@ -99,6 +98,7 @@ class ToyResNet(nn.Module):
         x = self.relu(self.linear(x))
         x = self.dropout(x)
         return self.classifier(x)
+
 
 model = ToyResNet()
 ```
@@ -242,14 +242,27 @@ model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_output
 If you want to use torch functions on placeholder symbolic variable, please create a `nn.Module` to wrap it up. Examples are `ConcatLayer` and `StackLayer` in `pytorch_functional.layers`.
 
 ### Layer takes more than 1 argument
+
 If a layer takes more than 1 argument, pass them after the layer argument, in ``*args``:
+
 ```py
 from pytorch_functional import Input, FunctionalModel, layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
 x = x1(layers.ConcatLayer(dim=1), x2)
-x.shape # (6, 2, 3)
+x.shape  # (6, 2, 3)
+```
+
+Alternatively, starting at version 0.4.0, you can do it in a more natural way:
+
+```py
+from pytorch_functional import Input, FunctionalModel, layers
+
+x1 = Input(shape=(1, 2, 3))
+x2 = Input(shape=(5, 2, 3))
+x = layers.ConcatLayer(dim=1)(x1, x2)
+x.shape  # (6, 2, 3)
 ```
 
 ## Features
@@ -264,7 +277,10 @@ x.shape # (6, 2, 3)
 
 * You cannot create a graph (model) with cycles. But if you can enclose such model in nn.Module, you can use this module in functional API.
 
-* You cannot use standard functions or expressions on a symbolic variable. Example of forbidden code: `x = Input((1, 2, 3)); x = torch.abs(x);`. In this case, you can use `abs(x)` instead or create a `nn.Module` wrapper for `torch.abs`.
+* You cannot use any standard function or expression on a symbolic variable:
+  * this code won't work: `x = Input((1, 2, 3)); x = torch.abs(x);`
+  * but this will work: `x = Input((1, 2, 3)); x = abs(x);`
+  * if needed, you can always create a `nn.Module` wrapper for `torch.abs`
 
 ## References
 
