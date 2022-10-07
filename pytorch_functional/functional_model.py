@@ -64,7 +64,7 @@ class FMGraphNode:
         else:
             new_depth = self.depth + 1
 
-        new_output = layer.forward(self._v, *(o._v for o in others))
+        new_output = layer.__call__(self._v, *(o._v for o in others))
 
         new_layer_node = FMGraphNode(value=new_output, parents=(self, *others), layer=layer, depth=new_depth)
         self.children.append(new_layer_node)
@@ -110,7 +110,7 @@ class FMGraphNode:
         self._parents_outputs.append(x)
 
         if len(self._parents_outputs) == len(self.parents):
-            self._output = self.layer.forward(*self._parents_outputs)
+            self._output = self.layer.__call__(*self._parents_outputs)
             self._parents_outputs = []
             for child in self.children:
                 child._forward_edge(self._output)
@@ -255,6 +255,7 @@ class FunctionalModel(nn.Module):
             FMGraphNode object or a tuple of them.
         """
         super().__init__()
+        logging.info(f"Creating a Functional Model!")
 
         if isinstance(inputs, FMGraphNode):
             inputs = (inputs,)
