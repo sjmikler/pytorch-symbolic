@@ -6,3 +6,4 @@
 *.sh
 .idea
 .coverage
+devel

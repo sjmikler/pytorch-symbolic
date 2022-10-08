@@ -1,6 +1,6 @@
 #  Copyright (c) 2022 Szymon Mikler
 
-from .experimental_api_v2 import enable_functional_api_for_new_modules
+from .configs import enable_module_call_optimization
 from .functional_model import FunctionalModel, Input
 
-enable_functional_api_for_new_modules()
+__all__ = ["enable_module_call_optimization", "FunctionalModel", "Input"]

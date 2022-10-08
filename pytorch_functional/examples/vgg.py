@@ -47,7 +47,7 @@ def VGG(
 
         for _ in range(group_size):
             flow = flow(nn.Conv2d(flow.channels, width, 3, 1, 1, bias=False))
-            flow = flow(nn.BatchNorm2d(flow.features))(activation)
+            flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
     outs = classifier(flow, n_classes, final_pooling)
     model = FunctionalModel(inputs=inputs, outputs=outs)
