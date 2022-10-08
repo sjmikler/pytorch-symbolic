@@ -29,12 +29,12 @@ def ToyResNet(input_shape, n_classes):
             shortcut = shortcut_func(flow, width, stride)
             flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, stride, 1))
-            flow = flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+            flow = flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, 1, 1))
 
             flow = flow + shortcut
             stride = 1
-    flow = flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+    flow = flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
     outs = classifier(flow, n_classes, pooling="avgpool")
     model = FunctionalModel(inputs=inputs, outputs=outs)
     return model
