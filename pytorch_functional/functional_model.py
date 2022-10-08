@@ -41,9 +41,13 @@ class Placeholder:
         return self._v.shape[1]
 
     @property
-    def channels(self):
+    def C(self):
         assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
         return self._v.shape[1]
+
+    @property
+    def channels(self):
+        return self.C
 
     @property
     def H(self):
@@ -54,6 +58,18 @@ class Placeholder:
     def W(self):
         assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
         return self._v.shape[3]
+
+    @property
+    def HW(self):
+        return (self.H, self.W)
+
+    @property
+    def CHW(self):
+        return (self.C, self.H, self.W)
+
+    @property
+    def HWC(self):
+        return (self.H, self.W, self.C)
 
     @property
     def batch_size(self):
