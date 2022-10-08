@@ -254,7 +254,7 @@ class Input(FMGraphNode):
 
 
 class FunctionalModel(nn.Module):
-    def __init__(self, inputs, outputs, accelerate=False):
+    def __init__(self, inputs, outputs, enable_cuda_graphs=False):
         """A PyTorch model that applies operations defined by the graph.
 
         All operations that changed ``inputs`` into ``outputs`` will be applied
@@ -286,7 +286,7 @@ class FunctionalModel(nn.Module):
         self._prune_unused_layers()
         self._register_reachable_modules()
 
-        if accelerate:
+        if enable_cuda_graphs:
             assert torch.cuda.is_available(), "CUDA acceleration is not available!"
             device = torch.device("cuda")
             self.to(device)
