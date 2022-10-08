@@ -18,7 +18,7 @@ def enable_functional_api_for_module(module):
         * wrap __call__
     """
     assert inspect.isclass(module), "Argument must be a class!"
-    logging.debug(f"ENABLING FUNCTIONAL API FOR {module}")
+    logging.debug(f"ENABLING EXPERIMENTAL API FOR {module}")
 
     assert "__pytorch_functional_old_call__" not in vars(
         module

@@ -6,7 +6,7 @@ from typing import Any, List
 import torch
 from torch import nn
 
-from . import layers
+from . import configs, layers
 
 
 class Placeholder:
@@ -186,15 +186,15 @@ class Placeholder:
     def __pow__(self, other):
         if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
         if isinstance(other, Placeholder):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, Placeholder):
@@ -338,6 +338,9 @@ class FunctionalModel(nn.Module):
             self.cuda()
             input_tensors = tuple(x.v.cuda() for x in inputs)
             torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
+
+        if configs.MODULE_CALL_OPTIMIZATION:
+            configs.remove_call_wrapper_from_all_modules()
 
     def forward(self, inputs):
         if self._has_single_input:
