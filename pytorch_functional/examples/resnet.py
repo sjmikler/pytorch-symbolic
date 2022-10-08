@@ -27,7 +27,7 @@ def ToyResNet(input_shape, n_classes):
     for group_size, width, stride in zip((2, 2, 2), (16, 32, 64), (1, 2, 2)):
         for _ in range(group_size):
             shortcut = shortcut_func(flow, width, stride)
-            flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
+            flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, stride, 1))
             flow = flow(nn.BatchNorm2d(flow.features))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, 1, 1))
@@ -82,32 +82,32 @@ def ResNet(
 
     def simple_block(flow, channels, stride):
         if preactivate_block:
-            flow = flow(nn.BatchNorm2d(flow.features))(activation)
+            flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels, 3, stride, 1))
-        flow = flow(nn.BatchNorm2d(flow.features))(activation)
+        flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
         if dropout:
             flow = flow(nn.Dropout(p=dropout))
         flow = flow(nn.Conv2d(flow.channels, channels, 3, 1, 1))
 
         if bn_ends_block:
-            flow = flow(nn.BatchNorm2d(flow.features))(activation)
+            flow = flow(nn.BatchNorm2d(flow.channels))(activation)
         return flow
 
     def bootleneck_block(flow, channels, stride):
         if preactivate_block:
-            flow = flow(nn.BatchNorm2d(flow.features))(activation)
+            flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels // 4, 1))
-        flow = flow(nn.BatchNorm2d(flow.features))(activation)
+        flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels // 4, 3, stride=stride, padding=1))
-        flow = flow(nn.BatchNorm2d(flow.features))(activation)
+        flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
         flow = flow(nn.Conv2d(flow.channels, channels, 1))
         if bn_ends_block:
-            flow = flow(nn.BatchNorm2d(flow.features))(activation)
+            flow = flow(nn.BatchNorm2d(flow.channels))(activation)
         return flow
 
     if bootleneck:
@@ -122,7 +122,7 @@ def ResNet(
 
     # BUILD THE RESIDUAL BLOCKS
     for group_size, width, stride in zip(group_sizes, channels, strides):
-        flow = flow(nn.BatchNorm2d(flow.features))(activation)
+        flow = flow(nn.BatchNorm2d(flow.channels))(activation)
         preactivate_block = False
 
         for _ in range(group_size):
@@ -133,7 +133,7 @@ def ResNet(
             stride = 1
 
     # BUILDING THE CLASSIFIER
-    flow = flow(nn.BatchNorm2d(flow.features))(activation)
+    flow = flow(nn.BatchNorm2d(flow.channels))(activation)
     outs = classifier(flow, n_classes, pooling=final_pooling)
     model = FunctionalModel(inputs=inputs, outputs=outs)
     return model
