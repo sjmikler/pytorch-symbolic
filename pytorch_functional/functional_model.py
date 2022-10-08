@@ -153,15 +153,15 @@ class FMGraphNode:
     def __pow__(self, other):
         if isinstance(other, FMGraphNode):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
 
     def __rpow__(self, other):
         if isinstance(other, FMGraphNode):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
         if isinstance(other, FMGraphNode):
@@ -205,12 +205,12 @@ class FMGraphNode:
 class Input(FMGraphNode):
     def __init__(
         self,
-        shape,
+        shape=None,
+        batch_shape=None,
         dtype=torch.float32,
         min_value=0.0,
         max_value=1.0,
-        _batch_size=1,
-        _use_tensor=None,
+        custom_tensor=None,
     ):
         """Input to the Functional Model.
 
@@ -224,6 +224,9 @@ class Input(FMGraphNode):
         ----------
         shape
             Shape of the real data. Should NOT include the batch dimension.
+        batch_shape
+            Shape of the real data. Includes the batch dimension.
+            Should be provided if ``shape`` is not provided.
         dtype
             Dtype of the real data that will be the input of the network.
         min_value
@@ -233,17 +236,25 @@ class Input(FMGraphNode):
         max_value
             As above, but the maximal value.
         """
-        if _use_tensor is not None:
-            super().__init__(value=_use_tensor)
+        if custom_tensor is not None:
+            super().__init__(value=custom_tensor)
             return
 
-        value = torch.rand(_batch_size, *shape) * (max_value - min_value) + min_value
+        if batch_shape is not None:
+            batch_size = batch_shape[0]
+            shape = batch_shape[1:]
+        elif shape is not None:
+            batch_size = 1
+        else:
+            raise ValueError("Shape argument is required!")
+
+        value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
         super().__init__(value=value)
 
 
 class FunctionalModel(nn.Module):
-    def __init__(self, inputs, outputs):
+    def __init__(self, inputs, outputs, use_cuda_graph=False):
         """A PyTorch model that applies operations defined by the graph.
 
         All operations that changed ``inputs`` into ``outputs`` will be applied
@@ -274,6 +285,13 @@ class FunctionalModel(nn.Module):
         self._registered_modules = []
         self._prune_unused_layers()
         self._register_reachable_modules()
+
+        if use_cuda_graph:
+            assert torch.cuda.is_available(), "CUDA acceleration is not available!"
+            device = torch.device("cuda")
+            self.to(device)
+            input_tensors = tuple(x._v.to("cuda") for x in inputs)
+            torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
 
     def forward(self, inputs):
         if self._has_single_input:
