@@ -26,7 +26,7 @@ class Placeholder:
         layer
             nn.Module object that transformed parents.
         """
-        self._v = value
+        self.v = value
         self.parents = parents
         self.children: List[Placeholder] = []
         self.layer = layer
@@ -37,13 +37,13 @@ class Placeholder:
 
     @property
     def features(self):
-        assert len(self._v.shape) == 2, "The data is not of [C,F] form!"
-        return self._v.shape[1]
+        assert len(self.v.shape) == 2, "The data is not of [C,F] form!"
+        return self.v.shape[1]
 
     @property
     def C(self):
-        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self._v.shape[1]
+        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
+        return self.v.shape[1]
 
     @property
     def channels(self):
@@ -51,13 +51,13 @@ class Placeholder:
 
     @property
     def H(self):
-        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self._v.shape[2]
+        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
+        return self.v.shape[2]
 
     @property
     def W(self):
-        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self._v.shape[3]
+        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
+        return self.v.shape[3]
 
     @property
     def HW(self):
@@ -74,25 +74,25 @@ class Placeholder:
     @property
     def batch_size(self):
         if self.batch_size_known:
-            return self._v.shape[0]
+            return self.v.shape[0]
         else:
             return None
 
     @property
     def shape(self):
         if self.batch_size_known:
-            return self._v.shape
+            return self.v.shape
         else:
-            return (None, *self._v.shape[1:])
+            return (None, *self.v.shape[1:])
 
     @property
     def numel(self):
-        return self._v.shape.numel()
+        return self.v.shape.numel()
 
     def apply_layer(self, layer, *others):
         all_parents = (self,) + others
         new_depth = min(parent.depth for parent in all_parents) + 1
-        new_output = layer.__call__(self._v, *(o._v for o in others))
+        new_output = layer.__call__(self.v, *(o.v for o in others))
         batch_size_known = all([parent.batch_size_known for parent in all_parents])
 
         new_layer_node = Placeholder(
@@ -336,7 +336,7 @@ class FunctionalModel(nn.Module):
                 assert x.batch_size_known, "Must provide batch size for each input!"
 
             self.cuda()
-            input_tensors = tuple(x._v.cuda() for x in inputs)
+            input_tensors = tuple(x.v.cuda() for x in inputs)
             torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
 
     def forward(self, inputs):
