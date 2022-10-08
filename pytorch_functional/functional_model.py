@@ -9,8 +9,8 @@ from torch import nn
 from . import layers
 
 
-class FMGraphNode:
-    def __init__(self, value: torch.Tensor, parents=tuple(), depth=0, layer=None):
+class Placeholder:
+    def __init__(self, value: torch.Tensor, parents=tuple(), depth=0, layer=None, batch_size_known=False):
         """Node of a Functional Model.
 
         This might represent input or intermediate values of the neural network.
@@ -28,50 +28,67 @@ class FMGraphNode:
         """
         self._v = value
         self.parents = parents
-        self.children: List[FMGraphNode] = []
+        self.children: List[Placeholder] = []
         self.layer = layer
         self.depth = depth
         self._output = None
         self._parents_outputs: List[Any] = []
-
-    @property
-    def channels(self):
-        return self._v.shape[1]
+        self.batch_size_known = batch_size_known
 
     @property
     def features(self):
+        assert len(self._v.shape) == 2, "The data is not of [C,F] form!"
+        return self._v.shape[1]
+
+    @property
+    def channels(self):
+        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
         return self._v.shape[1]
 
     @property
     def H(self):
-        assert len(self._v.shape) == 4, "Variable is not an image!"
+        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
         return self._v.shape[2]
 
     @property
     def W(self):
-        assert len(self._v.shape) == 4, "Variable is not an image!"
+        assert len(self._v.shape) == 4, "The data is not of [C,H,W] form!"
         return self._v.shape[3]
 
     @property
+    def batch_size(self):
+        if self.batch_size_known:
+            return self._v.shape[0]
+        else:
+            return None
+
+    @property
     def shape(self):
-        return (None, *self._v.shape[1:])
+        if self.batch_size_known:
+            return self._v.shape
+        else:
+            return (None, *self._v.shape[1:])
 
     @property
     def numel(self):
-        return self._v.shape[1:].numel()
+        return self._v.shape.numel()
 
     def apply_layer(self, layer, *others):
-        if others:
-            new_depth = min(self.depth, *(o.depth for o in others)) + 1
-        else:
-            new_depth = self.depth + 1
-
+        all_parents = (self,) + others
+        new_depth = min(parent.depth for parent in all_parents) + 1
         new_output = layer.__call__(self._v, *(o._v for o in others))
+        batch_size_known = all([parent.batch_size_known for parent in all_parents])
 
-        new_layer_node = FMGraphNode(value=new_output, parents=(self, *others), layer=layer, depth=new_depth)
-        self.children.append(new_layer_node)
-        for other in others:
-            other.children.append(new_layer_node)
+        new_layer_node = Placeholder(
+            value=new_output,
+            parents=all_parents,
+            layer=layer,
+            depth=new_depth,
+            batch_size_known=batch_size_known,
+        )
+        for parent in all_parents:
+            parent.children.append(new_layer_node)
+            logging.info(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
     def _get_all_nodes_below(self, layer_list):
@@ -128,7 +145,7 @@ class FMGraphNode:
         return self.apply_layer(layers.AnyOpLayer(lambda x: abs(x)))
 
     def __add__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self.apply_layer(layers.AddOpLayer(), other)
         else:
@@ -138,7 +155,7 @@ class FMGraphNode:
         return self.__add__(other)
 
     def __mul__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self.apply_layer(layers.MulOpLayer(), other)
         else:
@@ -151,58 +168,63 @@ class FMGraphNode:
         return self.apply_layer(layers.AnyOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
 
     def __rpow__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             return other.__pow__(self)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self.apply_layer(layers.SubOpLayer(), other)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: x - other))
 
     def __rsub__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             return other.__sub__(self)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: other - x))
 
     def __truediv__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x / y), other)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: x / other))
 
     def __rtruediv__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             return other.__truediv__(self)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: other / x))
 
     def __matmul__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             return self.apply_layer(layers.MatmulOpLayer(), other)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: x @ other))
 
     def __rmatmul__(self, other):
-        if isinstance(other, FMGraphNode):
+        if isinstance(other, Placeholder):
             return other.__matmul__(self)
         else:
             return self.apply_layer(layers.AnyOpLayer(op=lambda x: other @ x))
 
+    def __repr__(self):
+        addr = f"Placeholder at {hex(id(self))};"
+        info = f"child of {len(self.parents)}; parent of {len(self.children)}"
+        return "<" + addr + " " + info + ">"
 
-class Input(FMGraphNode):
+
+class Input(Placeholder):
     def __init__(
         self,
         shape=None,
@@ -223,10 +245,11 @@ class Input(FMGraphNode):
         Parameters
         ----------
         shape
-            Shape of the real data. Should NOT include the batch dimension.
+            Shape of the real data NOT including the batch dimension.
         batch_shape
-            Shape of the real data. Includes the batch dimension.
-            Should be provided if ``shape`` is not provided.
+            Shape of the real data including the batch dimension.
+            Should be provided instead ``shape`` if cuda graphs will be used.
+            If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
         dtype
             Dtype of the real data that will be the input of the network.
         min_value
@@ -238,22 +261,24 @@ class Input(FMGraphNode):
         """
         if custom_tensor is not None:
             self.was_batch_size_provided = True
-            super().__init__(value=custom_tensor)
+            super().__init__(value=custom_tensor, batch_size_known=True)
             return
 
         if batch_shape is not None:
             batch_size = batch_shape[0]
             shape = batch_shape[1:]
-            self.was_batch_size_provided = True
+            batch_size_known = True
         elif shape is not None:
+            # We use batch_size of 1 under the hood
+            # but we don't tell it to the user
             batch_size = 1
-            self.was_batch_size_provided = False
+            batch_size_known = False
         else:
             raise ValueError("Shape argument is required!")
 
         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
-        super().__init__(value=value)
+        super().__init__(value=value, batch_size_known=batch_size_known)
 
 
 class FunctionalModel(nn.Module):
@@ -273,14 +298,14 @@ class FunctionalModel(nn.Module):
         super().__init__()
         logging.info("Creating a Functional Model...")
 
-        if isinstance(inputs, FMGraphNode):
+        if isinstance(inputs, Placeholder):
             inputs = (inputs,)
-        assert all(isinstance(x, FMGraphNode) for x in inputs)
+        assert all(isinstance(x, Placeholder) for x in inputs)
         self.inputs = inputs
 
-        if isinstance(outputs, FMGraphNode):
+        if isinstance(outputs, Placeholder):
             outputs = (outputs,)
-        assert all(isinstance(x, FMGraphNode) for x in outputs)
+        assert all(isinstance(x, Placeholder) for x in outputs)
         self.outputs = outputs
 
         self._has_single_input = len(self.inputs) == 1
@@ -292,11 +317,10 @@ class FunctionalModel(nn.Module):
         if enable_cuda_graphs:
             assert torch.cuda.is_available(), "CUDA acceleration is not available!"
             for x in inputs:
-                assert x.was_batch_size_provided, "Must provide batch size for each input!"
+                assert x.batch_size_known, "Must provide batch size for each input!"
 
-            device = torch.device("cuda")
-            self.to(device)
-            input_tensors = tuple(x._v.to("cuda") for x in inputs)
+            self.cuda()
+            input_tensors = tuple(x._v.cuda() for x in inputs)
             torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
 
     def forward(self, inputs):
@@ -327,7 +351,11 @@ class FunctionalModel(nn.Module):
             return tuple(node.shape for node in self.outputs)
 
     def _register_module(self, node):
-        if not isinstance(node.layer, nn.Module) or node.layer in self._registered_modules:
+        if not isinstance(node.layer, nn.Module):
+            logging.info(f"Not registering {node.layer} (not a nn.Module)!")
+            return False
+        elif node.layer in self._registered_modules:
+            logging.info(f"Not registering {node.layer} (already registered)!")
             return False
 
         num_modules = len(self._registered_modules)

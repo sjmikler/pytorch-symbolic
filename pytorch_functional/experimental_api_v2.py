@@ -5,7 +5,7 @@ import logging
 
 from torch import nn
 
-from .functional_model import FMGraphNode
+from .functional_model import Placeholder
 
 _objects_with_wrapped_call = []
 
@@ -28,7 +28,7 @@ def enable_functional_api_for_module(module):
     module.__pytorch_functional_old_call__ = __old_call__
 
     def experimental_monkey_patch_call(self, *args, **kwds):
-        if len(args) > 0 and len(kwds) == 0 and all((isinstance(x, FMGraphNode) for x in args)):
+        if len(args) > 0 and len(kwds) == 0 and all((isinstance(x, Placeholder) for x in args)):
             node = args[0]
             return node.apply_layer(self, *args[1:])
         else:
