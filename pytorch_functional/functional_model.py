@@ -237,14 +237,17 @@ class Input(FMGraphNode):
             As above, but the maximal value.
         """
         if custom_tensor is not None:
+            self.was_batch_size_provided = True
             super().__init__(value=custom_tensor)
             return
 
         if batch_shape is not None:
             batch_size = batch_shape[0]
             shape = batch_shape[1:]
+            self.was_batch_size_provided = True
         elif shape is not None:
             batch_size = 1
+            self.was_batch_size_provided = False
         else:
             raise ValueError("Shape argument is required!")
 
@@ -288,6 +291,9 @@ class FunctionalModel(nn.Module):
 
         if enable_cuda_graphs:
             assert torch.cuda.is_available(), "CUDA acceleration is not available!"
+            for x in inputs:
+                assert x.was_batch_size_provided, "Must provide batch size for each input!"
+
             device = torch.device("cuda")
             self.to(device)
             input_tensors = tuple(x._v.to("cuda") for x in inputs)
