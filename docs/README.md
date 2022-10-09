@@ -11,7 +11,6 @@
 [![Python 3.10](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml)
 
 Pytorch Functional is MIT licensed library that adds functional API for model creation to PyTorch.
-Its aim to simplify definition of neural networks.
 
 Defining complex models in PyTorch required creating classes.
 [Defining models in Keras is easier](https://www.tensorflow.org/guide/keras/functional).
@@ -21,7 +20,7 @@ With Pytorch Functional, you can create neural networks without tedious calculat
 
 Features:
 
-* Small extension to PyTorch
+* Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
 * Reduces the amount of code that you need to write
