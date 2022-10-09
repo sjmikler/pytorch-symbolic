@@ -1,8 +1,8 @@
 #  Copyright (c) 2022 Szymon Mikler
 
-import re
 import os
 import pathlib
+import re
 
 
 def scan_for_code_blobs(text):
@@ -27,8 +27,7 @@ def test_all_code_blobs():
             globals_temp = {}
             exec(blob, globals_temp)
         except Exception as e:
-            print(f"Exception during automated documentation testing {idx}/{len(code_blobs)}.")
-            print(f"Source code that failed:")
+            print(f"Exception during automated documentation testing {idx}/{len(all_code_blobs)}:")
             print(blob)
             raise e
 
