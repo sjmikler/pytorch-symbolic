@@ -82,6 +82,17 @@ FunctionalModel(
 
 **See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/).**
 
+## Gentle introduction
+
+There's a notebook showing the basic usage of Pytorch Functional. With it you can:
+
+* Learn Pytorch Functional in an interactive way
+* See visualizations of graphs that are created under the hood
+* Try the package out before installing it on your system
+
+Click:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gahaalt/pytorch-functional/blob/develop/gentle-introduction.ipynb)
+
 ## Installation
 
 Install easily with pip:
