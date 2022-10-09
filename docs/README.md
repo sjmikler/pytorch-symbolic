@@ -13,7 +13,7 @@
 Pytorch Functional is a MIT licensed library that adds functional API for model creation to PyTorch.
 
 Defining complex models in PyTorch requires creating classes.
-[Defining models in tensorflow is easier](https://www.tensorflow.org/guide/keras/functional).
+[Defining models in Keras is easier](https://www.tensorflow.org/guide/keras/functional).
 This makes it just as easy in PyTorch. With Pytorch Functional, you can create neural networks
 without tedious calculations of input shapes for each layer.
 
@@ -27,7 +27,7 @@ Features:
 
 ## New in 0.4.0
 
-Using the new experimental API you can create functional model just like in tensorflow:
+Using the new version of the API you can create functional model just like in Keras:
 by calling the layer with placeholders as arguments. Layer will be then automagically registered in your model.
 
 ```py
