@@ -2,7 +2,7 @@
 
 import logging
 
-from .experimental_api_v2 import enable_functional_api_for_new_modules, remove_call_wrapper_from_all_modules
+from .experimental_api import enable_functional_api_for_new_modules, remove_call_wrapper_from_all_modules
 
 enable_functional_api_for_new_modules()
 
