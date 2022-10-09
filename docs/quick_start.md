@@ -203,7 +203,7 @@ model = ToyResNet()
 
 This took over 30 lines of code.
 
-### [More functional API examples](https://github.com/gahaalt/pytorch-functional/tree/master/examples)
+### [More functional API examples](https://github.com/gahaalt/pytorch-functional/tree/main/examples)
 
 The link above includes:
 
