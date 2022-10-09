@@ -186,15 +186,15 @@ class Placeholder:
     def __pow__(self, other):
         if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
         if isinstance(other, Placeholder):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, Placeholder):
