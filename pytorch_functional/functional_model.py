@@ -187,6 +187,19 @@ class Placeholder:
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    def __mod__(self, other):
+        if isinstance(other, Placeholder):
+            assert self.shape == other.shape, "Shapes do not match for the operation!"
+            return self.apply_layer(layers.ModOpLayer(), other)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x % other))
+
+    def __rmod__(self, other):
+        if isinstance(other, Placeholder):
+            return other.__mod__(self)
+        else:
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other % x))
+
     def __neg__(self):
         return self.apply_layer(layers.AnyOpLayer(op=lambda x: -x))
 

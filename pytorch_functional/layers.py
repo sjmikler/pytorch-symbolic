@@ -31,6 +31,15 @@ class MulOpLayer(nn.Module):
         return a * b
 
 
+class ModOpLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    @staticmethod
+    def forward(a, b):
+        return torch.remainder(a, b)
+
+
 class MatmulOpLayer(nn.Module):
     def __init__(self):
         super().__init__()
