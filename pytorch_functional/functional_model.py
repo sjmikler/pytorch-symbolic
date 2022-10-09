@@ -186,15 +186,15 @@ class Placeholder:
     def __pow__(self, other):
         if isinstance(other, Placeholder):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x ** other))
 
     def __rpow__(self, other):
         if isinstance(other, Placeholder):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
+            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
         if isinstance(other, Placeholder):
@@ -330,14 +330,10 @@ class FunctionalModel(nn.Module):
         self._prune_unused_layers()
         self._register_reachable_modules()
 
-        if enable_cuda_graphs:
-            assert torch.cuda.is_available(), "CUDA acceleration is not available!"
-            for x in inputs:
-                assert x.batch_size_known, "Must provide batch size for each input!"
+        self.cuda_graphs_enabled = False
 
-            self.cuda()
-            input_tensors = tuple(x.v.cuda() for x in inputs)
-            torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
+        if enable_cuda_graphs:
+            self._enable_cuda_graphs(inputs)
 
         if configs.MODULE_CALL_OPTIMIZATION:
             configs.remove_call_wrapper_from_all_modules()
@@ -368,6 +364,21 @@ class FunctionalModel(nn.Module):
             return self.outputs[0].shape
         else:
             return tuple(node.shape for node in self.outputs)
+
+    def _enable_cuda_graphs(self, inputs):
+        msg = (
+            "CUDA Graphs can result in undefined behaviour! "
+            "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
+        )
+        logging.warning(msg)
+        assert torch.cuda.is_available(), "CUDA acceleration is not available!"
+        for x in inputs:
+            assert x.batch_size_known, "Must provide batch size for each input!"
+
+        self.cuda()
+        input_tensors = tuple(x.v.cuda() for x in inputs)
+        torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
+        self.cuda_graphs_enabled = True
 
     def _register_module(self, node):
         if not isinstance(node.layer, nn.Module):
