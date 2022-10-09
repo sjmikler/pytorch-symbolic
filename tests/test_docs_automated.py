@@ -30,6 +30,3 @@ def test_all_code_blobs():
             print(f"Exception during automated documentation testing {idx}/{len(all_code_blobs)}:")
             print(blob)
             raise e
-
-
-test_all_code_blobs()
