@@ -10,7 +10,14 @@ from . import configs, layers
 
 
 class Placeholder:
-    def __init__(self, value: torch.Tensor, parents=tuple(), depth=0, layer=None, batch_size_known=False):
+    def __init__(
+        self,
+        value: torch.Tensor,
+        parents=tuple(),
+        depth=0,
+        layer=None,
+        batch_size_known=False,
+    ):
         """Node of a Functional Model.
 
         This might represent input or intermediate values of the neural network.

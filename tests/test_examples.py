@@ -2,7 +2,7 @@
 
 import torch
 
-from .. import examples, tools
+from pytorch_functional import examples, tools
 
 
 def test_toy_resnet():

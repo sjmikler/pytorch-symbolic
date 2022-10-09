@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from .. import FunctionalModel, Input, tools
+from pytorch_functional import FunctionalModel, Input, tools
 
 
 def test_1():
