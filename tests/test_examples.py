@@ -11,7 +11,7 @@ def test_toy_resnet():
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
-    assert tools.get_parameter_count(model) == 175178
+    assert tools.get_parameter_count(model) == 175530
 
 
 def test_wrn():
