@@ -44,12 +44,12 @@ Doing this, we:
 * Write less code
 * Write easier code
 
-### Comparing Pytorch Functional to TensorFlow
+### Comparing Pytorch Functional to Keras Functional
 
 We took an example of a toy ResNet from [tensorflow guide](https://www.tensorflow.org/guide/keras/functional) and
 created it in a few different ways. Note that their example took **16 lines of code**, excluding imports and utilities.
 
-Using Pytorch Functional, you can create toy ResNet using exactly just as many lines as in tensorflow:
+Using Pytorch Functional, you can create toy ResNet using exactly as many lines as using Keras Functional:
 
 ```py
 from torch import nn
@@ -77,7 +77,7 @@ outputs = nn.Linear(x.features, 10)(x)
 model = FunctionalModel(inputs, outputs)
 ```
 
-In fact, the code is equivalent line by line. For example this line in TensorFlow:
+In fact, the code is equivalent line by line. For example this line in Keras:
 
 ```py
 ... = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
@@ -91,16 +91,16 @@ is equivalent to this line in Pytorch Functional:
 
 Let's analyze what happens in Pytorch Functional.
 
-* `nn.Conv2d` is PyTorch equivalent of TensorFlow/Keras `layers.Conv2d` layer
+* `nn.Conv2d` is PyTorch equivalent of Keras `layers.Conv2d` layer
 * Input channels:
-    * In TensorFlow we don't pass it openly - it'll be calculated automatically from the inputs
+    * In Keras we don't pass it openly - it'll be calculated automatically from the inputs
     * In Pytorch Functional we also calculate it automatically using `x.channels`, but we pass it openly as an argument
 * In both frameworks `64, 3` are the output's number of channels and the kernel size
 * Padding:
-    * We use `padding="same"` in TensorFlow
+    * We use `padding="same"` in Keras
     * We use `padding=1` in PyTorch
 * Activation:
-    * In TensorFlow we simply add argument `activation='relu'`
+    * In Keras we simply add argument `activation='relu'`
     * in Pytorch Functional we apply `nn.ReLU()` as a transformation that should happen after `nn.Conv2d(...)`
 
 The example below is equivalent, but uses another way of registering layers in the network:
@@ -346,7 +346,7 @@ x.shape  # (6, 2, 3)
 
 ## Features
 
-* TensorFlow-like API
+* Keras-like API
 * Multiple inputs and outputs
 * Automatic pruning of unused layers
 * Reusing layers multiple times
