@@ -28,7 +28,7 @@ def ToyResNet(input_shape, n_classes):
     for group_size, width, stride in zip((2, 2, 2), (16, 32, 64), (1, 2, 2)):
         for _ in range(group_size):
             shortcut = shortcut_func(flow, width, stride)
-            flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
+            flow = flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, stride, 1))
             flow = flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
             flow = flow(nn.Conv2d(flow.channels, width, 3, 1, 1))
