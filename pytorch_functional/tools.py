@@ -28,7 +28,7 @@ def hash_tensor(tensor):
     return hash(" ".join([str(value) for value in tensor.flatten()]))
 
 
-def model_identical(a, b):
+def model_hashes_identical(a, b):
     hashes_a = [hash_tensor(p) for p in a.parameters()]
     hashes_b = [hash_tensor(p) for p in b.parameters()]
     return set(hashes_a) == set(hashes_b)
