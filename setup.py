@@ -7,9 +7,6 @@ from setuptools import find_packages, setup
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-packages = find_packages()
-print("Packages found:", packages)
-
 setup(
     name="pytorch-functional",
     version="0.4.8",
@@ -21,7 +18,7 @@ setup(
     author_email="sjmikler@gmail.com",
     license="MIT",
     description="Provides functional API for model creation in PyTorch.",
-    packages=packages,
+    packages=["pytorch_functional"],
     python_requires=">=3.7",
     classifiers=[
         "License :: OSI Approved :: MIT License",

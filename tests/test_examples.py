@@ -2,11 +2,12 @@
 
 import torch
 
-from pytorch_functional import examples, tools
+import examples
+from pytorch_functional import tools
 
 
 def test_toy_resnet():
-    model = examples.ToyResNet((3, 32, 32), n_classes=10)
+    model = examples.resnet.ToyResNet((3, 32, 32), n_classes=10)
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -14,7 +15,7 @@ def test_toy_resnet():
 
 
 def test_wrn():
-    model = examples.ResNet((3, 32, 32), n_classes=10, version=("WRN", 16, 4))
+    model = examples.resnet.ResNet((3, 32, 32), n_classes=10, version=("WRN", 16, 4))
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -22,7 +23,7 @@ def test_wrn():
 
 
 def test_vgg():
-    model = examples.VGG((3, 32, 32), n_classes=10, version=13)
+    model = examples.vgg.VGG((3, 32, 32), n_classes=10, version=13)
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -30,7 +31,7 @@ def test_vgg():
 
 
 def test_enc_dec():
-    model = examples.simple_encoder_decoder((3, 32, 32))
+    model = examples.encoder_decoder.simple_encoder_decoder((3, 32, 32))
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 1, 7, 7]
