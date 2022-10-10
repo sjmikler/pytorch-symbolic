@@ -1,6 +1,9 @@
 #  Copyright (c) 2022 Szymon Mikler
 
+from __future__ import annotations
+
 import logging
+from typing import List, Tuple
 
 import torch
 from torch import nn
@@ -50,13 +53,15 @@ class FunctionalModel(nn.Module):
         if configs.MODULE_CALL_OPTIMIZATION:
             configs.remove_call_wrapper_from_all_modules()
 
-    def forward(self, inputs):
+    def forward(
+        self, inputs: Tuple[torch.Tensor, ...] | torch.Tensor
+    ) -> Tuple[torch.Tensor, ...] | torch.Tensor:
         if self._has_single_input:
-            self.inputs[0]._forward_edge(inputs)
+            self.inputs[0]._begin_graph_flow(inputs)
         else:
             assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
             for root, arg in zip(self.inputs, inputs):
-                root._forward_edge(arg)
+                root._begin_graph_flow(arg)
 
         if self._has_single_output:
             return self.outputs[0]._output
@@ -77,7 +82,7 @@ class FunctionalModel(nn.Module):
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def _enable_cuda_graphs(self, inputs):
+    def _enable_cuda_graphs(self, inputs: Tuple[Placeholder]):
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -92,7 +97,7 @@ class FunctionalModel(nn.Module):
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
         self.cuda_graphs_enabled = True
 
-    def _register_module(self, node):
+    def _register_module(self, node: Placeholder) -> bool:
         if not isinstance(node.layer, nn.Module):
             logging.info(f"Not registering {node.layer} (not a nn.Module)!")
             return False
@@ -130,15 +135,15 @@ class FunctionalModel(nn.Module):
             node._clear_memory()
 
     @property
-    def _reachable_nodes(self):
-        nodes_below = []
+    def _reachable_nodes(self) -> List[Placeholder]:
+        nodes_below: List[Placeholder] = []
         for root in self.inputs:
             root._get_all_nodes_below(nodes_below)
         return nodes_below
 
     @property
-    def _used_nodes(self):
-        nodes_above = []
+    def _used_nodes(self) -> List[Placeholder]:
+        nodes_above: List[Placeholder] = []
         for output_leaf in self.outputs:
             output_leaf._get_all_nodes_above(nodes_above)
         return nodes_above

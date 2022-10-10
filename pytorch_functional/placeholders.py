@@ -47,51 +47,51 @@ class Placeholder:
         self.batch_size_known = batch_size_known
 
     @property
-    def features(self):
+    def features(self) -> int:
         """Size of 1D data."""
         assert len(self.v.shape) == 2, "The data is not of [C,F] form!"
         return self.v.shape[1]
 
     @property
-    def C(self):
+    def C(self) -> int:
         """Number of channels in Image data."""
         assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
         return self.v.shape[1]
 
     @property
-    def channels(self):
+    def channels(self) -> int:
         """Same as ``.C``"""
         return self.C
 
     @property
-    def H(self):
+    def H(self) -> int:
         """Height in Image data."""
         assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
         return self.v.shape[2]
 
     @property
-    def W(self):
+    def W(self) -> int:
         """Width in Image data."""
         assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
         return self.v.shape[3]
 
     @property
-    def HW(self):
+    def HW(self) -> Tuple[int, int]:
         """Tuple of (height, width) in Image data."""
         return (self.H, self.W)
 
     @property
-    def CHW(self):
+    def CHW(self) -> Tuple[int, int, int]:
         """Tuple of (channels, height, width) in Image data."""
         return (self.C, self.H, self.W)
 
     @property
-    def HWC(self):
+    def HWC(self) -> Tuple[int, int, int]:
         """Tuple of (height, width, channels) in Image data."""
         return (self.H, self.W, self.C)
 
     @property
-    def batch_size(self):
+    def batch_size(self) -> int | None:
         """If known - batch size of the data. Else None."""
         if self.batch_size_known:
             return self.v.shape[0]
@@ -99,7 +99,7 @@ class Placeholder:
             return None
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int | None, ...]:
         """Shape of the placeholder, including batch size."""
         if self.batch_size_known:
             return self.v.shape
@@ -107,11 +107,11 @@ class Placeholder:
             return (None, *self.v.shape[1:])
 
     @property
-    def numel(self):
+    def numel(self) -> int:
         """Number of the values in placeholder. If batch size is known, it is used too."""
         return self.v.shape.numel()
 
-    def apply_layer(self, layer: nn.Module, *others: Placeholder):
+    def apply_layer(self, layer: nn.Module, *others: Placeholder) -> Placeholder:
         """Register a new layer in the graph. Same as notation ``placeholder(layer)``."""
         assert all([isinstance(other, Placeholder) for other in others])
 
@@ -132,25 +132,23 @@ class Placeholder:
             logging.info(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
-    def _get_all_nodes_below(self, layer_list):
+    def _get_all_nodes_below(self, layer_list: List[Placeholder]):
         if self in layer_list:
             return layer_list
         layer_list.append(self)
 
         for child in self.children:
             child._get_all_nodes_below(layer_list)
-        return layer_list
 
-    def _get_all_nodes_above(self, layer_list):
+    def _get_all_nodes_above(self, layer_list: List[Placeholder]):
         if self in layer_list:
             return layer_list
         layer_list.append(self)
 
         for child in self.parents:
             child._get_all_nodes_above(layer_list)
-        return layer_list
 
-    def _remove_outsiders_below(self, insiders, already_called):
+    def _remove_outsiders_below(self, insiders: List[Placeholder], already_called: List[Placeholder]):
         if self in already_called:
             return None
         already_called.append(self)
@@ -161,19 +159,18 @@ class Placeholder:
             else:
                 self.children.remove(child)
 
-    def _forward_edge(self, x):
-        if len(self.parents) == 0:
-            for child in self.children:
-                child._forward_edge(x)
-            return
+    def _begin_graph_flow(self, x):
+        for child in self.children:
+            child._continue_graph_flow(x)
 
+    def _continue_graph_flow(self, x):
         self._parents_outputs.append(x)
 
         if len(self._parents_outputs) == len(self.parents):
-            self._output = self.layer.__call__(*self._parents_outputs)
+            self._output = self.layer(*self._parents_outputs)
             self._parents_outputs = []
             for child in self.children:
-                child._forward_edge(self._output)
+                child._continue_graph_flow(self._output)
 
     def _clear_memory(self):
         self._parents_outputs = []

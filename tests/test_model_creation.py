@@ -72,5 +72,5 @@ def test_identical_networks():
         model0 = create_vanilla_pyt(seed)
         model1 = create_api_v1(seed)
         model2 = create_api_v2(seed)
-        assert tools.model_hashes_identical(model1, model2)
-        assert tools.model_hashes_identical(model1, model0)
+        assert tools.models_have_corresponding_parameters(model1, model2)
+        assert tools.models_have_corresponding_parameters(model1, model0)
