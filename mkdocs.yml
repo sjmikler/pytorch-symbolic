@@ -5,9 +5,10 @@ nav:
     - README: README.md
     - quick_start.md
     - acceleration.md
-    - Reference/model.md
-    - Reference/placeholder.md
-    - Reference/tools.md
+    - Reference:
+        - Reference/model.md
+        - Reference/placeholder.md
+        - Reference/tools.md
 
 copyright:
     Copyright @ 2022 Szymon Mikler
