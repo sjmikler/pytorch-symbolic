@@ -10,20 +10,22 @@
 [![Python 3.9](https://github.com/gahaalt/pytorch-functional/actions/workflows/python39.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python39.yaml)
 [![Python 3.10](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml/badge.svg)](https://github.com/gahaalt/pytorch-functional/actions/workflows/python310.yaml)
 
-Pytorch Functional is a MIT licensed library that adds functional API for model creation to PyTorch.
+Pytorch Functional is MIT licensed library that adds functional API for model creation to PyTorch.
 
-Defining complex models in PyTorch requires creating classes.
+Defining complex models in PyTorch required creating classes.
 [Defining models in Keras is easier](https://www.tensorflow.org/guide/keras/functional).
-This makes it just as easy in PyTorch. With Pytorch Functional, you can create neural networks
-without tedious calculations of input shapes for each layer.
+Pytorch Functional makes it just as easy.
+
+With Pytorch Functional, you can create neural networks without tedious calculations of input shape for each layer.
 
 Features:
 
-* Small extension to PyTorch
+* Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
 * Reduces the amount of code that you need to write
 * Works well with complex architectures
+* Package and documentation automatically tested
 
 ## New in 0.4.0
 
@@ -79,6 +81,17 @@ FunctionalModel(
 ```
 
 **See more examples in [Quick Start](https://pytorch-functional.readthedocs.io/en/latest/quick_start/).**
+
+## Gentle introduction
+
+There's a notebook showing the basic usage of Pytorch Functional. With it you can:
+
+* Learn Pytorch Functional in an interactive way
+* See visualizations of graphs that are created under the hood
+* Try the package out before installing it on your system
+
+Click:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gahaalt/pytorch-functional/blob/develop/gentle-introduction.ipynb)
 
 ## Installation
 

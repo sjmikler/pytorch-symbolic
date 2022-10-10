@@ -31,6 +31,15 @@ class MulOpLayer(nn.Module):
         return a * b
 
 
+class ModOpLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    @staticmethod
+    def forward(a, b):
+        return torch.remainder(a, b)
+
+
 class MatmulOpLayer(nn.Module):
     def __init__(self):
         super().__init__()
@@ -51,8 +60,8 @@ class ConcatLayer(nn.Module):
         super().__init__()
         self.dim = dim
 
-    def forward(self, *elements):
-        return torch.cat(tensors=elements, dim=self.dim)
+    def forward(self, *tensors):
+        return torch.cat(tensors=tensors, dim=self.dim)
 
 
 class StackLayer(nn.Module):
@@ -60,8 +69,8 @@ class StackLayer(nn.Module):
         super().__init__()
         self.dim = dim
 
-    def forward(self, *elements):
-        return torch.stack(tensors=elements, dim=self.dim)
+    def forward(self, *tensors):
+        return torch.stack(tensors=tensors, dim=self.dim)
 
 
 class ReshapeLayer(nn.Module):
