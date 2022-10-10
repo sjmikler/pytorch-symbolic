@@ -3,6 +3,6 @@
 from . import tools
 from .configs import enable_module_call_optimization
 from .functional_model import FunctionalModel
-from .placeholders import Input, Placeholder
+from .placeholders import Input, SymbolicTensor
 
-__all__ = ["enable_module_call_optimization", "FunctionalModel", "Input", "Placeholder", "tools"]
+__all__ = ["enable_module_call_optimization", "FunctionalModel", "Input", "SymbolicTensor", "tools"]

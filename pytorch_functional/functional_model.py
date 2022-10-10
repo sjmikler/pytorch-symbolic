@@ -9,7 +9,7 @@ import torch
 from torch import nn
 
 from . import configs
-from .placeholders import Placeholder
+from .placeholders import SymbolicTensor
 
 
 class FunctionalModel(nn.Module):
@@ -29,14 +29,14 @@ class FunctionalModel(nn.Module):
         super().__init__()
         logging.info("Creating a Functional Model...")
 
-        if isinstance(inputs, Placeholder):
+        if isinstance(inputs, SymbolicTensor):
             inputs = (inputs,)
-        assert all(isinstance(x, Placeholder) for x in inputs)
+        assert all(isinstance(x, SymbolicTensor) for x in inputs)
         self.inputs = inputs
 
-        if isinstance(outputs, Placeholder):
+        if isinstance(outputs, SymbolicTensor):
             outputs = (outputs,)
-        assert all(isinstance(x, Placeholder) for x in outputs)
+        assert all(isinstance(x, SymbolicTensor) for x in outputs)
         self.outputs = outputs
 
         self._has_single_input = len(self.inputs) == 1
@@ -82,7 +82,7 @@ class FunctionalModel(nn.Module):
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def _enable_cuda_graphs(self, inputs: Tuple[Placeholder]):
+    def _enable_cuda_graphs(self, inputs: Tuple[SymbolicTensor]):
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -97,7 +97,7 @@ class FunctionalModel(nn.Module):
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
         self.cuda_graphs_enabled = True
 
-    def _register_module(self, node: Placeholder) -> bool:
+    def _register_module(self, node: SymbolicTensor) -> bool:
         if not isinstance(node.layer, nn.Module):
             logging.info(f"Not registering {node.layer} (not a nn.Module)!")
             return False
@@ -135,15 +135,15 @@ class FunctionalModel(nn.Module):
             node._clear_memory()
 
     @property
-    def _reachable_nodes(self) -> List[Placeholder]:
-        nodes_below: List[Placeholder] = []
+    def _reachable_nodes(self) -> List[SymbolicTensor]:
+        nodes_below: List[SymbolicTensor] = []
         for root in self.inputs:
             root._get_all_nodes_below(nodes_below)
         return nodes_below
 
     @property
-    def _used_nodes(self) -> List[Placeholder]:
-        nodes_above: List[Placeholder] = []
+    def _used_nodes(self) -> List[SymbolicTensor]:
+        nodes_above: List[SymbolicTensor] = []
         for output_leaf in self.outputs:
             output_leaf._get_all_nodes_above(nodes_above)
         return nodes_above

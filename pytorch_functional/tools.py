@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, Tuple
 
 if TYPE_CHECKING:
     from .functional_model import FunctionalModel
-    from .placeholders import Placeholder
+    from .placeholders import SymbolicTensor
 
 import torch
 from torch import nn
@@ -55,7 +55,7 @@ def models_have_corresponding_parameters(a: nn.Module, b: nn.Module):
     return set(hashes_a) == set(hashes_b)
 
 
-def default_node_text(plh: Placeholder) -> str:
+def default_node_text(plh: SymbolicTensor) -> str:
     return str(plh.shape)
 
 
@@ -66,8 +66,8 @@ def default_edge_text(layer: nn.Module | None) -> str:
 def draw_computation_graph(
     *,
     model: FunctionalModel | None = None,
-    inputs: Iterable[Placeholder] | None = None,
-    node_text_func: Callable[[Placeholder], str] | None = None,
+    inputs: Iterable[SymbolicTensor] | None = None,
+    node_text_func: Callable[[SymbolicTensor], str] | None = None,
     edge_text_func: Callable[[nn.Module | None], str] | None = None,
     rotate: bool = True,
 ) -> None:
@@ -82,7 +82,7 @@ def draw_computation_graph(
     model
         A FunctionalModel to be plotted. This or ``inputs`` must be provided.
     inputs
-        Input in the graph of Placeholder computations. This or ``model`` must be provided.
+        Input in the graph of SymbolicTensor computations. This or ``model`` must be provided.
     node_text_func
         A function that returns text that will be written on Nodes.
     edge_text_func
@@ -99,7 +99,7 @@ def draw_computation_graph(
         return
 
     from .functional_model import FunctionalModel
-    from .placeholders import Placeholder
+    from .placeholders import SymbolicTensor
 
     if node_text_func is None:
         node_text_func = default_node_text
@@ -111,9 +111,9 @@ def draw_computation_graph(
         assert isinstance(model, FunctionalModel)
         inputs = model.inputs
     elif inputs is not None:
-        if isinstance(inputs, Placeholder):
+        if isinstance(inputs, SymbolicTensor):
             inputs = (inputs,)
-        assert all(isinstance(x, Placeholder) for x in inputs)
+        assert all(isinstance(x, SymbolicTensor) for x in inputs)
     else:
         raise KeyError("Provide either `model` or `inputs`!")
 

@@ -27,51 +27,42 @@ Features:
 * Works well with complex architectures
 * Package and documentation automatically tested
 
-## New in 0.4.0
+## Example
 
-Using the new version of the API you can create functional model just like in Keras:
-by calling the layer with placeholders as arguments. Layer will be then automagically registered in your model.
+To create a functional model, you'll use symbolic tensors and nn.Modules.
+You can either call ``layer(symbolic_tensor)`` or ``symbolic_tensor(layer)``.
+
+You can create functional model just like in Keras:
+by calling the layer with symbolic tensors as they were normal tensors. Layer will be then automagically registered in your model.
 
 ```py
 from torch import nn
 from pytorch_functional import FunctionalModel, Input
 
-inputs = Input(shape=(1, 28, 28))  # Input is a special Placeholder
-x = nn.Flatten()(inputs)  # Every layer returns another Placeholder
-x = nn.Linear(x.shape[1], 10)(x)
-outputs = nn.ReLU()(x)
-model = FunctionalModel(inputs, outputs)
-model  # Model derives from nn.Module
+x = Input(shape=(1, 28, 28))  # Input returns a SymbolicTensor
+print(type(x))
+
+x = nn.Flatten()(x)  # Every layer returns another SymbolicTensor
+print(type(x))
 ```
 
 ```
-FunctionalModel(
-    (module000_depth001): Flatten(start_dim=1, end_dim=-1)
-    (module001_depth002): Linear(in_features=784, out_features=10, bias=True)
-    (module002_depth003): ReLU()
-)
+SymbolicTensor
+SymbolicTensor
 ```
 
-* 100% backward compatibile models
-* You can mix the new and old API
-* Works with multiple arguments
-
-## Example
-
-To create a functional model, call a placeholder with the layer as an argument.
-This will return another placeholder, which you can use.
+You can create a working classificator in a few lines of code:
 
 ```py
 from torch import nn
 from pytorch_functional import FunctionalModel, Input
 
 inputs = Input(shape=(1, 28, 28))
-x = inputs(nn.Flatten())
-outputs = x(nn.Linear(x.shape[1], 10))(nn.ReLU())
-model = FunctionalModel(inputs, outputs)
+x = nn.Flatten()(inputs)
+x = nn.Linear(x.shape[1], 10)(x)(nn.ReLU())
+model = FunctionalModel(inputs=inputs, outputs=x)
 model
 ```
-
 ```
 FunctionalModel(
     (module000_depth001): Flatten(start_dim=1, end_dim=-1)

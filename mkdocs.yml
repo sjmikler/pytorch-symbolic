@@ -8,7 +8,7 @@ nav:
     - Reference:
         - Reference/input.md
         - Reference/model.md
-        - Reference/placeholder.md
+        - Reference/symbolic.md
         - Reference/tools.md
 
 copyright:
