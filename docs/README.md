@@ -30,25 +30,26 @@ Features:
 ## Example
 
 To create a functional model, you'll use symbolic tensors and nn.Modules.
-You can either call ``layer(symbolic_tensor)`` or ``symbolic_tensor(layer)``.
+You can add new ``nn.Module`` to your model by calling ``module(symbolic_tensor)`` or equivalently ``symbolic_tensor(module)``.
 
 You can create functional model just like in Keras:
-by calling the layer with symbolic tensors as they were normal tensors. Layer will be then automagically registered in your model.
+by calling the modules and symbolic tensors as if they were normal tensors. Layers will be then automagically registered in your model.
 
 ```py
 from torch import nn
 from pytorch_functional import Input
 
 x = Input(shape=(1, 28, 28))  # Input is a SymbolicTensor
-print(type(x))
+print(x)
 
 x = nn.Flatten()(x)  # Every layer returns another SymbolicTensor
-print(type(x))
+x = x(nn.Flatten())  # This is equivalent
+print(x)
 ```
 
 ```
-<SymbolicTensor at 0x7faf578e2a90; child of 0; parent of 0>
-<SymbolicTensor at 0x7faf577fe460; child of 0; parent of 0>
+<SymbolicTensor at 0x7faf5779d130; child of 0; parent of 0>
+<SymbolicTensor at 0x7fafea899f10; child of 1; parent of 0>
 ```
 
 Using symbolic tensors, we can define a working classificator in a few lines of code:
@@ -63,6 +64,7 @@ x = nn.Linear(x.shape[1], 10)(x)(nn.ReLU())
 model = FunctionalModel(inputs=inputs, outputs=x)
 model
 ```
+
 ```
 FunctionalModel(
     (module000_depth001): Flatten(start_dim=1, end_dim=-1)
