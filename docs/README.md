@@ -36,12 +36,12 @@ by calling the layer with placeholders as arguments. Layer will be then automagi
 from torch import nn
 from pytorch_functional import FunctionalModel, Input
 
-inputs = Input(shape=(1, 28, 28))
-x = nn.Flatten()(inputs)
+inputs = Input(shape=(1, 28, 28))  # Input is a special Placeholder
+x = nn.Flatten()(inputs)  # Every layer returns another Placeholder
 x = nn.Linear(x.shape[1], 10)(x)
 outputs = nn.ReLU()(x)
 model = FunctionalModel(inputs, outputs)
-model
+model  # Model derives from nn.Module
 ```
 
 ```
