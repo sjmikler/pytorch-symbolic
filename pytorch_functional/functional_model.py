@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 import torch
 from torch import nn
@@ -32,12 +32,12 @@ class FunctionalModel(nn.Module):
         if isinstance(inputs, SymbolicTensor):
             inputs = (inputs,)
         assert all(isinstance(x, SymbolicTensor) for x in inputs)
-        self.inputs = inputs
+        self.inputs = tuple(inputs)
 
         if isinstance(outputs, SymbolicTensor):
             outputs = (outputs,)
         assert all(isinstance(x, SymbolicTensor) for x in outputs)
-        self.outputs = outputs
+        self.outputs = tuple(outputs)
 
         self._has_single_input = len(self.inputs) == 1
         self._has_single_output = len(self.outputs) == 1
@@ -48,7 +48,7 @@ class FunctionalModel(nn.Module):
         self.cuda_graphs_enabled = False
 
         if enable_cuda_graphs:
-            self._enable_cuda_graphs(inputs)
+            self._enable_cuda_graphs(self.inputs)
 
         if configs.MODULE_CALL_OPTIMIZATION:
             configs.remove_call_wrapper_from_all_modules()
