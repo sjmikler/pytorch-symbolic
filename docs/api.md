@@ -24,7 +24,7 @@
         show_object_full_path: false
         docstring_section_style: table
         show_signature_annotations: true
-        separate_signature: true
+        separate_signature: false
         annotations_path: brief
         merge_init_into_class: true
         show_root_full_path: true

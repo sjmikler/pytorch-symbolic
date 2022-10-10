@@ -15,7 +15,7 @@ class Placeholder:
     def __init__(
         self,
         value: torch.Tensor,
-        parents: Tuple[Placeholder, ...] = (),
+        parents: Tuple[Placeholder, ...] = tuple(),
         depth: int = 0,
         layer: nn.Module = None,
         batch_size_known: bool = False,
