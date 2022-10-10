@@ -146,8 +146,9 @@ def draw_computation_graph(
         import matplotlib.patches
         import matplotlib.pyplot as plt
         import networkx as nx
+        import scipy
     except ImportError:
-        print("To plot graphs, you need to install following packages:\nnetworkx\nmatplotlib")
+        print("To plot graphs, you need to install following packages:\nnetworkx\nmatplotlib\nscipy")
         return
 
     from .functional_model import FunctionalModel
