@@ -37,9 +37,9 @@ by calling the layer with symbolic tensors as they were normal tensors. Layer wi
 
 ```py
 from torch import nn
-from pytorch_functional import FunctionalModel, Input
+from pytorch_functional import Input
 
-x = Input(shape=(1, 28, 28))  # Input returns a SymbolicTensor
+x = Input(shape=(1, 28, 28))  # Input is a SymbolicTensor
 print(type(x))
 
 x = nn.Flatten()(x)  # Every layer returns another SymbolicTensor
@@ -47,11 +47,11 @@ print(type(x))
 ```
 
 ```
-SymbolicTensor
-SymbolicTensor
+<SymbolicTensor at 0x7faf578e2a90; child of 0; parent of 0>
+<SymbolicTensor at 0x7faf577fe460; child of 0; parent of 0>
 ```
 
-You can create a working classificator in a few lines of code:
+Using symbolic tensors, we can define a working classificator in a few lines of code:
 
 ```py
 from torch import nn
