@@ -1,4 +1,4 @@
-# Tools Reference
+# Tools
 
 ::: pytorch_functional.tools
     options:

@@ -1,4 +1,4 @@
-# Placeholder
+# Input
 
 ::: pytorch_functional.Input
     options:
