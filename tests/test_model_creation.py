@@ -90,8 +90,7 @@ def create_vanilla_pyt_multi_in_out(seed):
             self.l13 = nn.Linear(10, 10)
             self.l23 = nn.Linear(10, 10)
 
-        def forward(self, inputs):
-            x1, x2 = inputs
+        def forward(self, x1, x2):
             x1 = self.l11(x1)
             x1 = self.l12(x1)
 
@@ -139,10 +138,10 @@ def test_equal_outputs_multi_in_out():
         x2 = torch.rand(10, 10)
 
         model1 = create_vanilla_pyt_multi_in_out(seed)
-        o11, o12 = model1((x1, x2))
+        o11, o12 = model1(x1, x2)
 
         model2 = create_api_multi_in_out(seed)
-        o21, o22 = model2((x1, x2))
+        o21, o22 = model2(x1, x2)
 
         assert torch.equal(o11, o21)
         assert torch.equal(o12, o22)

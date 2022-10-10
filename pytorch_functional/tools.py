@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from itertools import chain
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Tuple
 
 if TYPE_CHECKING:
     from .functional_model import FunctionalModel
     from .symbolic import SymbolicTensor
+
+from collections import defaultdict
 
 import torch
 from torch import nn
@@ -63,6 +66,47 @@ def default_edge_text(layer: nn.Module | None) -> str:
     return str(layer)
 
 
+def fix_positions_in_multipartite_layout(graph, positions_dict):
+    import networkx as nx
+
+    assert isinstance(graph, nx.DiGraph)
+
+    positions = list(positions_dict.values())
+    selected_positions = {}
+
+    layers = defaultdict(list)
+    for pos in positions:
+        layers[pos[1]].append(pos[0])
+
+    layer_to_nodes = defaultdict(list)
+    for node, pos in positions_dict.items():
+        layer_to_nodes[pos[1]].append(node)
+
+    for layer, nodes_in_layer in layer_to_nodes.items():
+        for node in nodes_in_layer:
+            related_nodes = list(graph.predecessors(node))
+            related_nodes += list(graph.successors(node))
+
+            min_sum_distances = float("inf")
+            best_free_pos = None
+
+            avail_xs = layers[layer]
+            for x in avail_xs:
+                sum_distances = 0
+                for related_node in related_nodes:
+                    if related_node not in selected_positions:
+                        continue
+                    r_x, r_y = selected_positions[related_node]
+                    sum_distances += (x - r_x) ** 2 + (layer - r_y) ** 2
+                if sum_distances < min_sum_distances:
+                    min_sum_distances = sum_distances
+                    best_free_pos = (x, layer)
+            assert best_free_pos is not None
+            selected_positions[node] = best_free_pos
+            layers[best_free_pos[1]].remove(best_free_pos[0])
+    return selected_positions
+
+
 def draw_computation_graph(
     *,
     model: FunctionalModel | None = None,
@@ -74,8 +118,8 @@ def draw_computation_graph(
     """Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
 
     This is not suitable for large graphs or large neural networks. This is a simple tool that
-    was created to demonstrate that Pytorch Functional creates graphs, and graphs are always
-    nice to visualize.
+    was designed to demonstrate that Pytorch Functional creates sensible graphs that are nice
+    to visualize.
 
     Parameters
     ----------
@@ -153,6 +197,7 @@ def draw_computation_graph(
                 visited.add(id(child))
 
     pos = nx.multipartite_layout(graph, subset_key="depth", align="horizontal", scale=-1)
+    pos = fix_positions_in_multipartite_layout(graph, pos)
 
     nx.draw_networkx(
         graph,

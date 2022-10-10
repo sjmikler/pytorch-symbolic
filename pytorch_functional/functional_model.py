@@ -53,11 +53,9 @@ class FunctionalModel(nn.Module):
         if configs.MODULE_CALL_OPTIMIZATION:
             configs.remove_call_wrapper_from_all_modules()
 
-    def forward(
-        self, inputs: Tuple[torch.Tensor, ...] | torch.Tensor
-    ) -> Tuple[torch.Tensor, ...] | torch.Tensor:
+    def forward(self, *inputs: torch.Tensor) -> torch.Tensor | Tuple[torch.Tensor, ...]:
         if self._has_single_input:
-            self.inputs[0]._begin_graph_flow(inputs)
+            self.inputs[0]._begin_graph_flow(inputs[0])
         else:
             assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
             for root, arg in zip(self.inputs, inputs):
