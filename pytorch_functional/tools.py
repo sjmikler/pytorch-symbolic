@@ -29,7 +29,7 @@ def get_parameter_shapes(model: nn.Module):
 
 
 def model_similar(a: nn.Module, b: nn.Module):
-    """Check whether two models have the same number of parameters and the same shapes."""
+    """Check whether two models have the same number of parameters and the same shapes of parameters."""
     if get_parameter_count(a) != get_parameter_count(b):
         return False
 
@@ -45,7 +45,11 @@ def hash_torch_tensor(tensor: torch.Tensor):
 
 
 def models_have_corresponding_parameters(a: nn.Module, b: nn.Module):
-    """Check whether two models' parameters have identical hash values. Parameter order does not matter."""
+    """Check whether two models' parameters have identical hash values.
+
+    Parameter order does not matter.
+    So if two models have identical parameters but in different order, this will still return True.
+    """
     hashes_a = [hash_torch_tensor(p) for p in a.parameters()]
     hashes_b = [hash_torch_tensor(p) for p in b.parameters()]
     return set(hashes_a) == set(hashes_b)
