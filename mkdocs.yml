@@ -5,7 +5,9 @@ nav:
     - README: README.md
     - quick_start.md
     - acceleration.md
-    - api.md
+    - api_model.md
+    - api_plh.md
+    - api_tools.md
 
 copyright:
     Copyright @ 2022 Szymon Mikler

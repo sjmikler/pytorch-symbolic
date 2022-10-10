@@ -1,4 +1,4 @@
-# Acceleration
+# Accelerating Networks
 
 ## CUDA Graphs
 
