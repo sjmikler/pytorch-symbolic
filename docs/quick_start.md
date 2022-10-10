@@ -2,14 +2,14 @@
 
 ## Functional API for model creation
 
-Deep neural networks can be presented as directed acyclic graphs where nodes are intermediate outputs and edges
-are layers (transformations, functions). In this graph, there exists a nonempty set of input nodes (without any predecessors)
-and a nonempty set of output nodes (nodes without any successors). If your architecture meets the above conditions,
-it can be created in a functional manner.
+Deep neural networks can be represented as directed acyclic graphs where nodes are inputs, outputs or intermediate
+states and edges are layers (in general transformations or functions). In such graph,
+there exists a nonempty set of input nodes and a nonempty set of output nodes.
+If your architecture meets the above conditions, it can be created in a functional manner.
 
 ### Introduction
 
-Using Pytorch Functional to create a linear classificator without hidden layers, you can write following code:
+To create a linear classificator without hidden layers, you can write following:
 
 ```py
 from torch import nn
@@ -31,13 +31,13 @@ outputs = inputs(nn.Linear(in_features=inputs.features, out_features=10))
 model = FunctionalModel(inputs, outputs)
 ```
 
-To register a new layer in a functional model, you can have two equivalent ways:
+To register a new layer, e.g. ``nn.Linear`` in Pytorch Functional, you can have two equivalent options:
 
-* `layer(placeholder)` (like in TensorFlow Functional API)
+* `layer(placeholder)` (like in Keras Functional API)
 * `placeholder(layer)` (legacy)
 
 Instead of deriving input and outputs shapes by hand, placeholder data is passed through the network.
-Using its attributes we can instantly obtain the shape of intermediate outputs.
+Using its attributes we can instantly obtain shapes of intermediate outputs.
 
 Doing this, we:
 
@@ -47,7 +47,7 @@ Doing this, we:
 ### Comparing Pytorch Functional to Keras Functional
 
 We took an example of a toy ResNet from [tensorflow guide](https://www.tensorflow.org/guide/keras/functional) and
-created it in a few different ways. Note that their example took **16 lines of code**, excluding imports and utilities.
+created it in a few different ways. Note that their example is **16 lines long**, excluding imports and utilities.
 
 Using Pytorch Functional, you can create toy ResNet using exactly as many lines as using Keras Functional:
 
@@ -77,7 +77,7 @@ outputs = nn.Linear(x.features, 10)(x)
 model = FunctionalModel(inputs, outputs)
 ```
 
-In fact, the code is equivalent line by line. For example this line in Keras:
+In fact, each line of code in Pytorch Functional and Keras is functionally equivalent. For example this line in Keras:
 
 ```py
 ... = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
@@ -89,7 +89,7 @@ is equivalent to this line in Pytorch Functional:
 ... = nn.Conv2d(x.channels, 64, 3, padding=1)(x)(nn.ReLU())
 ```
 
-Let's analyze what happens in Pytorch Functional.
+Let's analyze what happens in this line:
 
 * `nn.Conv2d` is PyTorch equivalent of Keras `layers.Conv2d` layer
 * Input channels:
