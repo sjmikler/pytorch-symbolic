@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, Tuple
 
 if TYPE_CHECKING:
     from .functional_model import FunctionalModel
-    from .placeholders import SymbolicTensor
+    from .symbolic import SymbolicTensor
 
 import torch
 from torch import nn
@@ -99,7 +99,7 @@ def draw_computation_graph(
         return
 
     from .functional_model import FunctionalModel
-    from .placeholders import SymbolicTensor
+    from .symbolic import SymbolicTensor
 
     if node_text_func is None:
         node_text_func = default_node_text

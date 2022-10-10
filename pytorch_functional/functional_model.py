@@ -9,7 +9,7 @@ import torch
 from torch import nn
 
 from . import configs
-from .placeholders import SymbolicTensor
+from .symbolic import SymbolicTensor
 
 
 class FunctionalModel(nn.Module):
