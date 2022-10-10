@@ -1,6 +1,6 @@
 # Placeholder
 
-::: pytorch_functional.Input
+::: pytorch_functional.Placeholder
     options:
         show_source: false
         heading_level: 2
