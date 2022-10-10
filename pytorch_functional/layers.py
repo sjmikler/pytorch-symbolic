@@ -60,8 +60,8 @@ class ConcatLayer(nn.Module):
         super().__init__()
         self.dim = dim
 
-    def forward(self, *elements):
-        return torch.cat(tensors=elements, dim=self.dim)
+    def forward(self, *tensors):
+        return torch.cat(tensors=tensors, dim=self.dim)
 
 
 class StackLayer(nn.Module):
@@ -69,8 +69,8 @@ class StackLayer(nn.Module):
         super().__init__()
         self.dim = dim
 
-    def forward(self, *elements):
-        return torch.stack(tensors=elements, dim=self.dim)
+    def forward(self, *tensors):
+        return torch.stack(tensors=tensors, dim=self.dim)
 
 
 class ReshapeLayer(nn.Module):

@@ -59,7 +59,7 @@ def default_edge_text(layer: nn.Module | None) -> str:
     return str(layer)
 
 
-def plot_computation_graph(
+def draw_computation_graph(
     *,
     model: FunctionalModel | None = None,
     inputs: Iterable[Placeholder] | None = None,
