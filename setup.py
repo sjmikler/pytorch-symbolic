@@ -30,7 +30,7 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
     ],
-    install_requires=["torch>=1.9.0"],
+    install_requires=["torch>=1.12.0"],
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
