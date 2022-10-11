@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, tools
+from pytorch_functional import FunctionalModel, Input, model_tools
 
 
 def test_1():
@@ -26,4 +26,4 @@ def test_1():
     outputs = nn.Linear(x.features, 10)(x)
 
     model = FunctionalModel(inputs, outputs)
-    assert tools.get_parameter_count(model) == 223242
+    assert model_tools.get_parameter_count(model) == 223242

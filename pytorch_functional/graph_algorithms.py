@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Set, Tuple
 
-from .symbolic import SymbolicTensor
+from .symbolic_tensor import SymbolicTensor
 
 if TYPE_CHECKING:
     from .functional_model import FunctionalModel
@@ -207,7 +207,7 @@ def draw_graph(
         return
 
     from .functional_model import FunctionalModel
-    from .symbolic import SymbolicTensor
+    from .symbolic_tensor import SymbolicTensor
 
     if node_text_func is None:
         if node_text_namescope is not None:

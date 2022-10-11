@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, enable_module_call_optimization, layers, tools
+from pytorch_functional import FunctionalModel, Input, enable_module_call_optimization, layers, model_tools
 
 
 def create_vanilla_pyt(seed):
@@ -72,8 +72,8 @@ def test_equal_parameters():
         model0 = create_vanilla_pyt(seed)
         model1 = create_api_v1(seed)
         model2 = create_api_v2(seed)
-        assert tools.models_have_corresponding_parameters(model1, model2)
-        assert tools.models_have_corresponding_parameters(model1, model0)
+        assert model_tools.models_have_corresponding_parameters(model1, model2)
+        assert model_tools.models_have_corresponding_parameters(model1, model0)
 
 
 def create_vanilla_pyt_multi_in_out(seed):
@@ -129,7 +129,7 @@ def test_equal_parameters_multi_in_out():
     for seed in range(10):
         model1 = create_vanilla_pyt_multi_in_out(seed)
         model2 = create_api_multi_in_out(seed)
-        assert tools.models_have_corresponding_parameters(model1, model2)
+        assert model_tools.models_have_corresponding_parameters(model1, model2)
 
 
 def test_equal_outputs_multi_in_out():

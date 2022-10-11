@@ -3,7 +3,7 @@
 import torch
 
 import examples
-from pytorch_functional import tools
+from pytorch_functional import model_tools
 
 
 def test_toy_resnet():
@@ -11,7 +11,7 @@ def test_toy_resnet():
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
-    assert tools.get_parameter_count(model) == 175530
+    assert model_tools.get_parameter_count(model) == 175530
 
 
 def test_wrn():
@@ -19,7 +19,7 @@ def test_wrn():
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
-    assert tools.get_parameter_count(model) == 2750698
+    assert model_tools.get_parameter_count(model) == 2750698
 
 
 def test_vgg():
@@ -27,7 +27,7 @@ def test_vgg():
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
-    assert tools.get_parameter_count(model) == 9413066
+    assert model_tools.get_parameter_count(model) == 9413066
 
 
 def test_enc_dec():
@@ -35,4 +35,4 @@ def test_enc_dec():
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 1, 7, 7]
-    assert tools.get_parameter_count(model) == 28529
+    assert model_tools.get_parameter_count(model) == 28529

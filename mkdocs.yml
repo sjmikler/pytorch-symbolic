@@ -6,11 +6,11 @@ nav:
     - quick_start.md
     - acceleration.md
     - Reference:
-        - Reference/galgo.md
+        - Reference/graph_algorithms.md
         - Reference/input.md
-        - Reference/model.md
-        - Reference/symbolic.md
-        - Reference/tools.md
+        - Reference/functional_model.md
+        - Reference/symbolic_tensor.md
+        - Reference/model_tools.md
 
 copyright:
     Copyright @ 2022 Szymon Mikler

@@ -1,6 +1,6 @@
-# Tools
+# Functional Model
 
-::: pytorch_functional.tools
+::: pytorch_functional.FunctionalModel
     options:
         show_source: false
         heading_level: 2

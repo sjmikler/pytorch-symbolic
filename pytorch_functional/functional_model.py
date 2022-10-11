@@ -8,9 +8,9 @@ from typing import Any, Iterable, List, Set, Tuple
 import torch
 from torch import nn
 
-from . import configs
+from . import config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
-from .symbolic import SymbolicTensor
+from .symbolic_tensor import SymbolicTensor
 
 
 class FunctionalModel(nn.Module):
@@ -58,8 +58,8 @@ class FunctionalModel(nn.Module):
         if enable_cuda_graphs:
             self._enable_cuda_graphs(self.inputs)
 
-        if configs.MODULE_CALL_OPTIMIZATION:
-            configs.remove_call_wrapper_from_all_modules()
+        if config.MODULE_CALL_OPTIMIZATION:
+            config.remove_call_wrapper_from_all_modules()
 
     def forward(self, *inputs: torch.Tensor) -> Any:
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
