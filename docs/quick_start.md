@@ -7,6 +7,14 @@ states and edges are layers (in general transformations or functions). In such g
 there exists a nonempty set of input nodes and a nonempty set of output nodes.
 If your architecture meets the above conditions, it can be created in a functional manner.
 
+### Features
+
+* Keras-like API
+* Multiple inputs and outputs
+* Layers can be shared between models
+* Works with any user-defined module
+* Produces fast models with CUDA Graphs acceleration available
+
 ### Introduction
 
 To create a linear classificator without hidden layers, you can write following:
@@ -343,13 +351,6 @@ x2 = Input(shape=(5, 2, 3))
 x = x1(layers.ConcatLayer(dim=1), x2)
 x.shape  # (6, 2, 3)
 ```
-
-## Features
-
-* Keras-like API
-* Multiple inputs and outputs
-* Automatic pruning of unused layers
-* Reusing layers multiple times
 
 ## Limitations
 
