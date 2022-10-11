@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Set, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Set, Tuple
 
 from .symbolic_tensor import SymbolicTensor
 
@@ -201,7 +201,6 @@ def draw_graph(
         import matplotlib.patches
         import matplotlib.pyplot as plt
         import networkx as nx
-        import scipy
     except ImportError:
         print("To plot graphs, you need to install `networkx`. Run `pip install networkx`.")
         return

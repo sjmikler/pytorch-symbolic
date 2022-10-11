@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 import torch
 from torch import nn
