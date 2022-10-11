@@ -72,9 +72,9 @@ def calc_sum_sq_distances(graph, positions_dict):
         related_nodes = list(graph.predecessors(node))
 
         for n2 in related_nodes:
-            x, y = positions_dict[node]
+            x1, y1 = positions_dict[node]
             x2, y2 = positions_dict[n2]
-            sum_distances += (x - y) ** 2 + (x2 - y2) ** 2
+            sum_distances += (x1 - x2) ** 2 + (y1 - y2) ** 2
     return sum_distances
 
 
