@@ -2,14 +2,14 @@
 
 from pathlib import Path
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="pytorch-functional",
-    version="0.4.19",
+    version="0.5.0",
     url="https://github.com/gahaalt/pytorch-functional.git",
     project_urls={
         "Documentation": "https://pytorch-functional.readthedocs.io/",

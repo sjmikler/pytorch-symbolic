@@ -7,11 +7,19 @@ states and edges are layers (in general transformations or functions). In such g
 there exists a nonempty set of input nodes and a nonempty set of output nodes.
 If your architecture meets the above conditions, it can be created in a functional manner.
 
+### Features
+
+* Keras-like API
+* Multiple inputs and outputs
+* Layers can be shared between models
+* Works with any user-defined module
+* Produces fast models with CUDA Graphs acceleration available
+
 ### Introduction
 
 To create a linear classificator without hidden layers, you can write following:
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -22,7 +30,7 @@ model = FunctionalModel(inputs, outputs)
 
 Or equivalent:
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -51,7 +59,7 @@ created it in a few different ways. Note that their example is **16 lines long**
 
 Using Pytorch Functional, you can create toy ResNet using exactly as many lines as using Keras Functional:
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -79,13 +87,13 @@ model = FunctionalModel(inputs, outputs)
 
 In fact, each line of code in Pytorch Functional and Keras is functionally equivalent. For example this line in Keras:
 
-```py
+```python
 ... = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
 ```
 
 is equivalent to this line in Pytorch Functional:
 
-```py
+```python
 ... = nn.Conv2d(x.channels, 64, 3, padding=1)(x)(nn.ReLU())
 ```
 
@@ -105,7 +113,7 @@ Let's analyze what happens in this line:
 
 The example below is equivalent, but uses another way of registering layers in the network:
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -150,7 +158,7 @@ The separation of steps 2 and 3 often makes network creation tedious and more co
 
 PyTorch non-functional example (toy ResNet equivalent):
 
-```py
+```python
 from torch import nn
 
 
@@ -235,7 +243,7 @@ There are no differences between `placeholder(layer)` and `layer(placeholder)`. 
 
 ### Sequential topology example
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -266,7 +274,7 @@ assert model.output_shape == (None, 10)
 
 ### Multiple inputs example
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input, FunctionalModel
 
@@ -302,7 +310,7 @@ you have to wrap it in a `nn.Module`.
 
 For example:
 
-```py
+```python
 from torch import nn
 
 
@@ -324,7 +332,7 @@ There are more examples available in in the code of `pytorch_functional.layers`.
 
 You can do it in a moore natural way using `layer(placeholder)` notation:
 
-```py
+```python
 from pytorch_functional import Input, layers
 
 x1 = Input(shape=(1, 2, 3))
@@ -335,7 +343,7 @@ x.shape  # (6, 2, 3)
 
 Alternatively, using the other notation, do it like this `placeholder(layer, *other_placeholders)`:
 
-```py
+```python
 from pytorch_functional import Input, layers
 
 x1 = Input(shape=(1, 2, 3))
@@ -343,13 +351,6 @@ x2 = Input(shape=(5, 2, 3))
 x = x1(layers.ConcatLayer(dim=1), x2)
 x.shape  # (6, 2, 3)
 ```
-
-## Features
-
-* Keras-like API
-* Multiple inputs and outputs
-* Automatic pruning of unused layers
-* Reusing layers multiple times
 
 ## Limitations
 

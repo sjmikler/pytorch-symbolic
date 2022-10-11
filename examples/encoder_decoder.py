@@ -36,19 +36,3 @@ def simple_encoder_decoder(input_shape=(1, 28, 28)):
     decoded_img = encoded_img(decoder)
     autoencoder = FunctionalModel(autoencoder_input, decoded_img)
     return autoencoder
-
-
-if __name__ == "__main__":
-    from logging import DEBUG, basicConfig
-
-    import torch
-
-    from pytorch_functional import tools
-
-    basicConfig(level=DEBUG)
-
-    model = simple_encoder_decoder((1, 28, 28))
-
-    inputs = torch.rand(1, 1, 28, 28)
-    outs = model.forward(inputs)
-    print(f"Parameters: {tools.get_parameter_count(model)}")
