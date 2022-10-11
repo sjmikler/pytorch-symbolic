@@ -36,4 +36,4 @@ jobs:
         mypy .
     - name: Test with pytest
       run: |
-        pytest .
+        pytest . --log-cli-level=WARNING

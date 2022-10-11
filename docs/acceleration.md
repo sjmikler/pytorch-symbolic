@@ -9,7 +9,7 @@ Pytorch Functional comes with easy to use CUDA Graphs support.
 
 To enable it, use:
 
-```py
+```python
 ...
 model = FunctionalModel(inputs, outputs, enable_cuda_graphs=True)
 ```

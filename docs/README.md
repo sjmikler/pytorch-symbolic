@@ -35,7 +35,7 @@ You can add new ``nn.Module`` to your model by calling ``module(symbolic_tensor)
 You can create functional model just like in Keras:
 by calling the modules and symbolic tensors as if they were normal tensors. Layers will be then automagically registered in your model.
 
-```py
+```python
 from torch import nn
 from pytorch_functional import Input
 
@@ -54,7 +54,7 @@ print(x)
 
 Using symbolic tensors, we can define a working classificator in a few lines of code:
 
-```py
+```python
 from torch import nn
 from pytorch_functional import FunctionalModel, Input
 
