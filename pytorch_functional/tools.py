@@ -66,14 +66,28 @@ def default_edge_text(layer: nn.Module | None) -> str:
     return str(layer)
 
 
-def fix_positions_in_multipartite_layout(graph, positions_dict):
+def calc_sum_sq_distances(graph, positions_dict):
+    sum_distances = 0
+    for node in positions_dict:
+        related_nodes = list(graph.predecessors(node))
+
+        for n2 in related_nodes:
+            x, y = positions_dict[node]
+            x2, y2 = positions_dict[n2]
+            sum_distances += (x - y) ** 2 + (x2 - y2) ** 2
+    return sum_distances
+
+
+def fix_positions_in_multipartite_layout(graph, orig_positions_dict):
     import networkx as nx
     import numpy as np
     import scipy
 
     assert isinstance(graph, nx.DiGraph)
 
-    positions = list(positions_dict.values())
+    orig_sum = calc_sum_sq_distances(graph, orig_positions_dict)
+
+    positions = list(orig_positions_dict.values())
     selected_positions = {}
 
     layers = defaultdict(list)
@@ -81,7 +95,7 @@ def fix_positions_in_multipartite_layout(graph, positions_dict):
         layers[pos[1]].append(pos[0])
 
     layer_to_nodes = defaultdict(list)
-    for node, pos in positions_dict.items():
+    for node, pos in orig_positions_dict.items():
         layer_to_nodes[pos[1]].append(node)
 
     # Layers are just unique Y positions on the plot
@@ -100,10 +114,14 @@ def fix_positions_in_multipartite_layout(graph, positions_dict):
             for x_idx, x in enumerate(avail_xs):
                 sum_distances = 0
                 for related_node in related_nodes:
-                    if related_node not in selected_positions:
-                        continue
-                    r_x, r_y = selected_positions[related_node]
-                    sum_distances += (x - r_x) ** 2 + (layer - r_y) ** 2
+                    if related_node in selected_positions:
+                        r_x, r_y = selected_positions[related_node]
+                        sum_distances += (x - r_x) ** 2 + (layer - r_y) ** 2
+                    else:
+                        # If node doesn't have a position yet
+                        # we use the original position but we weight it down
+                        r_x, r_y = orig_positions_dict[related_node]
+                        sum_distances += ((x - r_x) ** 2 + (layer - r_y) ** 2) / 2
                 distances[node_idx, x_idx] = sum_distances
 
         # Minimize the sum of squared distances
@@ -112,7 +130,12 @@ def fix_positions_in_multipartite_layout(graph, positions_dict):
         for row, col in zip(rows, cols):
             selected_positions[nodes_in_layer[row]] = (avail_xs[col], layer)
 
-    return selected_positions
+    new_sum = calc_sum_sq_distances(graph, selected_positions)
+
+    if new_sum <= orig_sum:
+        return selected_positions
+
+    return orig_positions_dict
 
 
 def draw_computation_graph(
