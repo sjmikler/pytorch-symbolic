@@ -90,7 +90,7 @@ def _transpose_positions_dict(pos_dict):
 def _fix_positions_in_multipartite_layout(graph, orig_positions_dict, align: str = "vertical"):
     import networkx as nx
     import numpy as np
-    import scipy
+    from scipy.optimize import linear_sum_assignment
 
     assert isinstance(graph, nx.DiGraph)
 
@@ -138,7 +138,7 @@ def _fix_positions_in_multipartite_layout(graph, orig_positions_dict, align: str
 
         # Minimize the sum of squared distances
         # This might work poorly when there are interconnections in the layer
-        rows, cols = scipy.optimize.linear_sum_assignment(distances)
+        rows, cols = linear_sum_assignment(distances)
         for row, col in zip(rows, cols):
             selected_positions[nodes_in_layer[row]] = (avail_xs[col], layer)
 
