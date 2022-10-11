@@ -1,4 +1,4 @@
-# Model tools
+# model_tools
 
 ::: pytorch_functional.model_tools
     options:

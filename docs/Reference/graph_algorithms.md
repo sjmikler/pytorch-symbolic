@@ -1,4 +1,4 @@
-# Graph algorithms
+# graph_algorithms
 
 ::: pytorch_functional.graph_algorithms
     options:

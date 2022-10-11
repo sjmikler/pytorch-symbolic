@@ -312,7 +312,7 @@ def draw_graph(
     plt.legend(handles=handles)
 
 
-def topological_sort(nodes: Set[SymbolicTensor]):
+def topological_sort(nodes: Set[SymbolicTensor]) -> List[SymbolicTensor]:
     """In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
     linear ordering of its nodes in which each node comes before all nodes to which it has outbound edges.
     Every DAG has one or more topological sorts."""

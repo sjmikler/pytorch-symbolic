@@ -1,4 +1,4 @@
-# Symbolic Tensor
+# SymbolicTensor
 
 A ``SymbolicTensor`` is similar to ``torch.Tensor`` object, but it is used only during model creation.
 

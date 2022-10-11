@@ -1,4 +1,4 @@
-# Functional Model
+# FunctionalModel
 
 ::: pytorch_functional.FunctionalModel
     options:
