@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Tuple
+from typing import Any, Iterable, List, Set, Tuple
 
 import torch
 from torch import nn
 
 from . import configs
+from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic import SymbolicTensor
 
 
 class FunctionalModel(nn.Module):
-    def __init__(self, inputs, outputs, enable_cuda_graphs=False):
+    def __init__(
+        self,
+        inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
+        outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
+        enable_cuda_graphs=False,
+    ):
         """A PyTorch model that applies operations defined by the graph.
 
         All operations that changed ``inputs`` into ``outputs`` will be applied
@@ -32,18 +38,20 @@ class FunctionalModel(nn.Module):
         if isinstance(inputs, SymbolicTensor):
             inputs = (inputs,)
         assert all(isinstance(x, SymbolicTensor) for x in inputs)
-        self.inputs = tuple(inputs)
+        self.inputs: Tuple[SymbolicTensor, ...] = tuple(inputs)
 
         if isinstance(outputs, SymbolicTensor):
             outputs = (outputs,)
         assert all(isinstance(x, SymbolicTensor) for x in outputs)
-        self.outputs = tuple(outputs)
+        self.outputs: Tuple[SymbolicTensor, ...] = tuple(outputs)
 
         self._has_single_input = len(self.inputs) == 1
         self._has_single_output = len(self.outputs) == 1
-        self._registered_modules = []
-        self._prune_unused_layers()
-        self._register_reachable_modules()
+
+        self._figure_out_execution_order()
+
+        self._registered_modules: List[nn.Module] = []
+        self._register_used_modules()
 
         self.cuda_graphs_enabled = False
 
@@ -53,13 +61,13 @@ class FunctionalModel(nn.Module):
         if configs.MODULE_CALL_OPTIMIZATION:
             configs.remove_call_wrapper_from_all_modules()
 
-    def forward(self, *inputs: torch.Tensor) -> torch.Tensor | Tuple[torch.Tensor, ...]:
-        if self._has_single_input:
-            self.inputs[0]._begin_graph_flow(inputs[0])
-        else:
-            assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
-            for root, arg in zip(self.inputs, inputs):
-                root._begin_graph_flow(arg)
+    def forward(self, *inputs: torch.Tensor) -> Any:
+        assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
+        for input_data, input_node in zip(inputs, self.inputs):
+            input_node._launch_input(input_data)
+
+        for node in self._execution_order:
+            node._launch()
 
         if self._has_single_output:
             return self.outputs[0]._output
@@ -80,7 +88,7 @@ class FunctionalModel(nn.Module):
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def _enable_cuda_graphs(self, inputs: Tuple[SymbolicTensor]):
+    def _enable_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -108,40 +116,19 @@ class FunctionalModel(nn.Module):
         self._registered_modules.append(node.layer)
         return True
 
-    def _register_reachable_modules(self):
-        reachable_nodes = self._reachable_nodes
+    @property
+    def _used_nodes(self) -> Set[SymbolicTensor]:
+        """Return a set of all nodes used in this model."""
+        return figure_out_nodes_between(self.inputs, self.outputs)
+
+    def _register_used_modules(self):
         num_registered = 0
-        for node in reachable_nodes:
+        for node in self._execution_order:
             if self._register_module(node):
                 num_registered += 1
         logging.info(f"Registered {num_registered} modules!")
 
-    def _prune_unused_layers(self):
-        used_nodes = self._used_nodes
-        used_nodes_ids = {id(node) for node in used_nodes}
-        reachable_nodes_ids = {id(node) for node in self._reachable_nodes}
-        to_prune = reachable_nodes_ids.difference(used_nodes_ids)
-
-        logging.info(f"Pruning {len(to_prune)} modules!")
-
-        already_called = []
-        for root in self.inputs:
-            root._remove_outsiders_below(insiders=used_nodes, already_called=already_called)
-
-    def _clear_nodes_memory(self):
-        for node in self._reachable_nodes:
-            node._clear_memory()
-
-    @property
-    def _reachable_nodes(self) -> List[SymbolicTensor]:
-        nodes_below: List[SymbolicTensor] = []
-        for root in self.inputs:
-            root._get_all_nodes_below(nodes_below)
-        return nodes_below
-
-    @property
-    def _used_nodes(self) -> List[SymbolicTensor]:
-        nodes_above: List[SymbolicTensor] = []
-        for output_leaf in self.outputs:
-            output_leaf._get_all_nodes_above(nodes_above)
-        return nodes_above
+    def _figure_out_execution_order(self):
+        # Exclude inputs, as we don't launch any layers in input nodes
+        used_nodes_excl_inputs = self._used_nodes - set(self.inputs)
+        self._execution_order = topological_sort(used_nodes_excl_inputs)

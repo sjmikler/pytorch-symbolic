@@ -17,7 +17,7 @@ class SymbolicTensor:
         value: torch.Tensor,
         parents: Tuple[SymbolicTensor, ...] = tuple(),
         depth: int = 0,
-        layer: nn.Module = None,
+        layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
         """Node in a Functional Model.
@@ -31,7 +31,7 @@ class SymbolicTensor:
         parents
             Tuple of parent nodes - other Placeholders.
         depth
-            How deep the node is in the tree. It is defined as minimum of parents' depth plus 1.
+            How deep the node is in the tree. It is defined as maximum of parents' depth plus 1.
         layer
             nn.Module object that transformed parents into this object.
         batch_size_known
@@ -43,7 +43,7 @@ class SymbolicTensor:
         self.layer = layer
         self.depth = depth
         self._output = None
-        self._parents_outputs: List[Any] = []
+        self._parents_outputs: List[torch.Tensor] = []
         self.batch_size_known = batch_size_known
 
     @property
@@ -116,7 +116,7 @@ class SymbolicTensor:
         assert all([isinstance(other, SymbolicTensor) for other in others])
 
         parents = (self, *others)
-        new_depth = min(parent.depth for parent in parents) + 1
+        new_depth = max(parent.depth for parent in parents) + 1
         new_output = layer.__call__(self.v, *(o.v for o in others))
         batch_size_known = all([parent.batch_size_known for parent in parents])
 
@@ -136,7 +136,6 @@ class SymbolicTensor:
         if self in layer_list:
             return layer_list
         layer_list.append(self)
-
         for child in self.children:
             child._get_all_nodes_below(layer_list)
 
@@ -144,37 +143,14 @@ class SymbolicTensor:
         if self in layer_list:
             return layer_list
         layer_list.append(self)
+        for parent in self.parents:
+            parent._get_all_nodes_above(layer_list)
 
-        for child in self.parents:
-            child._get_all_nodes_above(layer_list)
+    def _launch_input(self, x):
+        self._output = x
 
-    def _remove_outsiders_below(self, insiders: List[SymbolicTensor], already_called: List[SymbolicTensor]):
-        if self in already_called:
-            return None
-        already_called.append(self)
-
-        for child in self.children.copy():
-            if child in insiders:
-                child._remove_outsiders_below(insiders, already_called)
-            else:
-                self.children.remove(child)
-
-    def _begin_graph_flow(self, x):
-        for child in self.children:
-            child._continue_graph_flow(x)
-
-    def _continue_graph_flow(self, x):
-        self._parents_outputs.append(x)
-
-        if len(self._parents_outputs) == len(self.parents):
-            self._output = self.layer(*self._parents_outputs)
-            self._parents_outputs = []
-            for child in self.children:
-                child._continue_graph_flow(self._output)
-
-    def _clear_memory(self):
-        self._parents_outputs = []
-        self._output = None
+    def _launch(self):
+        self._output = self.layer(*(parent._output for parent in self.parents))
 
     def __call__(self, *args, **kwargs):
         return self.apply_layer(*args, **kwargs)
@@ -273,6 +249,9 @@ class SymbolicTensor:
         addr = f"SymbolicTensor at {hex(id(self))};"
         info = f"child of {len(self.parents)}; parent of {len(self.children)}"
         return "<" + addr + " " + info + ">"
+
+    def __hash__(self):
+        return id(self)
 
 
 class Input(SymbolicTensor):

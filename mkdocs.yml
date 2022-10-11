@@ -6,6 +6,7 @@ nav:
     - quick_start.md
     - acceleration.md
     - Reference:
+        - Reference/galgo.md
         - Reference/input.md
         - Reference/model.md
         - Reference/symbolic.md
@@ -32,7 +33,7 @@ plugins:
             python:
                 options:
                     docstring_style: numpy
-                    
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
