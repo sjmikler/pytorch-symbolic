@@ -104,7 +104,7 @@ class FunctionalModel(nn.Module):
         self.cuda()
         input_tensors = tuple(x.v.cuda() for x in inputs)
 
-        torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
+        torch.cuda.make_graphed_callables(self, sample_args=input_tensors)  # type: ignore
         self.cuda_graphs_enabled = True
 
     def _register_module(self, node: SymbolicTensor) -> bool:
