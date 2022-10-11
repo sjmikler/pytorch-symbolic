@@ -89,6 +89,9 @@ class FunctionalModel(nn.Module):
             return tuple(node.shape for node in self.outputs)
 
     def _enable_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
+        if not hasattr(torch.cuda, "make_graphed_callables"):
+            raise ModuleNotFoundError("CUDA Graphs requires PyTorch >= 1.12!")
+
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -100,6 +103,7 @@ class FunctionalModel(nn.Module):
 
         self.cuda()
         input_tensors = tuple(x.v.cuda() for x in inputs)
+
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
         self.cuda_graphs_enabled = True
 
