@@ -23,7 +23,7 @@ def test_all_code_blobs():
                 for blob in code_blobs:
                     all_code_blobs.append(blob)
 
-    logging.warning(f"Found {len(all_code_blobs)} code blobs!")
+    logging.warning(f"Detected {len(all_code_blobs)} code examples!")
 
     for idx, blob in enumerate(all_code_blobs):
         try:
