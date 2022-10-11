@@ -67,15 +67,15 @@ def default_edge_text(layer: nn.Module | None) -> str:
 
 
 def calc_sum_sq_distances(graph, positions_dict):
-    sum_distances = 0
+    sum_sq_distances = 0
     for node in positions_dict:
         related_nodes = list(graph.predecessors(node))
 
         for n2 in related_nodes:
             x1, y1 = positions_dict[node]
             x2, y2 = positions_dict[n2]
-            sum_distances += (x1 - x2) ** 2 + (y1 - y2) ** 2
-    return sum_distances
+            sum_sq_distances += (x1 - x2) ** 2 + (y1 - y2) ** 2
+    return sum_sq_distances
 
 
 def fix_positions_in_multipartite_layout(graph, orig_positions_dict):
