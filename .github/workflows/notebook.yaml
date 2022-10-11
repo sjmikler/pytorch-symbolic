@@ -4,32 +4,32 @@
 name: Notebook
 
 on:
-  push:
-    branches: [ "main", "develop" ]
-  pull_request:
-    branches: [ "main", "develop" ]
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  build:
+    build:
 
-    runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.9"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install torch numpy jupyter
-    - name: Convert notebook to python
-      run: |
-         jupyter nbconvert gentle-introduction.ipynb --to python
-    - name: Run script
-      run: |
-        ipython gentle-introduction.py
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Set up Python 3.7
+                uses: actions/setup-python@v3
+                with:
+                    python-version: "3.7"
+            -   name: Install dependencies
+                run: |
+                    python -m pip install --upgrade pip
+                    pip install torch numpy jupyter
+            -   name: Convert notebook to python
+                run: |
+                    jupyter nbconvert gentle-introduction.ipynb --to python
+            -   name: Run script
+                run: |
+                    ipython gentle-introduction.py
