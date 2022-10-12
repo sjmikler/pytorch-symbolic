@@ -6,7 +6,7 @@ from typing import Callable, Dict, Hashable, List, Tuple
 
 from torch import nn
 
-from . import layers
+from . import useful_layers
 from .functional_model import SymbolicTensor
 
 
@@ -45,25 +45,26 @@ def _replace_symbolic_with_value(container, extracted, navigation):
     return container
 
 
-def add_to_model(function: Callable | nn.Module, *args, **kwds):
-    """Register a custom function or module in the computation graph.
+def add_to_model(func: Callable | nn.Module, *args, **kwds):
+    """Register a custom func or module in the computation graph.
 
-    This should work will arbitrary functions or models.
+    This should work will arbitrary functions and modules.
 
-    In case of functions it might add a small delay to the call.
-    If this is unacceptable, please create a nn.Module from your function.
-    All arguments to the functions, including Symbolic Tensors, should be passed here.
+    In case of functions it might add a small delay to the call, because it is figuring out
+    where the arguments should go. If this is unacceptable, please create a nn.Module from your func.
+
+    All arguments, including Symbolic Tensors, should be passed after the ``func`` argument.
     They can be mixed and matched, even nested in lists, tuples and dictionaries.
 
-    Convolution function example::
+    Convolution func example::
 
         inputs = Input(shape=(3, 32, 32))
         kernel = Input(shape=(16, 3, 3, 3), include_batch=False)
         bias = Input(shape=(16,), include_batch=False)
         output = add_function(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
     """
-    if isinstance(function, nn.Module) and not kwds:
-        return add_module_to_model(function, *args)
+    if isinstance(func, nn.Module) and not kwds:
+        return add_module_to_model(func, *args)
 
     extracted_symbols: List[SymbolicTensor] = []
 
@@ -89,7 +90,7 @@ def add_to_model(function: Callable | nn.Module, *args, **kwds):
 
             obj[navi[-1]] = arg
 
-        return function(*real_call_args, **real_call_kwds)
+        return func(*real_call_args, **real_call_kwds)
 
-    module = layers.NamedAnyOpLayer(op=wrapper_function, name=f"{function.__name__}({len(navigation)})")
+    module = useful_layers.NamedAnyOpLayer(op=wrapper_function, name=f"{func.__name__}({len(navigation)})")
     return extracted_symbols[0](module, *extracted_symbols[1:])

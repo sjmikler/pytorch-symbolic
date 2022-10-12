@@ -333,22 +333,22 @@ There are more examples available in in the code of `pytorch_functional.layers`.
 You can do it in a moore natural way using `layer(placeholder)` notation:
 
 ```python
-from pytorch_functional import Input, layers
+from pytorch_functional import Input, useful_layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
-x = layers.ConcatLayer(dim=1)(x1, x2)
+x = useful_layers.ConcatLayer(dim=1)(x1, x2)
 x.shape  # (6, 2, 3)
 ```
 
 Alternatively, using the other notation, do it like this `placeholder(layer, *other_placeholders)`:
 
 ```python
-from pytorch_functional import Input, layers
+from pytorch_functional import Input, useful_layers
 
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
-x = x1(layers.ConcatLayer(dim=1), x2)
+x = x1(useful_layers.ConcatLayer(dim=1), x2)
 x.shape  # (6, 2, 3)
 ```
 

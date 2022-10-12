@@ -24,9 +24,11 @@ class CallbackLayer(nn.Module):
     def __init__(self, op):
         """This can be used for debugging or logging purposes. Accepts only one argument.
 
-        x = CallbackLayer(print)(x)
+        Example::
 
-        This example does not change anything in x, but prints its value
+            x = CallbackLayer(print)(x)
+
+        It does not change anything in x, but prints its value.
         """
         super().__init__()
         self.callback = op

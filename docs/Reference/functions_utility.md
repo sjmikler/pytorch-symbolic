@@ -2,7 +2,13 @@
 
 This module provides a way to add custom functions to the model.
 
-To do this, instead of calling ``function(*args, **kwds)``, use ``add_to_model(function, *args, **kwds)``.
+To register a function in your model, instead of doing 
+- ``function(*args, **kwds)``
+
+do this:
+- ``add_to_model(function, *args, **kwds)``.
+
+For this to work, there must be at least one SymbolicTensor in ``*args, **kwds``.
 
 Example for using ``torch.concat``:
 
@@ -24,9 +30,9 @@ output
 
 This will work for most of the use cases, even if Symbolic Tensors 
 are hidden in nested tuples, lists or dicts, but you should know that there's
-a small call overhead involved.
+a small call time overhead every time you register a custom function in the model.
 
-Recommended way to use a custom function is to write yourself an ``nn.Module`` that does
+Recommended way to use a custom functions is to write yourself an ``nn.Module`` that does
 the same as the function. Then you can use it as usually and Pytorch Functional will be overhead free!
 
 ::: pytorch_functional.functions_utility
