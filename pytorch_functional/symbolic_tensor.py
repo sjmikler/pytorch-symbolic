@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import torch
 from torch import nn
@@ -111,8 +111,8 @@ class SymbolicTensor:
         """Number of the values in placeholder. If batch size is known, it is used too."""
         return self.v.shape.numel()
 
-    def apply_layer(self, layer: nn.Module, *others: SymbolicTensor) -> SymbolicTensor:
-        """Register a new layer in the graph. Same as notation ``placeholder(layer)``."""
+    def apply_module(self, layer: nn.Module, *others: SymbolicTensor) -> SymbolicTensor:
+        """Register a new layer in the graph. Layer must be nn.Module."""
         assert all([isinstance(other, SymbolicTensor) for other in others])
 
         parents = (self, *others)
@@ -152,18 +152,18 @@ class SymbolicTensor:
     def _launch(self):
         self._output = self.layer(*(parent._output for parent in self.parents))
 
-    def __call__(self, *args, **kwargs):
-        return self.apply_layer(*args, **kwargs)
+    def __call__(self, *args):
+        return self.apply_module(*args)
 
     def __abs__(self):
-        return self.apply_layer(layers.AnyOpLayer(lambda x: abs(x)))
+        return self(layers.AnyOpLayer(lambda x: abs(x)))
 
     def __add__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AddOpLayer(), other)
+            return self(layers.AddOpLayer(), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x + other))
+            return self(layers.AnyOpLayer(op=lambda x: x + other))
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -171,9 +171,9 @@ class SymbolicTensor:
     def __mul__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.MulOpLayer(), other)
+            return self(layers.MulOpLayer(), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x - other))
+            return self(layers.AnyOpLayer(op=lambda x: x - other))
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -181,69 +181,69 @@ class SymbolicTensor:
     def __mod__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.ModOpLayer(), other)
+            return self(layers.ModOpLayer(), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x % other))
+            return self(layers.AnyOpLayer(op=lambda x: x % other))
 
     def __rmod__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__mod__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other % x))
+            return self(layers.AnyOpLayer(op=lambda x: other % x))
 
     def __neg__(self):
-        return self.apply_layer(layers.AnyOpLayer(op=lambda x: -x))
+        return self(layers.AnyOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x**y), other)
+            return self(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x**other))
+            return self(layers.AnyOpLayer(op=lambda x: x ** other))
 
     def __rpow__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__pow__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other**x))
+            return self(layers.AnyOpLayer(op=lambda x: other ** x))
 
     def __sub__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.SubOpLayer(), other)
+            return self(layers.SubOpLayer(), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x - other))
+            return self(layers.AnyOpLayer(op=lambda x: x - other))
 
     def __rsub__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__sub__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other - x))
+            return self(layers.AnyOpLayer(op=lambda x: other - x))
 
     def __truediv__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x, y: x / y), other)
+            return self(layers.AnyOpLayer(op=lambda x, y: x / y), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x / other))
+            return self(layers.AnyOpLayer(op=lambda x: x / other))
 
     def __rtruediv__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__truediv__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other / x))
+            return self(layers.AnyOpLayer(op=lambda x: other / x))
 
     def __matmul__(self, other):
         if isinstance(other, SymbolicTensor):
-            return self.apply_layer(layers.MatmulOpLayer(), other)
+            return self(layers.MatmulOpLayer(), other)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: x @ other))
+            return self(layers.AnyOpLayer(op=lambda x: x @ other))
 
     def __rmatmul__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__matmul__(self)
         else:
-            return self.apply_layer(layers.AnyOpLayer(op=lambda x: other @ x))
+            return self(layers.AnyOpLayer(op=lambda x: other @ x))
 
     def __repr__(self):
         addr = f"SymbolicTensor at {hex(id(self))};"
