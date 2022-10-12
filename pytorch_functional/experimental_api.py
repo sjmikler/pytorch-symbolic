@@ -30,7 +30,7 @@ def enable_functional_api_for_module(module):
     def experimental_monkey_patch_call(self, *args, **kwds):
         if len(args) > 0 and len(kwds) == 0 and all((isinstance(x, SymbolicTensor) for x in args)):
             node = args[0]
-            return node.apply_layer(self, *args[1:])
+            return node(self, *args[1:])
         else:
             return __old_call__(self, *args, **kwds)
 
