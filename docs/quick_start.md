@@ -2,8 +2,12 @@
 
 ## Functional API for model creation
 
-Deep neural networks can be represented as directed acyclic graphs where nodes are inputs, outputs or intermediate
-states and edges are layers (in general transformations or functions). In such graph,
+Deep neural networks can be represented as directed acyclic graphs where:
+
+* nodes are inputs, outputs or intermediate states
+* edges are layers (in general transformations or functions)
+
+In such graph,
 there exists a nonempty set of input nodes and a nonempty set of output nodes.
 If your architecture meets the above conditions, it can be created in a functional manner.
 
@@ -15,9 +19,9 @@ If your architecture meets the above conditions, it can be created in a function
 * Works with any user-defined module
 * Produces fast models with CUDA Graphs acceleration available
 
-### Introduction
+## Introduction
 
-To create a linear classificator without hidden layers, you can write following:
+To create a linear classificator without hidden layers, you can write the following:
 
 ```python
 from torch import nn
@@ -41,23 +45,28 @@ model = FunctionalModel(inputs, outputs)
 
 To register a new layer, e.g. ``nn.Linear`` in Pytorch Functional, you can have two equivalent options:
 
-* `layer(placeholder)` (like in Keras Functional API)
-* `placeholder(layer)` (legacy)
+* `layer(symbolic_tensor)` (like in Keras Functional API)
+* `symbolic_tensor(layer)` (legacy)
 
-Instead of deriving input and outputs shapes by hand, placeholder data is passed through the network.
-Using its attributes we can instantly obtain shapes of intermediate outputs.
+There are no differences between the above. They both create identical models and they both return a SymbolicTensor.
+
+In Pytorch Functional symbolic data is passed through the network during its creation.
+Using its attributes we can instantly obtain shapes of intermediate outputs,
+instead of deriving them by hand.
 
 Doing this, we:
 
 * Write less code
 * Write easier code
 
-### Comparing Pytorch Functional to Keras Functional
+## Comparing Pytorch Functional to Keras Functional
 
-We took an example of a toy ResNet from [tensorflow guide](https://www.tensorflow.org/guide/keras/functional) and
-created it in a few different ways. Note that their example is **16 lines long**, excluding imports and utilities.
+We took an example of a toy ResNet from
+[tensorflow guide](https://www.tensorflow.org/guide/keras/functional) and
+recreated it in a few different ways. Note that their example is **16 lines long**,
+excluding imports and utilities.
 
-Using Pytorch Functional, you can create toy ResNet using exactly as many lines as using Keras Functional:
+Using Pytorch Functional, you can create toy ResNet using exactly as many lines as using Keras:
 
 ```python
 from torch import nn
@@ -103,13 +112,13 @@ Let's analyze what happens in this line:
 * Input channels:
     * In Keras we don't pass it openly - it'll be calculated automatically from the inputs
     * In Pytorch Functional we also calculate it automatically using `x.channels`, but we pass it openly as an argument
-* In both frameworks `64, 3` are the output's number of channels and the kernel size
+* In both frameworks `64, 3` is the output number of channels and size of the kernel
 * Padding:
     * We use `padding="same"` in Keras
     * We use `padding=1` in PyTorch
 * Activation:
-    * In Keras we simply add argument `activation='relu'`
-    * in Pytorch Functional we apply `nn.ReLU()` as a transformation that should happen after `nn.Conv2d(...)`
+    * In Keras we simply add an argument `activation='relu'`
+    * in Pytorch Functional we add `nn.ReLU()` as a transformation that happens after `nn.Conv2d(...)`
 
 The example below is equivalent, but uses another way of registering layers in the network:
 
@@ -143,7 +152,7 @@ This took 16 lines of code.
 
 You can register new layers in whichever way is more convinient for you.
 
-### Contrast to vanilla PyTorch
+### Comparison to vanilla PyTorch
 
 A usual way to define the model in PyTorch is to create a class that inherits from `nn.Module`.
 
@@ -156,7 +165,7 @@ Steps:
 
 The separation of steps 2 and 3 often makes network creation tedious and more complicated than it should be.
 
-PyTorch non-functional example (toy ResNet equivalent):
+PyTorch non-functional example (toy ResNet equivalent from previous section):
 
 ```python
 from torch import nn
@@ -211,7 +220,7 @@ model = ToyResNet()
 
 This took over 30 lines of code.
 
-### [More functional API examples](https://github.com/gahaalt/pytorch-functional/tree/main/examples)
+## [More functional API examples](https://github.com/gahaalt/pytorch-functional/tree/main/examples)
 
 The link above includes:
 
@@ -219,27 +228,29 @@ The link above includes:
 * VGG
 * ResNet
 
-## How to use (legacy way)
+### Creating a model for RGB images step by step
 
-The section below explains how to create networks by using the `placeholder(layer)` method.
-
-There are no differences between `placeholder(layer)` and `layer(placeholder)`. They both return the resulting placeholder as an output.
-
-### Creating a functional model for RGB images step by step
-
-1. Get placeholder input `inputs = Input(shape)`, where `shape` is in `(C, H, W)` format without batch dimension
-    * If you need to provide the batch size as well, you should use `inputs = Input(batch_shape=(B, C, H, W)`.
-2. To define the model, you can use placeholder's property `.shape`, or use its handy shortcuts:
-    * `.features` for number of features in case of 1-dimensional data
-    * `.C` or `.channels` for the number of channels
-    * `.H` for the height of the image
-    * `.W` for the width of the image
+1. Get your symbolic input. These are ways to do it:
+    * `inputs = Input(shape=(C, H, W))`
+    * `inputs = Input(shape=(B, C, H, W), include_batch=False)`
+    * `inputs = Input(batch_shape=(B, C, H, W))`
+2. To define the model, you can use placeholder's property `.shape` or use handy shortcuts:
+    * `.features` equals `.shape[1]` in case of 1-dimensional data
+    * `.C` and `.channels` equals `.shape[1]` for the RGB data
+    * `.H` equals `.shape[2]` for the RGB data
+    * `.W` equals `.shape[3]` for the RGB data
     * Placeholders have standard operations defined: `+`, `-`, `*`, `/`, `**` and `abs`.
-      For example, `x = 2 + inputs` or `x = inputs / y` will work as expected.
-    * Concatenate or stack placeholders using `pytorch_functional.layers.ConcatOpLayer` and `pytorch_functional.layers.StackOpLayer`
-3. Register new modules in the model using: `outputs = inputs(layer)`
+      For example, `x=2+inputs` or `x=inputs%y` will work as expected.
+    * To concatenate (stacking is similar) symbolic layers:
+        * use `useful_layers.ConcatOpLayer(dim=1)`
+        * add custom function to the model:
+          ```
+          from pytorch_functional.functions_utility import add_to_model
+          add_to_model(torch.concat, tensors=(...), dim=1)
+          ```
+3. Register new module in the model: `outputs = inputs(layer)` or `outputs = layer(inputs)`
 4. When all the layers are added, create the model: `model = FunctionalModel(inputs, outputs)`
-5. Use `model` as a normal PyTorch model. It's 100% compatibile.
+5. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatibile.
 
 ### Sequential topology example
 
@@ -283,14 +294,12 @@ task2_input = Input(shape=(3, 32, 32))
 
 x = task1_input
 x = x(nn.Conv2d(x.channels, 16, 3))
-x = x(nn.MaxPool2d(3))(nn.ReLU())
-x = x(nn.Flatten())
+x = x(nn.MaxPool2d(3))(nn.ReLU())(nn.Flatten())
 head1_out = x(nn.Linear(x.features, 200))
 
 x = task2_input
 x = x(nn.Conv2d(x.channels, 16, 3))
-x = x(nn.MaxPool2d(3))(nn.ReLU())
-x = x(nn.Flatten())
+x = x(nn.MaxPool2d(3))(nn.ReLU())(nn.Flatten())
 head2_out = x(nn.Linear(x.features, 200))
 
 x = head1_out + head2_out
@@ -330,7 +339,9 @@ There are more examples available in in the code of `pytorch_functional.layers`.
 
 ### Layer taking multiple arguments
 
-You can do it in a moore natural way using `layer(placeholder)` notation:
+You can do it in a natural way using `layer(placeholder)` notation.
+
+Just pass multiple arguments to the layer:
 
 ```python
 from pytorch_functional import Input, useful_layers
@@ -352,14 +363,30 @@ x = x1(useful_layers.ConcatLayer(dim=1), x2)
 x.shape  # (6, 2, 3)
 ```
 
+### Adding custom functions to the model
+
+If for some reason you want your model to execute a custom function, you can register it in the graph.
+
+The recommended way is to convert it into `nn.Module`, but you if you want, Pytorch Functional will do it for you:
+
+```python
+import torch
+from pytorch_functional import Input
+from pytorch_functional.functions_utility import add_to_model
+
+x1 = Input(shape=(1, 2, 3))
+x2 = Input(shape=(5, 2, 3))
+x = add_to_model(torch.concat, (x1, x2), dim=1)
+x.shape  # (6, 2, 3)
+```
+
 ## Limitations
 
-* You cannot create a graph (model) with cycles
-
-* You cannot use all custom functions on Placeholders:
+* You cannot just call custom functions on Placeholders:
     * this won't work: `x = Input((1, 2, 3)); x = torch.abs(x);`
     * but this will work: `x = Input((1, 2, 3)); x = abs(x);`
-    * if needed, you can always create a `nn.Module` wrapper for `torch.abs`
+    * you can always create a `nn.Module` wrapper for `torch.abs` yourself
+    * or use `functions_utility.add_to_model(torch.abs, x)`
 
 ## References
 
