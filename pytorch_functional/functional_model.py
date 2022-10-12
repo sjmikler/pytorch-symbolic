@@ -44,6 +44,13 @@ class FunctionalModel(nn.Module):
             A collection of SymbolicTensors that will end the computations.
             These nodes return your final computation result.
             So if you have mulitple outputs, FunctionalModel will return a tuple of tensors.
+
+        enable_cuda_graphs
+            If True, after the model creation, model will be converted to CUDA Graph.
+            This requires CUDA capable device.
+            CUDA Graphs are greatly speeding up the execution of some of the models.
+            Not all models are compatible with CUDA Graphs. For example, if your model
+            includes some non-deterministic behaviour, it likely won't work.
         """
         super().__init__()
         logging.info("Creating a Functional Model...")
