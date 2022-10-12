@@ -4,6 +4,38 @@ import torch
 from torch import nn
 
 
+class AnyOpLayer(nn.Module):
+    def __init__(self, op):
+        super().__init__()
+        self.forward = op
+
+
+class NamedAnyOpLayer(nn.Module):
+    def __init__(self, op, name):
+        super().__init__()
+        self.forward = op
+        self.name = name
+
+    def __repr__(self):
+        return self.name
+
+
+class CallbackLayer(nn.Module):
+    def __init__(self, op):
+        """This can be used for debugging or logging purposes. Accepts only one argument.
+
+        x = CallbackLayer(print)(x)
+
+        This example does not change anything in x, but prints its value
+        """
+        super().__init__()
+        self.callback = op
+
+    def forward(self, arg):
+        self.callback(arg)
+        return arg
+
+
 class AddOpLayer(nn.Module):
     def __init__(self):
         super().__init__()
@@ -47,12 +79,6 @@ class MatmulOpLayer(nn.Module):
     @staticmethod
     def forward(a, b):
         return a @ b
-
-
-class AnyOpLayer(nn.Module):
-    def __init__(self, op):
-        super().__init__()
-        self.forward = op
 
 
 class ConcatLayer(nn.Module):
