@@ -25,12 +25,25 @@ class FunctionalModel(nn.Module):
         All operations that changed ``inputs`` into ``outputs`` will be applied
         in the same order on the real data that will be fed into this model.
 
+        Example::
+
+            input1 = Input((10,))
+            input2 = Input((10,))
+            x = input1 + input2
+            x = nn.Linear(x.features, 1)(x)
+            model = FunctionalModel((input1, input2), x)
+
         Parameters
         ----------
         inputs
-            FMGraphNode object or a tuple of them.
+            A collection of SymbolicTensors that will begin the computations.
+            For these nodes, you'll provide the input. So if you have mulitple inputs,
+            be prepared to pass multiple inputs during training/inference.
+
         outputs
-            FMGraphNode object or a tuple of them.
+            A collection of SymbolicTensors that will end the computations.
+            These nodes return your final computation result.
+            So if you have mulitple outputs, FunctionalModel will return a tuple of tensors.
         """
         super().__init__()
         logging.info("Creating a Functional Model...")
@@ -62,6 +75,7 @@ class FunctionalModel(nn.Module):
             config.remove_call_wrapper_from_all_modules()
 
     def forward(self, *inputs: torch.Tensor) -> Any:
+        """This function is executed by __call__. Do not use this directly, use __call__ instead."""
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
         for input_data, input_node in zip(inputs, self.inputs):
             input_node._launch_input(input_data)
@@ -76,6 +90,7 @@ class FunctionalModel(nn.Module):
 
     @property
     def input_shape(self):
+        """Return shape of the input or in case of multiple inputs - a tuple of them."""
         if self._has_single_input:
             return self.inputs[0].shape
         else:
@@ -83,6 +98,7 @@ class FunctionalModel(nn.Module):
 
     @property
     def output_shape(self):
+        """Return shape of the output or in case of multiple outputs - a atuple of them."""
         if self._has_single_output:
             return self.outputs[0].shape
         else:
