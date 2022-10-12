@@ -204,9 +204,11 @@ def draw_graph(
         import matplotlib.patches
         import matplotlib.pyplot as plt
         import networkx as nx
-    except ImportError:
-        print("To plot graphs, you need to install `networkx`. Run `pip install networkx`.")
-        return
+    except ImportError as e:
+        print(
+            "To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`."
+        )
+        raise e
 
     from .functional_model import FunctionalModel
     from .symbolic_tensor import SymbolicTensor

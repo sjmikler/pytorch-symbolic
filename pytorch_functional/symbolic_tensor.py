@@ -173,7 +173,7 @@ class SymbolicTensor:
             assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.MulOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x - other))
+            return self(useful_layers.AnyOpLayer(op=lambda x: x * other))
 
     def __rmul__(self, other):
         return self.__mul__(other)
