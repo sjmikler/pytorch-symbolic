@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, layers, model_tools
+from pytorch_functional import FunctionalModel, Input, model_tools, useful_layers
 
 
 def test_1():
@@ -84,5 +84,5 @@ def test_3():
 def test_4():
     x1 = Input(shape=(1, 2, 3))
     x2 = Input(shape=(5, 2, 3))
-    x = x1(layers.ConcatLayer(dim=1), x2)
+    x = x1(useful_layers.ConcatLayer(dim=1), x2)
     assert x.shape == (None, 6, 2, 3)

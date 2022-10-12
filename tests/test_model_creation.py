@@ -3,7 +3,13 @@
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, enable_module_call_optimization, layers, model_tools
+from pytorch_functional import (
+    FunctionalModel,
+    Input,
+    enable_module_call_optimization,
+    model_tools,
+    useful_layers,
+)
 
 
 def create_vanilla_pyt(seed):
@@ -119,7 +125,7 @@ def create_api_multi_in_out(seed):
     for _ in range(2):
         x2 = nn.Linear(10, 10)(x2)
 
-    x_cat = layers.ConcatLayer(dim=1)(x1, x2)
+    x_cat = useful_layers.ConcatLayer(dim=1)(x1, x2)
     x_cat = nn.Linear(20, 10)(x_cat)
 
     x_out1 = nn.Linear(10, 10)(x_cat)
