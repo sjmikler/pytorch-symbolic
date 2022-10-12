@@ -1,4 +1,4 @@
-# functions_handling
+# functions_utility
 
 This module provides a way to add custom functions to the model.
 
@@ -29,7 +29,7 @@ a small call overhead involved.
 Recommended way to use a custom function is to write yourself an ``nn.Module`` that does
 the same as the function. Then you can use it as usually and Pytorch Functional will be overhead free!
 
-::: pytorch_functional.functions_handling
+::: pytorch_functional.functions_utility
     options:
         show_source: false
         heading_level: 2
