@@ -20,13 +20,16 @@ def check_for_missing_inputs(
 ):
     """Check if there exist nodes which require input from outside of the graph.
 
-    Such thing is forbidden, as it doesn't make sense.
-    Example of such violation:
-        - x1 = Input(shape=(32,))
-        - x2 = Input(shape=(32,))
-        - x3 = x1 + x2
-        - model = FunctionalModel(inputs=x1, outputs=x3)
-    How can model not rely on ``x2`` if ``x3`` requires it for its operation?
+    It is forbidden, as it doesn't make sense.
+
+    Example of such violation::
+
+        x1 = Input(shape=(32,))
+        x2 = Input(shape=(32,))
+        x3 = x1 + x2
+        model = FunctionalModel(inputs=x1, outputs=x3)
+
+    Model cannot execute defined operations unless ``x2`` is given, because ``x3`` requires it.
     """
     for node in used_nodes:
         if node in inputs:

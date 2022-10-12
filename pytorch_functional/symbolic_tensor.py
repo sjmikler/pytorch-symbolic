@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 import torch
 from torch import nn
@@ -197,15 +197,15 @@ class SymbolicTensor:
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
             assert self.shape == other.shape, "Shapes do not match for the operation!"
-            return self(layers.AnyOpLayer(op=lambda x, y: x ** y), other)
+            return self(layers.AnyOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self(layers.AnyOpLayer(op=lambda x: x ** other))
+            return self(layers.AnyOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
         if isinstance(other, SymbolicTensor):
             return other.__pow__(self)
         else:
-            return self(layers.AnyOpLayer(op=lambda x: other ** x))
+            return self(layers.AnyOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -258,6 +258,7 @@ class Input(SymbolicTensor):
     def __init__(
         self,
         shape: Tuple | List | None = None,
+        include_batch: bool = True,
         batch_shape: Tuple | List | None = None,
         dtype=torch.float32,
         min_value: float = 0.0,
@@ -276,6 +277,8 @@ class Input(SymbolicTensor):
         ----------
         shape
             Shape of the real data NOT including the batch dimension.
+        include_batch
+            If True and ``batch_shape`` was not given, batch_shape will not be added to ``shape``.
         batch_shape
             Shape of the real data including the batch dimension.
             Should be provided instead ``shape`` if cuda graphs will be used.
@@ -296,6 +299,9 @@ class Input(SymbolicTensor):
             self.was_batch_size_provided = True
             super().__init__(value=custom_tensor, batch_size_known=True)
             return
+
+        if batch_shape is None and not include_batch:
+            batch_shape = shape
 
         if batch_shape is not None:
             batch_size = batch_shape[0]

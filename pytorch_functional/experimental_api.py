@@ -5,7 +5,7 @@ import logging
 
 from torch import nn
 
-from .functional_model import SymbolicTensor
+from .symbolic_tensor import SymbolicTensor
 
 _objects_with_wrapped_call = []
 

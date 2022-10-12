@@ -6,6 +6,7 @@ nav:
     - quick_start.md
     - acceleration.md
     - Reference:
+        - Reference/functions_utility.md
         - Reference/functional_model.md
         - Reference/graph_algorithms.md
         - Reference/input.md
