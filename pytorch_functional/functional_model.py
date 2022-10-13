@@ -74,6 +74,8 @@ class FunctionalModel(nn.Module):
         self._figure_out_execution_order()
         self._register_used_modules()
 
+        self._generated_forward_source = None
+
         if generate_optimized_forward:
             self._generate_optimized_forward()
 
@@ -83,7 +85,13 @@ class FunctionalModel(nn.Module):
             self._enable_cuda_graphs(self.inputs)
 
     def forward(self, *inputs: torch.Tensor) -> Any:
-        """This function is executed by __call__. Do not use this directly, use __call__ instead."""
+        """This function is executed by __call__. Do not use this directly, use __call__ instead.
+
+        Warning!
+
+        This function will be overwritten by `_generate_optimized_forward` if `generate_optimized_forward`
+        is True. If this happened and you want to see your source, print `self._generated_forward_source`.
+        """
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
         for input_data, input_node in zip(inputs, self.inputs):
             input_node._launch_input(input_data)
