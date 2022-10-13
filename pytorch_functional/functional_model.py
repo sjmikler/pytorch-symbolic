@@ -40,12 +40,10 @@ class FunctionalModel(nn.Module):
             A collection of SymbolicTensors that will begin the computations.
             For these nodes, you'll provide the input. So if you have mulitple inputs,
             be prepared to pass multiple inputs during training/inference.
-
         outputs
             A collection of SymbolicTensors that will end the computations.
             These nodes return your final computation result.
             So if you have mulitple outputs, FunctionalModel will return a tuple of tensors.
-
         enable_cuda_graphs
             If True, after the model creation, model will be converted to CUDA Graph.
             This requires CUDA capable device.
