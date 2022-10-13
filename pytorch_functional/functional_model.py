@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Set, Tuple
 import torch
 from torch import nn
 
-from . import config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic_tensor import SymbolicTensor
 
@@ -83,9 +82,6 @@ class FunctionalModel(nn.Module):
         if enable_cuda_graphs:
             self._enable_cuda_graphs(self.inputs)
 
-        if config.MODULE_CALL_OPTIMIZATION:
-            config.remove_call_wrapper_from_all_modules()
-
     def forward(self, *inputs: torch.Tensor) -> Any:
         """This function is executed by __call__. Do not use this directly, use __call__ instead."""
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
@@ -106,18 +102,18 @@ class FunctionalModel(nn.Module):
         code_lines = [forward_definition]
 
         TAB = " " * 4
-        code_lines.append(TAB + "ordered_layers=self._execution_order_layers")
+        code_lines.append(TAB + "l=self._execution_order_layers")
 
         for exec_id, node in enumerate(self._execution_order_nodes):
             input_names = [node._get_str_name() for node in node.parents]
             output_name = node._get_str_name()
-            code_line = TAB + output_name + f" = ordered_layers[{exec_id}](" + ",".join(input_names) + ")"
+            code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
             code_lines.append(code_line)
 
         return_line = TAB + "return " + ",".join(node._get_str_name() for node in self.outputs)
         code_lines.append(return_line)
         generated_forward = "\n".join(code_lines) + "\n"
-        self._auto_generated_forward_str = generated_forward
+        self._generated_forward_source = generated_forward
 
         exec(generated_forward, {}, locals())
         self.forward = MethodType(locals()["_generated_forward"], self)

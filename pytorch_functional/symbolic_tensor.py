@@ -254,7 +254,7 @@ class SymbolicTensor:
         return id(self)
 
     def _get_str_name(self):
-        return "x" + str(self.__hash__())
+        return "x" + str(hex(hash(self)))
 
 
 class Input(SymbolicTensor):

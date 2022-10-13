@@ -6,11 +6,7 @@ import time
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, enable_module_call_optimization
-from pytorch_functional.config import disable_module_call_optimization
-
-# logging.basicConfig(level=logging.INFO)
-
+from pytorch_functional import FunctionalModel, Input, optimize_module_calls
 
 N_WARMUP = 10
 N_ITER = 1000
@@ -25,7 +21,7 @@ class VanillaMultiLayerNet(nn.Module):
 
         self.layers = []
         for i in range(n_layers):
-            layer = nn.Identity(N_FEATURES, N_FEATURES)
+            layer = nn.Linear(N_FEATURES, N_FEATURES)
             self.register_module(str(i), layer)
             self.layers.append(layer)
 
@@ -35,12 +31,12 @@ class VanillaMultiLayerNet(nn.Module):
         return x
 
 
-def mega_multi_layer_net(n_layers, cuda_graphs=False, code_gen=False):
+def mega_multi_layer_net(n_layers, cuda_graphs=False, code_gen=True):
     """Very thin, unrealistic network whose bootleneck is the number of subsequent calls."""
     x = inputs = Input(batch_shape=(BATCH_SIZE, N_FEATURES))
 
     for _ in range(n_layers):
-        x = nn.Identity(x.features, x.features)(x)
+        x = nn.Linear(x.features, x.features)(x)
 
     model = FunctionalModel(inputs, x, enable_cuda_graphs=cuda_graphs, generate_optimized_forward=code_gen)
     return model
@@ -75,29 +71,8 @@ if __name__ == "__main__":
     # Create the network
 
     models = {n_layers: mega_multi_layer_net(n_layers).cpu() for n_layers in N_LAYERS}
-    models_op = {n_layers: mega_multi_layer_net(n_layers, code_gen=True).cpu() for n_layers in N_LAYERS}
-    # models_cg = {n_layers: mega_multi_layer_net(n_layers, cuda_graphs=True).cpu() for n_layers in N_LAYERS}
     models_va = {n_layers: VanillaMultiLayerNet(n_layers).cpu() for n_layers in N_LAYERS}
-
-    # for n_layers, model in models.items():
-    #     td = run(model)
-    #     time_per_run = td / N_ITER
-    #     print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
-    # print()
-    #
-    # for n_layers, model in models_va.items():
-    #     td = run(model)
-    #     time_per_run = td / N_ITER
-    #     print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
-    # print()
-    #
-    # for n_layers, model in models_cg.items():
-    #     td = run(model)
-    #     time_per_run = td / N_ITER
-    #     print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
-    # print()
-
-    enable_module_call_optimization()
+    models_cg = {n_layers: mega_multi_layer_net(n_layers, cuda_graphs=True).cpu() for n_layers in N_LAYERS}
 
     for n_layers, model in models.items():
         td = run(model)
@@ -111,14 +86,29 @@ if __name__ == "__main__":
         print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
     print()
 
-    for n_layers, model in models_op.items():
+    for n_layers, model in models_cg.items():
         td = run(model)
         time_per_run = td / N_ITER
         print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
     print()
 
-    # for n_layers, model in models_cg.items():
-    #     td = run(model)
-    #     time_per_run = td / N_ITER
-    #     print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
-    # print()
+    optimize_module_calls()
+    time.sleep(0.1)
+
+    for n_layers, model in models.items():
+        td = run(model)
+        time_per_run = td / N_ITER
+        print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
+    print()
+
+    for n_layers, model in models_va.items():
+        td = run(model)
+        time_per_run = td / N_ITER
+        print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
+    print()
+
+    for n_layers, model in models_cg.items():
+        td = run(model)
+        time_per_run = td / N_ITER
+        print(f"layers: {n_layers: > 5}, MS per run: {time_per_run * 100:6.4f}")
+    print()

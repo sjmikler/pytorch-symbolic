@@ -6,20 +6,8 @@ from .experimental_api import enable_functional_api_for_new_modules, remove_call
 
 enable_functional_api_for_new_modules()
 
-DISABLED = 0
-ENABLED = 1
 
-MODULE_CALL_OPTIMIZATION = DISABLED
-
-
-def enable_module_call_optimization():
-    global MODULE_CALL_OPTIMIZATION
-    msg = "Enabling call optimization! Reusing modules might throw errors!"
+def optimize_module_calls():
+    msg = "Optimizing module calls! Reusing modules might throw errors!"
     logging.warning(msg)
-    MODULE_CALL_OPTIMIZATION = ENABLED
     remove_call_wrapper_from_all_modules()
-
-
-def disable_module_call_optimization():
-    global MODULE_CALL_OPTIMIZATION
-    MODULE_CALL_OPTIMIZATION = DISABLED
