@@ -20,13 +20,16 @@ def check_for_missing_inputs(
 ):
     """Check if there exist nodes which require input from outside of the graph.
 
-    Such thing is forbidden, as it doesn't make sense.
-    Example of such violation:
-        - x1 = Input(shape=(32,))
-        - x2 = Input(shape=(32,))
-        - x3 = x1 + x2
-        - model = FunctionalModel(inputs=x1, outputs=x3)
-    How can model not rely on ``x2`` if ``x3`` requires it for its operation?
+    It is forbidden, as it doesn't make sense.
+
+    Example of such violation::
+
+        x1 = Input(shape=(32,))
+        x2 = Input(shape=(32,))
+        x3 = x1 + x2
+        model = FunctionalModel(inputs=x1, outputs=x3)
+
+    Model cannot execute defined operations unless ``x2`` is given, because ``x3`` requires it.
     """
     for node in used_nodes:
         if node in inputs:
@@ -201,9 +204,11 @@ def draw_graph(
         import matplotlib.patches
         import matplotlib.pyplot as plt
         import networkx as nx
-    except ImportError:
-        print("To plot graphs, you need to install `networkx`. Run `pip install networkx`.")
-        return
+    except ImportError as e:
+        print(
+            "To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`."
+        )
+        raise e
 
     from .functional_model import FunctionalModel
     from .symbolic_tensor import SymbolicTensor
