@@ -3,13 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_functional import (
-    FunctionalModel,
-    Input,
-    enable_module_call_optimization,
-    model_tools,
-    useful_layers,
-)
+from pytorch_functional import FunctionalModel, Input, model_tools, optimize_module_calls, useful_layers
 
 
 def create_vanilla_pyt(seed):
@@ -63,12 +57,15 @@ def test_equal_outputs():
 
 
 def test_equal_outputs_with_call_optimization():
-    enable_module_call_optimization()
     for seed in range(10):
         x = torch.rand(10, 10)
-        outs0 = create_vanilla_pyt(seed)(x)
-        outs1 = create_api_v1(seed)(x)
-        outs2 = create_api_v2(seed)(x)
+        model0 = create_vanilla_pyt(seed)
+        model1 = create_api_v1(seed)
+        model2 = create_api_v2(seed)
+        optimize_module_calls()
+        outs0 = model0(x)
+        outs1 = model1(x)
+        outs2 = model2(x)
         assert torch.equal(outs1, outs2)
         assert torch.equal(outs1, outs0)
 
