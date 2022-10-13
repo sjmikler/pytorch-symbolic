@@ -164,9 +164,7 @@ class FunctionalModel(nn.Module):
 
     def _register_used_modules(self):
         for node in self._execution_order_nodes:
-            if not isinstance(node.layer, nn.Module):
-                logging.info(f"Not registering {node.layer} (not a nn.Module)!")
-                return False
+            assert isinstance(node.layer, nn.Module)
             self.add_module(name=self._node_to_layer_name[node], module=node.layer)
 
     def _figure_out_execution_order(self):
