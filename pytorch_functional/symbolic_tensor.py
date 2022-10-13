@@ -27,7 +27,7 @@ class SymbolicTensor:
         Parameters
         ----------
         value
-            Tensor object representing example of value that will flow through the node.
+            x object representing example of value that will flow through the node.
         parents
             Tuple of parent nodes - other Placeholders.
         depth
@@ -252,6 +252,9 @@ class SymbolicTensor:
 
     def __hash__(self):
         return id(self)
+
+    def _get_str_name(self):
+        return "x" + str(self.__hash__())
 
 
 class Input(SymbolicTensor):

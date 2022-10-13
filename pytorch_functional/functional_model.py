@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Set, Tuple
+from types import MethodType
+from typing import Any, Dict, List, Set, Tuple
 
 import torch
 from torch import nn
@@ -19,6 +20,7 @@ class FunctionalModel(nn.Module):
         inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         enable_cuda_graphs=False,
+        generate_optimized_forward=True,
     ):
         """A PyTorch model that applies operations defined by the graph.
 
@@ -68,10 +70,13 @@ class FunctionalModel(nn.Module):
         self._has_single_input = len(self.inputs) == 1
         self._has_single_output = len(self.outputs) == 1
 
+        self._node_to_layer_name: Dict[SymbolicTensor, str] = {}
+        self._layer_name_to_node: Dict[str, SymbolicTensor] = {}
         self._figure_out_execution_order()
-
-        self._registered_modules: List[nn.Module] = []
         self._register_used_modules()
+
+        if generate_optimized_forward:
+            self._generate_optimized_forward()
 
         self.cuda_graphs_enabled = False
 
@@ -87,13 +92,35 @@ class FunctionalModel(nn.Module):
         for input_data, input_node in zip(inputs, self.inputs):
             input_node._launch_input(input_data)
 
-        for node in self._execution_order:
+        for node in self._execution_order_nodes:
             node._launch()
 
         if self._has_single_output:
             return self.outputs[0]._output
         else:
             return tuple(output_leaf._output for output_leaf in self.outputs)
+
+    def _generate_optimized_forward(self):
+        input_names = [node._get_str_name() for node in self.inputs]
+        forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
+        code_lines = [forward_definition]
+
+        TAB = " " * 4
+        code_lines.append(TAB + "ordered_layers=self._execution_order_layers")
+
+        for exec_id, node in enumerate(self._execution_order_nodes):
+            input_names = [node._get_str_name() for node in node.parents]
+            output_name = node._get_str_name()
+            code_line = TAB + output_name + f" = ordered_layers[{exec_id}](" + ",".join(input_names) + ")"
+            code_lines.append(code_line)
+
+        return_line = TAB + "return " + ",".join(node._get_str_name() for node in self.outputs)
+        code_lines.append(return_line)
+        generated_forward = "\n".join(code_lines) + "\n"
+        self._auto_generated_forward_str = generated_forward
+
+        exec(generated_forward, {}, locals())
+        self.forward = MethodType(locals()["_generated_forward"], self)
 
     @property
     def input_shape(self):
@@ -127,18 +154,12 @@ class FunctionalModel(nn.Module):
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
         self.cuda_graphs_enabled = True
 
-    def _register_module(self, node: SymbolicTensor) -> bool:
-        if not isinstance(node.layer, nn.Module):
-            logging.info(f"Not registering {node.layer} (not a nn.Module)!")
-            return False
-        elif node.layer in self._registered_modules:
-            logging.info(f"Not registering {node.layer} (already registered)!")
-            return False
-
-        num_modules = len(self._registered_modules)
-        self.add_module(name=f"module{num_modules:0>3}_depth{node.depth:0>3}", module=node.layer)
-        self._registered_modules.append(node.layer)
-        return True
+    def _decide_name_for_node(self, node):
+        assert node not in self._layer_name_to_node, "Node is already named!"
+        name = f"module{len(self._layer_name_to_node)}_depth{node.depth:0>3}"
+        self._layer_name_to_node[name] = node
+        self._node_to_layer_name[node] = name
+        return name
 
     @property
     def _used_nodes(self) -> Set[SymbolicTensor]:
@@ -146,13 +167,18 @@ class FunctionalModel(nn.Module):
         return figure_out_nodes_between(self.inputs, self.outputs)
 
     def _register_used_modules(self):
-        num_registered = 0
-        for node in self._execution_order:
-            if self._register_module(node):
-                num_registered += 1
-        logging.info(f"Registered {num_registered} modules!")
+        for node in self._execution_order_nodes:
+            if not isinstance(node.layer, nn.Module):
+                logging.info(f"Not registering {node.layer} (not a nn.Module)!")
+                return False
+            self.add_module(name=self._node_to_layer_name[node], module=node.layer)
 
     def _figure_out_execution_order(self):
         # Exclude inputs, as we don't launch any layers in input nodes
         used_nodes_excl_inputs = self._used_nodes - set(self.inputs)
-        self._execution_order = topological_sort(used_nodes_excl_inputs)
+        self._execution_order_nodes = topological_sort(used_nodes_excl_inputs)
+        self._execution_order_layers = []
+
+        for node in self._execution_order_nodes:
+            self._decide_name_for_node(node)
+            self._execution_order_layers.append(node.layer)

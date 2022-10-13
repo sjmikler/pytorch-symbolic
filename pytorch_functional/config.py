@@ -18,3 +18,8 @@ def enable_module_call_optimization():
     logging.warning(msg)
     MODULE_CALL_OPTIMIZATION = ENABLED
     remove_call_wrapper_from_all_modules()
+
+
+def disable_module_call_optimization():
+    global MODULE_CALL_OPTIMIZATION
+    MODULE_CALL_OPTIMIZATION = DISABLED
