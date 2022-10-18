@@ -16,7 +16,7 @@ from .symbolic_tensor import SymbolicTensor
 
 class BareFunctionalModel(nn.Module):
     def __init__(self, names: List[str], layers: List[nn.Module], forward_src: str):
-        """A model that has nothing to do with the FunctionalModel graph structure.
+        """A tiny model that has nothing to do with the FunctionalModel graph structure.
 
         It can live, even if the graph structure is removed!
         """
@@ -147,6 +147,8 @@ class FunctionalModel(nn.Module):
             self._replace_forward_with_codegen()
 
     def bare(self) -> BareFunctionalModel:
+        logging.warning("Models should not be modified after converting to CUDA Graphs!")
+
         names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
         layers = [node.layer for node in self._execution_order_nodes]
         forward_src = self._forward_codegen()
