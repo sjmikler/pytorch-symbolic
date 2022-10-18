@@ -64,3 +64,27 @@ def test_multiple_inputs():
         out = model(*xs)
         vanilla_out = vanilla_model(*xs)
         assert torch.equal(out, vanilla_out), str((out, vanilla_out))
+
+
+def test_bare_multiple_inputs():
+    inputs = [Input(shape=(FEATURES,)) for _ in range(NUM_INPUTS)]
+    torch.manual_seed(SEED)
+
+    concatenated = WeightedConcatLayer(dim=1)(*inputs)
+    transformed = [nn.Linear(concatenated.features, FEATURES)(concatenated) for _ in range(NUM_LAYERS)]
+    concatenated2 = WeightedConcatLayer(dim=1)(*transformed)
+    concatenated2 = nn.Linear(concatenated2.features, FEATURES)(concatenated2)
+    result = concatenated2 - sum(transformed)
+    model = FunctionalModel(inputs=inputs, outputs=result).bare()
+
+    torch.manual_seed(SEED)
+    vanilla_model = VanillaModel()
+
+    assert model_tools.model_similar(model, vanilla_model)
+    assert model_tools.models_have_corresponding_parameters(model, vanilla_model)
+
+    for i in range(10):
+        xs = [torch.rand(i, FEATURES) for _ in range(NUM_INPUTS)]
+        out = model(*xs)
+        vanilla_out = vanilla_model(*xs)
+        assert torch.equal(out, vanilla_out), str((out, vanilla_out))
