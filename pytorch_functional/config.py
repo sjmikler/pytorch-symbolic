@@ -8,6 +8,6 @@ enable_functional_api_for_new_modules()
 
 
 def optimize_module_calls():
-    msg = "Optimizing module calls! Reusing modules might throw errors!"
+    msg = "Optimizing module calls for existing layers! Reusing them might throw errors!"
     logging.warning(msg)
     remove_call_wrapper_from_all_modules()

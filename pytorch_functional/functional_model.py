@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 from types import MethodType
 from typing import Any, Dict, List, Set, Tuple
@@ -13,13 +14,31 @@ from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic_tensor import SymbolicTensor
 
 
+class BareFunctionalModel(nn.Module):
+    def __init__(self, names: List[str], layers: List[nn.Module], forward_src: str):
+        """A model that has nothing to do with the FunctionalModel graph structure.
+
+        It can live, even if the graph structure is removed!
+        """
+        super().__init__()
+        self._execution_order_layers = []
+        for name, layer in zip(names, layers):
+            layer = copy.deepcopy(layer)
+            self.register_module(name, layer)
+            self._execution_order_layers.append(layer)
+
+        locs = {"self": self}
+        exec(forward_src, {}, locs)
+        self.forward = MethodType(locs["_generated_forward"], self)
+
+
 class FunctionalModel(nn.Module):
     def __init__(
         self,
         inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         enable_cuda_graphs=False,
-        generate_optimized_forward=True,
+        enable_forward_codegen=True,
     ):
         """A PyTorch model that applies operations defined by the graph.
 
@@ -72,22 +91,22 @@ class FunctionalModel(nn.Module):
         self._figure_out_execution_order()
         self._register_used_modules()
 
-        self._generated_forward_source = None
+        self._enable_forward_codegen = enable_forward_codegen
+        if self._enable_forward_codegen:
+            self._replace_forward_with_codegen()
 
-        if generate_optimized_forward:
-            self._generate_optimized_forward()
+        self._enable_cuda_graphs = enable_cuda_graphs
 
         self.cuda_graphs_enabled = False
-
-        if enable_cuda_graphs:
-            self._enable_cuda_graphs(self.inputs)
+        if self._enable_cuda_graphs:
+            self._convert_to_cuda_graphs(self.inputs)
 
     def forward(self, *inputs: torch.Tensor) -> Any:
         """This function is executed by __call__. Do not use this directly, use __call__ instead.
 
         Warning!
 
-        This function will be overwritten by `_generate_optimized_forward` if `generate_optimized_forward`
+        This function will be overwritten by `_generate_optimized_forward` if `enable_forward_codegen`
         is True. If this happened and you want to see your source, print `self._generated_forward_source`.
         """
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
@@ -101,28 +120,6 @@ class FunctionalModel(nn.Module):
             return self.outputs[0]._output
         else:
             return tuple(output_leaf._output for output_leaf in self.outputs)
-
-    def _generate_optimized_forward(self):
-        input_names = [node._get_str_name() for node in self.inputs]
-        forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
-        code_lines = [forward_definition]
-
-        TAB = " " * 4
-        code_lines.append(TAB + "l=self._execution_order_layers")
-
-        for exec_id, node in enumerate(self._execution_order_nodes):
-            input_names = [node._get_str_name() for node in node.parents]
-            output_name = node._get_str_name()
-            code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
-            code_lines.append(code_line)
-
-        return_line = TAB + "return " + ",".join(node._get_str_name() for node in self.outputs)
-        code_lines.append(return_line)
-        generated_forward = "\n".join(code_lines) + "\n"
-        self._generated_forward_source = generated_forward
-
-        exec(generated_forward, {}, locals())
-        self.forward = MethodType(locals()["_generated_forward"], self)
 
     @property
     def input_shape(self):
@@ -140,7 +137,47 @@ class FunctionalModel(nn.Module):
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def _enable_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
+    def add_output(self, node):
+        assert node not in self.inputs, "Node is an input!"
+        assert node in self._execution_order_nodes, "Node is not in the graph!"
+
+        self.outputs = (*self.outputs, node)
+        self._has_single_output = len(self.outputs) == 1
+        if self._enable_forward_codegen:
+            self._replace_forward_with_codegen()
+
+    def bare(self) -> BareFunctionalModel:
+        names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
+        layers = [node.layer for node in self._execution_order_nodes]
+        forward_src = self._forward_codegen()
+        bare = BareFunctionalModel(names, layers, forward_src)
+        return bare
+
+    def _forward_codegen(self):
+        input_names = [node._get_str_name() for node in self.inputs]
+        forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
+        code_lines = [forward_definition]
+
+        TAB = " " * 4
+        code_lines.append(TAB + "l=self._execution_order_layers")
+
+        for exec_id, node in enumerate(self._execution_order_nodes):
+            input_names = [node._get_str_name() for node in node.parents]
+            output_name = node._get_str_name()
+            code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
+            code_lines.append(code_line)
+
+        return_line = TAB + "return " + ",".join(node._get_str_name() for node in self.outputs)
+        code_lines.append(return_line)
+        generated_forward = "\n".join(code_lines) + "\n"
+        return generated_forward
+
+    def _replace_forward_with_codegen(self):
+        self._generated_forward_source = self._forward_codegen()
+        exec(self._generated_forward_source, {}, locals())
+        self.forward = MethodType(locals()["_generated_forward"], self)
+
+    def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -182,3 +219,9 @@ class FunctionalModel(nn.Module):
         for node in self._execution_order_nodes:
             self._decide_name_for_node(node)
             self._execution_order_layers.append(node.layer)
+
+    def __deepcopy__(self, memo):
+        """This copies a working Module, but the underlying graph structure is not copied!"""
+        obj = self.bare()
+        memo[id(self)] = obj
+        return obj
