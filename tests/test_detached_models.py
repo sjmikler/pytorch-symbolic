@@ -26,7 +26,7 @@ def test_on_resnet():
     outputs = nn.Linear(x.features, 10)(x)
 
     model = FunctionalModel(inputs, outputs)
-    bare_model = model.detach_from_graph()
+    detached_model = model.detach_from_graph()
 
-    assert model_tools.model_similar(model, bare_model)
-    assert model_tools.models_have_corresponding_parameters(model, bare_model)
+    assert model_tools.model_similar(model, detached_model)
+    assert model_tools.models_have_corresponding_parameters(model, detached_model)

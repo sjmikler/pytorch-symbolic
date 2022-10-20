@@ -23,7 +23,7 @@ def test_func_concat():
         assert torch.equal(model2(x1, x2), correct_result)
 
 
-def test_bare_func_concat():
+def test_detached_func_concat():
     in1 = Input((10, 20))
     in2 = Input((10, 20))
 
@@ -87,7 +87,7 @@ def test_func_complicated_input():
     assert torch.allclose(r1, correct_result)
 
 
-def test_bare_func_complicated_input():
+def test_detached_func_complicated_input():
     sym1 = Input(batch_shape=(10, 20))
     sym2 = Input(batch_shape=(10, 20))
     sym3 = Input(batch_shape=(10, 20))

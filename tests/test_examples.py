@@ -63,7 +63,7 @@ def test_resnet():
     assert model_tools.get_parameter_count(model) == 223242
 
 
-def test_bare_example_toy_resnet():
+def test_detached_example_toy_resnet():
     model = examples.resnet.ToyResNet((3, 32, 32), n_classes=10).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
@@ -71,7 +71,7 @@ def test_bare_example_toy_resnet():
     assert model_tools.get_parameter_count(model) == 175530
 
 
-def test_bare_example_wrn():
+def test_detached_example_wrn():
     model = examples.resnet.ResNet((3, 32, 32), n_classes=10, version=("WRN", 16, 4)).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
@@ -79,7 +79,7 @@ def test_bare_example_wrn():
     assert model_tools.get_parameter_count(model) == 2750698
 
 
-def test_bare_example_vgg():
+def test_detached_example_vgg():
     model = examples.vgg.VGG((3, 32, 32), n_classes=10, version=13).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
@@ -87,7 +87,7 @@ def test_bare_example_vgg():
     assert model_tools.get_parameter_count(model) == 9413066
 
 
-def test_bare_example_enc_dec():
+def test_detached_example_enc_dec():
     model = examples.encoder_decoder.simple_encoder_decoder((3, 32, 32)).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
@@ -95,7 +95,7 @@ def test_bare_example_enc_dec():
     assert model_tools.get_parameter_count(model) == 28529
 
 
-def test_bare_resnet():
+def test_detached_resnet():
     inputs = Input(shape=(3, 32, 32))
     x = nn.Conv2d(inputs.channels, 32, 3)(inputs)(nn.ReLU())
     x = nn.Conv2d(x.channels, 64, 3)(x)(nn.ReLU())

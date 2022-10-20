@@ -66,7 +66,7 @@ def test_multiple_inputs():
         assert torch.equal(out, vanilla_out), str((out, vanilla_out))
 
 
-def test_bare_multiple_inputs():
+def test_detached_multiple_inputs():
     inputs = [Input(shape=(FEATURES,)) for _ in range(NUM_INPUTS)]
     torch.manual_seed(SEED)
 

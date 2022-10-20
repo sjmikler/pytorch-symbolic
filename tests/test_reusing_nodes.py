@@ -56,7 +56,7 @@ def test_models_from_slice():
         prev_outs = outs
 
 
-def test_bare_models_from_slice():
+def test_detached_models_from_slice():
     x = Input(shape=(3, 10, 10))
 
     nodes = []
