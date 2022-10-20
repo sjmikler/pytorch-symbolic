@@ -30,8 +30,8 @@ def test_bare_func_concat():
     cat1 = functions_utility.add_to_model(torch.concat, (in1, in2), dim=2)
     cat2 = functions_utility.add_to_model(torch.concat, tensors=(in1, in2), dim=2)
 
-    model1 = FunctionalModel(inputs=(in1, in2), outputs=cat1).bare()
-    model2 = FunctionalModel(inputs=(in1, in2), outputs=cat2).bare()
+    model1 = FunctionalModel(inputs=(in1, in2), outputs=cat1).detach_from_graph()
+    model2 = FunctionalModel(inputs=(in1, in2), outputs=cat2).detach_from_graph()
 
     for _ in range(10):
         x1 = torch.rand(1, 10, 20)
@@ -110,8 +110,8 @@ def test_bare_func_complicated_input():
         sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]]
     )
 
-    model1 = FunctionalModel((sym1, sym2, sym3), outputs=summed1).bare()
-    model2 = FunctionalModel((sym1, sym2, sym3), outputs=summed2).bare()
+    model1 = FunctionalModel((sym1, sym2, sym3), outputs=summed1).detach_from_graph()
+    model2 = FunctionalModel((sym1, sym2, sym3), outputs=summed2).detach_from_graph()
 
     x1 = torch.rand(10, 20)
     x2 = torch.rand(10, 20)

@@ -69,7 +69,7 @@ def test_bare_models_from_slice():
     for i in range(0, 20, 5):
         nodes_slice = nodes[i : i + 5]
 
-        model = FunctionalModel(inputs=nodes_slice[0], outputs=nodes_slice[-1]).bare()
+        model = FunctionalModel(inputs=nodes_slice[0], outputs=nodes_slice[-1]).detach_from_graph()
         models.append(model)
 
     data = torch.rand(16, 3, 10, 10)

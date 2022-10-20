@@ -10,26 +10,33 @@ from typing import Any, Dict, List, Set, Tuple
 import torch
 from torch import nn
 
+from . import code_generator
 from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic_tensor import SymbolicTensor
 
 
-class BareFunctionalModel(nn.Module):
+class DetachedFunctionalModel(nn.Module):
     def __init__(self, names: List[str], layers: List[nn.Module], forward_src: str):
-        """A tiny model that has nothing to do with the FunctionalModel graph structure.
+        """A tiny model detached from the FunctionalModel graph structure.
 
         It can live, even if the graph structure is removed!
         """
         super().__init__()
         self._execution_order_layers = []
         for name, layer in zip(names, layers):
-            layer = copy.deepcopy(layer)
-            self.register_module(name, layer)
+            try:
+                layer = copy.deepcopy(layer)
+            except Exception as e:
+                logging.error(f"Deepcopy of {layer} failed!")
+                raise e
+            self.add_module(name, layer)
             self._execution_order_layers.append(layer)
 
-        locs = {"self": self}
-        exec(forward_src, {}, locs)
-        self.forward = MethodType(locs["_generated_forward"], self)
+        self._generated_forward_source = forward_src
+
+        scope = {"self": self}
+        exec(self._generated_forward_source, {}, scope)
+        self.forward = MethodType(scope["_generated_forward"], self)  # type: ignore
 
 
 class FunctionalModel(nn.Module):
@@ -83,21 +90,18 @@ class FunctionalModel(nn.Module):
         assert all(isinstance(x, SymbolicTensor) for x in outputs)
         self.outputs: Tuple[SymbolicTensor, ...] = tuple(outputs)
 
-        self._has_single_input = len(self.inputs) == 1
-        self._has_single_output = len(self.outputs) == 1
-
+        # Initialize helper variables
         self._node_to_layer_name: Dict[SymbolicTensor, str] = {}
         self._layer_name_to_node: Dict[str, SymbolicTensor] = {}
+        self._execution_order_nodes: List[SymbolicTensor] = []
+        self._execution_order_layers: List[nn.Module] = []
         self._figure_out_execution_order()
-        self._register_used_modules()
 
         self._enable_forward_codegen = enable_forward_codegen
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
 
         self._enable_cuda_graphs = enable_cuda_graphs
-
-        self.cuda_graphs_enabled = False
         if self._enable_cuda_graphs:
             self._convert_to_cuda_graphs(self.inputs)
 
@@ -116,7 +120,7 @@ class FunctionalModel(nn.Module):
         for node in self._execution_order_nodes:
             node._launch()
 
-        if self._has_single_output:
+        if len(self.outputs) == 1:
             return self.outputs[0]._output
         else:
             return tuple(output_leaf._output for output_leaf in self.outputs)
@@ -124,7 +128,7 @@ class FunctionalModel(nn.Module):
     @property
     def input_shape(self):
         """Return shape of the input or in case of multiple inputs - a tuple of them."""
-        if self._has_single_input:
+        if len(self.inputs) == 1:
             return self.inputs[0].shape
         else:
             return tuple(node.shape for node in self.inputs)
@@ -132,52 +136,42 @@ class FunctionalModel(nn.Module):
     @property
     def output_shape(self):
         """Return shape of the output or in case of multiple outputs - a atuple of them."""
-        if self._has_single_output:
+        if len(self.outputs):
             return self.outputs[0].shape
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def add_output(self, node):
+    def add_output(self, node: SymbolicTensor):
         assert node not in self.inputs, "Node is an input!"
         assert node in self._execution_order_nodes, "Node is not in the graph!"
 
         self.outputs = (*self.outputs, node)
-        self._has_single_output = len(self.outputs) == 1
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
 
-    def bare(self) -> BareFunctionalModel:
-        logging.warning("Models should not be modified after converting to CUDA Graphs!")
+    def detach_from_graph(self) -> DetachedFunctionalModel:
+        if self._enable_cuda_graphs:
+            logging.warning("This might fail after converting to CUDA Graphs!")
 
         names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
-        layers = [node.layer for node in self._execution_order_nodes]
-        forward_src = self._forward_codegen()
-        bare = BareFunctionalModel(names, layers, forward_src)
-        return bare
-
-    def _forward_codegen(self):
-        input_names = [node._get_str_name() for node in self.inputs]
-        forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
-        code_lines = [forward_definition]
-
-        TAB = " " * 4
-        code_lines.append(TAB + "l=self._execution_order_layers")
-
-        for exec_id, node in enumerate(self._execution_order_nodes):
-            input_names = [node._get_str_name() for node in node.parents]
-            output_name = node._get_str_name()
-            code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
-            code_lines.append(code_line)
-
-        return_line = TAB + "return " + ",".join(node._get_str_name() for node in self.outputs)
-        code_lines.append(return_line)
-        generated_forward = "\n".join(code_lines) + "\n"
-        return generated_forward
+        forward_src = code_generator.generate_forward_with_loops(
+            self.inputs,
+            self.outputs,
+            self._execution_order_nodes,
+            min_loop_length=50,
+        )
+        return DetachedFunctionalModel(names, self._execution_order_layers, forward_src)
 
     def _replace_forward_with_codegen(self):
-        self._generated_forward_source = self._forward_codegen()
-        exec(self._generated_forward_source, {}, locals())
-        self.forward = MethodType(locals()["_generated_forward"], self)
+        self._generated_forward_source = code_generator.generate_forward_with_loops(
+            self.inputs,
+            self.outputs,
+            self._execution_order_nodes,
+            min_loop_length=50,
+        )
+        scope = {"self": self}
+        exec(self._generated_forward_source, {}, scope)
+        self.forward = MethodType(scope["_generated_forward"], self)
 
     def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
         msg = (
@@ -191,39 +185,29 @@ class FunctionalModel(nn.Module):
 
         self.cuda()
         input_tensors = tuple(x.v.cuda() for x in inputs)
-
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
-        self.cuda_graphs_enabled = True
-
-    def _decide_name_for_node(self, node):
-        assert node not in self._layer_name_to_node, "Node is already named!"
-        name = f"module{len(self._layer_name_to_node)}_depth{node.depth:0>3}"
-        self._layer_name_to_node[name] = node
-        self._node_to_layer_name[node] = name
-        return name
 
     @property
     def _used_nodes(self) -> Set[SymbolicTensor]:
         """Return a set of all nodes used in this model."""
         return figure_out_nodes_between(self.inputs, self.outputs)
 
-    def _register_used_modules(self):
-        for node in self._execution_order_nodes:
-            assert isinstance(node.layer, nn.Module)
-            self.add_module(name=self._node_to_layer_name[node], module=node.layer)
-
     def _figure_out_execution_order(self):
         # Exclude inputs, as we don't launch any layers in input nodes
         used_nodes_excl_inputs = self._used_nodes - set(self.inputs)
         self._execution_order_nodes = topological_sort(used_nodes_excl_inputs)
-        self._execution_order_layers = []
+        self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
-        for node in self._execution_order_nodes:
-            self._decide_name_for_node(node)
-            self._execution_order_layers.append(node.layer)
+        num_layers = len(self._execution_order_nodes)
+        str_length = len(str(num_layers))
+        for idx, node in enumerate(self._execution_order_nodes):
+            name = f"module{str(idx).zfill(str_length)}_depth{str(node.depth).zfill(str_length)}"
+            self._layer_name_to_node[name] = node
+            self._node_to_layer_name[node] = name
+            self.add_module(name=name, module=node.layer)
 
     def __deepcopy__(self, memo):
         """This copies a working Module, but the underlying graph structure is not copied!"""
-        obj = self.bare()
+        obj = self.detach_from_graph()
         memo[id(self)] = obj
         return obj

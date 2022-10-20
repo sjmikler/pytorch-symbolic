@@ -64,7 +64,7 @@ def test_resnet():
 
 
 def test_bare_example_toy_resnet():
-    model = examples.resnet.ToyResNet((3, 32, 32), n_classes=10).bare()
+    model = examples.resnet.ToyResNet((3, 32, 32), n_classes=10).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -72,7 +72,7 @@ def test_bare_example_toy_resnet():
 
 
 def test_bare_example_wrn():
-    model = examples.resnet.ResNet((3, 32, 32), n_classes=10, version=("WRN", 16, 4)).bare()
+    model = examples.resnet.ResNet((3, 32, 32), n_classes=10, version=("WRN", 16, 4)).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -80,7 +80,7 @@ def test_bare_example_wrn():
 
 
 def test_bare_example_vgg():
-    model = examples.vgg.VGG((3, 32, 32), n_classes=10, version=13).bare()
+    model = examples.vgg.VGG((3, 32, 32), n_classes=10, version=13).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 10]
@@ -88,7 +88,7 @@ def test_bare_example_vgg():
 
 
 def test_bare_example_enc_dec():
-    model = examples.encoder_decoder.simple_encoder_decoder((3, 32, 32)).bare()
+    model = examples.encoder_decoder.simple_encoder_decoder((3, 32, 32)).detach_from_graph()
     inputs = torch.rand(16, 3, 32, 32)
     outputs = model(inputs)
     assert list(outputs.shape) == [16, 1, 7, 7]
@@ -115,5 +115,5 @@ def test_bare_resnet():
     x = nn.Dropout(0.5)(x)
     outputs = nn.Linear(x.features, 10)(x)
 
-    model = FunctionalModel(inputs, outputs).bare()
+    model = FunctionalModel(inputs, outputs).detach_from_graph()
     assert model_tools.get_parameter_count(model) == 223242

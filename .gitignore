@@ -8,6 +8,5 @@
 .idea
 .coverage
 devel
-benchmarks
 
 MNIST

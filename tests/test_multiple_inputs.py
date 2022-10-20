@@ -75,7 +75,7 @@ def test_bare_multiple_inputs():
     concatenated2 = WeightedConcatLayer(dim=1)(*transformed)
     concatenated2 = nn.Linear(concatenated2.features, FEATURES)(concatenated2)
     result = concatenated2 - sum(transformed)
-    model = FunctionalModel(inputs=inputs, outputs=result).bare()
+    model = FunctionalModel(inputs=inputs, outputs=result).detach_from_graph()
 
     torch.manual_seed(SEED)
     vanilla_model = VanillaModel()
