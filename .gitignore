@@ -8,6 +8,6 @@
 .idea
 .coverage
 devel
-benchmarks
+benchmarks/logs
 
 MNIST

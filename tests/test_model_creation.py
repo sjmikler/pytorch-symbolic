@@ -151,3 +151,26 @@ def test_equal_outputs_multi_in_out():
 
         assert torch.equal(o11, o21)
         assert torch.equal(o12, o22)
+
+
+def test_detached_equal_parameters_multi_in_out():
+    for seed in range(10):
+        model1 = create_vanilla_pyt_multi_in_out(seed)
+        model2 = create_api_multi_in_out(seed).detach_from_graph()
+        assert model_tools.model_similar(model1, model2)
+        assert model_tools.models_have_corresponding_parameters(model1, model2)
+
+
+def test_detached_equal_outputs_multi_in_out():
+    for seed in range(10):
+        x1 = torch.rand(10, 10)
+        x2 = torch.rand(10, 10)
+
+        model1 = create_vanilla_pyt_multi_in_out(seed)
+        o11, o12 = model1(x1, x2)
+
+        model2 = create_api_multi_in_out(seed).detach_from_graph()
+        o21, o22 = model2(x1, x2)
+
+        assert torch.equal(o11, o21)
+        assert torch.equal(o12, o22)
