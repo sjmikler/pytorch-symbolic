@@ -2,11 +2,11 @@
 
 Benchmarking is difficult as hell.
 
-This is not a guide how to benchmark stuff correctly, however I'll share what I used to produce charts.
+This is not a guide how to benchmark stuff correctly, but we'll share what we used to produce our charts.
 
-I am using Linux with Intel CPU, some of the commands are different for AMD CPUs.
+We're using Linux with Intel CPU, some of the commands are different for AMD CPUs.
 
-Before running script on thread `$THREAD`, I make sure to run the following:
+Before running any benchmarking script on thread `$THREAD`, we make sure to run the following:
 
 ```bash
 echo 1 >> /sys/devices/system/cpu/intel_pstate/no_turbo

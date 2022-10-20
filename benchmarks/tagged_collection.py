@@ -135,7 +135,7 @@ class TaggedCollection(list):
         with open(path, "r") as f:
             for line in f.readlines():
                 if line.startswith(prefix):
-                    line = line[len(prefix):].strip()
+                    line = line[len(prefix) :].strip()
                     data = json.loads(line)
                     tc.convert_and_append(data)
         return tc
@@ -150,6 +150,7 @@ class TaggedCollection(list):
 
     def to_df(self):
         import pandas as pd
+
         return pd.DataFrame.from_records(self)
 
     @property

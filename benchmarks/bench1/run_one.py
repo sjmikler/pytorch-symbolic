@@ -1,21 +1,20 @@
-#  Copyright (c) 2022 Szymon Mikler import gc import os
+#  Copyright (c) 2022 Szymon Mikler
 
 import argparse
 import gc
+import logging
 import os
 import socket
 import sys
 import time
-
-import torch
 from copy import deepcopy
 
-from benchmarks import dllogger
-from benchmarks.bench1 import define_models
-from benchmarks.dllogger import DLLLoggerAlreadyInitialized, JSONStreamBackend, StdOutBackend, Verbosity
-from pytorch_functional import optimize_module_calls
+import dllogger
+import torch
+from dllogger import DLLLoggerAlreadyInitialized, JSONStreamBackend, StdOutBackend, Verbosity
 
-import logging
+from benchmarks.bench1 import define_models
+from pytorch_functional import optimize_module_calls
 
 logging.basicConfig(level=logging.ERROR)
 

@@ -68,9 +68,7 @@ def plot(
 X = "data.layers"
 Y = "data.throughput"
 
-filters = (
-    lambda row: "call_optimization" in row.tags,
-)
+filters = (lambda row: "call_optimization" in row.tags,)
 
 tagged = TaggedCollection.from_dllogs("benchmarks/good_logs/bench1.jsonl")
 
