@@ -9,14 +9,14 @@ We're using Linux with Intel CPU, some of the commands are different for AMD CPU
 Before running any benchmarking script on thread `$THREAD`, we make sure to run the following:
 
 ```bash
-echo 1 >> /sys/devices/system/cpu/intel_pstate/no_turbo
+echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
 echo 0 | tee /sys/kernel/randomize_va_space
 
 echo performance > /sys/devices/system/cpu/cpu"$THREAD"/cpufreq/scaling_governor
 echo performance > /sys/devices/system/cpu/cpu"$THREAD_NEXT"/cpufreq/scaling_governor
 
-echo 1 >> /sys/devices/system/cpu/cpu"$THREAD"/online
-echo 0 >> /sys/devices/system/cpu/cpu"$THREAD_NEXT"/online
+echo 1 > /sys/devices/system/cpu/cpu"$THREAD"/online
+echo 0 > /sys/devices/system/cpu/cpu"$THREAD_NEXT"/online
 ```
 
 # Requirement
