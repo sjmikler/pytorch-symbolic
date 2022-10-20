@@ -65,12 +65,12 @@ def plot(
 
 #########################
 
-X = "data.layers"
+X = "data.IMG_SIZE"
 Y = "data.throughput"
 
 filters = (lambda row: "call_optimization" in row.tags,)
 
-tagged = TaggedCollection.from_dllogs("benchmarks/good_logs/bench1.jsonl")
+tagged = TaggedCollection.from_dllogs("benchmarks/logs/toy_resnet3.jsonl")
 
 tagged = tagged.filter(*filters)
 assert len(tagged) > 0, "Empty query!"
@@ -82,12 +82,13 @@ for x, reference_for_x in references.groupby(lambda row: row[X], return_keys=Tru
     avg = np.median(reference_for_x.get(Y))
     reference_y_for_x[x] = avg
 
-fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(12, 8), constrained_layout=True, dpi=300)
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 5), constrained_layout=True, dpi=300)
+ax = [ax]
 
 names = {
     "oct20,vanilla,call_optimization": "Inheriting from nn.Module",
-    "oct20,sequential,call_optimization": "nn.Sequential",
     "oct20,functional,call_optimization": "FunctionalModel",
+    "oct20,functional,cuda_graphs,call_optimization": "FunctionalModel with CUDA Graphs",
 }
 
 for tags, group in tagged.groupby("tags", return_keys=True):
@@ -102,23 +103,23 @@ plot(
     y_axis=Y,
     compare="Definition",
     reference_y=None,
-    title="Performance comparison between different definitions of deep linear models",
-    xlabel="Number of linear layers",
+    title="Performance comparison between different definitions of Toy ResNet",
+    xlabel="Height and width of the input images",
     ylabel="Batches per second (more is better)",
     ax=ax[0],
     fig=fig,
 )
-plot(
-    tagged.df,
-    x_axis=X,
-    y_axis=Y,
-    compare="Definition",
-    reference_y=reference_y_for_x,
-    title="Close-up",
-    xlabel="Number of linear layers",
-    ylabel="Throughput difference (%)",
-    ax=ax[1],
-    fig=fig,
-)
+# plot(
+#     tagged.df,
+#     x_axis=X,
+#     y_axis=Y,
+#     compare="tags",
+#     reference_y=reference_y_for_x,
+#     title="Close-up",
+#     xlabel="Number of linear layers",
+#     ylabel="Throughput difference (%)",
+#     ax=ax[1],
+#     fig=fig,
+# )
 plt.savefig("latest.png")
 plt.show()

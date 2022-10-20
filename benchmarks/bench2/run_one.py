@@ -7,13 +7,12 @@ import os
 import socket
 import sys
 import time
-from copy import deepcopy
 
 import dllogger
 import torch
 from dllogger import DLLLoggerAlreadyInitialized, JSONStreamBackend, StdOutBackend, Verbosity
 
-from benchmarks.bench1 import define_models
+from benchmarks.bench2 import define_models
 from pytorch_functional import optimize_module_calls
 
 logging.basicConfig(level=logging.ERROR)
@@ -23,10 +22,9 @@ gc.disable()
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--n-layers", type=int, required=True)
 parser.add_argument("--n-warmup", type=int, default=50)
 parser.add_argument("--n-iter", type=int, default=1000)
-parser.add_argument("--n-features", type=int, default=4)
+parser.add_argument("--img-size", type=int, default=32)
 parser.add_argument("--batch-size", type=int, default=4)
 parser.add_argument("--model-idx", type=int, required=True)
 parser.add_argument("--device", type=str, default="cpu")
@@ -41,10 +39,9 @@ os.makedirs(args.path, exist_ok=True)
 
 N_WARMUP = args.n_warmup
 N_ITER = args.n_iter
-N_LAYERS = args.n_layers
-N_FEATURES = args.n_features
 BATCH_SIZE = args.batch_size
 DEVICE = args.device
+IMG_SIZE = args.img_size
 
 CUDA_GRAPHS = False
 
@@ -67,7 +64,7 @@ except DLLLoggerAlreadyInitialized:
 
 
 def run(model, device):
-    x = torch.rand(size=(BATCH_SIZE, N_FEATURES))
+    x = torch.rand(size=(BATCH_SIZE, 3, IMG_SIZE, IMG_SIZE))
     x = x.to(device)
 
     for _ in range(N_WARMUP):
@@ -86,16 +83,15 @@ def run(model, device):
     return td
 
 
-def log(name, layers, time_per_run):
+def log(name, time_per_run):
     dllogger.log(
         step={},
         data={
             "tags": name,
-            "layers": layers,
             "throughput": 1 / time_per_run,
+            "IMG_SIZE": IMG_SIZE,
             "N_WARMUP": N_WARMUP,
             "N_ITER": N_ITER,
-            "N_FEATURES": N_FEATURES,
             "BATCH_SIZE": BATCH_SIZE,
             "HOST": host_info,
         },
@@ -108,9 +104,9 @@ if __name__ == "__main__":
 
     sys.setrecursionlimit(10000)
 
-    models = define_models.create_sequential_multi_layer(N_LAYERS, N_FEATURES)
+    models = define_models.create_toy_resnets(BATCH_SIZE, IMG_SIZE)
     tags, model = models[args.model_idx]
-    model = deepcopy(model)
+    model = model.to(device)
     optimize_module_calls()
 
     if not isinstance(tags, tuple):
@@ -122,4 +118,4 @@ if __name__ == "__main__":
     }
 
     td = run(model, device)
-    log([*BASE_TAGS, *tags, "call_optimization"], N_LAYERS, td / N_ITER)
+    log([*BASE_TAGS, *tags, "call_optimization"], td / N_ITER)

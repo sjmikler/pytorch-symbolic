@@ -1,6 +1,6 @@
 # Benchmarks
 
-Benchmarking is difficult as hell.
+Fair benchmarking can be very difficult.
 
 This is not a guide how to benchmark stuff correctly, but we'll share what we used to produce our charts.
 

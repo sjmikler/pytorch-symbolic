@@ -4,7 +4,7 @@ repo_url: https://github.com/gahaalt/pytorch-functional
 nav:
     - README: README.md
     - quick_start.md
-    - acceleration.md
+    - benchmarks.md
     - Reference:
         - Reference/functions_utility.md
         - Reference/functional_model.md

@@ -18,7 +18,7 @@ CPU: i7-12700KF
 GPU: RTX 3080 10GB
 ```
 
-## Thin and extra deep
+## Deep linear model
 
 This is a very thin and deep neural networks with linear layers only.
 In such a deep network, if there's overhead in automatically generated `forward` function,
@@ -52,6 +52,33 @@ model = FunctionalModel(inputs, x)
 ![images/from_250_to_1000_linear_layers.png](images/from_250_to_1000_linear_layers.png)
 > Percentile intervals [25, 75] are visible. Only sequential model seems to be a
 > few percents slower than the other two. It is slowing down more, as number of layers is increasing.
+
+## Toy ResNet
+
+This model is presented in [Quick Start](quick_start.md), it was also used in TensorFlow documentation.
+It is a shallower and thiner version of normally used ResNet networks.
+
+#### Data
+
+```py
+import torch
+
+data = torch.rand(size=(4, 3, 16, 16))  # Resolution varies from 16x16 to 64x64
+```
+
+#### Model definition
+
+Definition can be found in [Quick Start](quick_start.md).
+
+### Inference (gpu)
+
+![images/toy_resnet.png](images/toy_resnet.png)
+> CUDA Graphs have a huge advantage here due to the small batch size.
+> For non CUDA Graphed models GPU is executing kernels much faster than CPU is scheduling the work.
+> This is why we don't see any slowdown when the image resolution increases.
+> FunctionalModel is slightly faster than the Vanilla model. This is due to implementation details.
+> For example, it is quite slow to access layer by `self.layer` in forward function and automatically generated
+> forward function in FunctionalModel does not need to do this.
 
 ## How is `FunctionalModel` optimized?
 
@@ -97,6 +124,20 @@ def _generated_forward(self,i00,i01):
     return o00
 ```
 
-Additionaly, it's very simple to enable CUDA Graphs
+## Cuda Graphs
+
+Additionaly, with Pytorch Functional it's very simple to enable CUDA Graphs
 when GPU runtime is available. CUDA Graphs is a novel feature in PyTorch that can greatly
-increase the performance of some models.
+increase the performance of some models by reducing GPU idle time
+and removing the overhead caused by CPU making GPU calls.
+
+To enable CUDA Graphs, use:
+
+```python
+...
+model = FunctionalModel(inputs, outputs, enable_cuda_graphs=True)
+```
+
+When using CUDA Graphs, please remember to cast your inputs to GPU.
+In general, when using CUDA Graphs, you might get some silent errors, for example, when you don't cast your data to GPU.
+Always check if everything is working _without_ CUDA Graphs before enabling them.
