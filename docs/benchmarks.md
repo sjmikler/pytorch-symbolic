@@ -156,5 +156,5 @@ model = FunctionalModel(inputs, outputs, enable_cuda_graphs=True)
 ```
 
 When using CUDA Graphs, please remember to cast your inputs to GPU.
-In general, when using CUDA Graphs, you might get some silent errors, for example, when you don't cast your data to GPU.
+In general, when using CUDA Graphs, you might get some silent errors, for example when you forget to cast your data to GPU.
 Always check if everything is working _without_ CUDA Graphs before enabling them.
