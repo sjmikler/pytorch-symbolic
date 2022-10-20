@@ -18,6 +18,23 @@ CPU: i7-12700KF
 GPU: RTX 3080 10GB
 ```
 
+## Tweaks
+
+When using FunctionalModel for performance critical use case, you should use `optimize_module_calls` after all models are created.
+
+```python
+from torch import nn
+from pytorch_functional import Input, FunctionalModel, optimize_module_calls
+
+x = inputs = Input(shape=(3, 32, 32))
+x = nn.Identity()(x)
+model = FunctionalModel(inputs, x)
+
+optimize_module_calls()
+```
+
+Not using it might give you a little slowdown. We use it in the benchmarks.
+
 ## Deep linear model
 
 This is a very thin and deep neural networks with linear layers only.
