@@ -46,21 +46,23 @@ def figure_out_nodes_between(
 ) -> Set[SymbolicTensor]:
     """Returns intersection of predecessors tree of outputs and succesors tree of inputs."""
 
-    nodes_above: List[SymbolicTensor] = []
+    all_nodes_above: List[SymbolicTensor] = []
     if outputs is not None:
         for output_leaf in outputs:
-            output_leaf._get_all_nodes_above(nodes_above)
+            nodes_above = output_leaf._get_all_nodes_above()
+            all_nodes_above.extend(nodes_above)
 
-    nodes_below: List[SymbolicTensor] = []
+    all_nodes_below: List[SymbolicTensor] = []
     if inputs is not None:
         for input_leaf in inputs:
-            input_leaf._get_all_nodes_below(nodes_below)
+            nodes_below = input_leaf._get_all_nodes_below()
+            all_nodes_below.extend(nodes_below)
 
     # Get the intersection
     if inputs is None or outputs is None:
-        used_nodes = set(nodes_above) | set(nodes_below)
+        used_nodes = set(all_nodes_above) | set(all_nodes_below)
     else:
-        used_nodes = set(nodes_above) & set(nodes_below)
+        used_nodes = set(all_nodes_above) & set(all_nodes_below)
     if inputs is not None:
         check_for_missing_inputs(used_nodes, inputs)
     return used_nodes
@@ -71,7 +73,7 @@ def default_node_text(plh: SymbolicTensor) -> str:
 
 
 def default_edge_text(layer: nn.Module | None) -> str:
-    return str(layer)
+    return layer._get_name()
 
 
 def _calc_sum_sq_distances(graph, positions_dict):
@@ -173,7 +175,7 @@ def draw_graph(
     outputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
     node_text_func: Callable[[SymbolicTensor], str] | None = None,
     edge_text_func: Callable[[nn.Module | None], str] | None = None,
-    node_text_namescope: Dict[str, Any] | None = None,
+    node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
     rotate_labels: bool = False,
 ) -> None:
@@ -193,8 +195,9 @@ def draw_graph(
         A function that returns text that will be written on Nodes.
     edge_text_func
         A function that returns text that will be written on Edges.
-    node_text_namescope
+    node_text_namespace
         If used with ``globals()``, it will try to show variable name on each node.
+        Has an effect only if `node_text_func` is None.
     rotate_labels
         If True, text on edges will be rotated in the direction of the arrow.
     rotate_graph
@@ -214,8 +217,8 @@ def draw_graph(
     from .symbolic_tensor import SymbolicTensor
 
     if node_text_func is None:
-        if node_text_namescope is not None:
-            node_text_func = variable_name_resolver(node_text_namescope)
+        if node_text_namespace is not None:
+            node_text_func = variable_name_resolver(node_text_namespace)
         else:
             node_text_func = default_node_text
 

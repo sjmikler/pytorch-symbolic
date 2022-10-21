@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Set, Tuple
 import torch
 from torch import nn
 
-from . import code_generator
+from . import code_generator, config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic_tensor import SymbolicTensor
 
@@ -158,7 +158,7 @@ class FunctionalModel(nn.Module):
             self.inputs,
             self.outputs,
             self._execution_order_nodes,
-            min_loop_length=50,
+            min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         return DetachedFunctionalModel(names, self._execution_order_layers, forward_src)
 
@@ -167,7 +167,7 @@ class FunctionalModel(nn.Module):
             self.inputs,
             self.outputs,
             self._execution_order_nodes,
-            min_loop_length=50,
+            min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)

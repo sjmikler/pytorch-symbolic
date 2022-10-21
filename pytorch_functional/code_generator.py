@@ -74,7 +74,6 @@ def generate_forward_with_loops(
             continue
 
         input_names = [node_to_name[node] for node in node.parents]
-
         sequence = [node]
         last_node = node
         while (
