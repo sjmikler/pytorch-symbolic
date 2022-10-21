@@ -31,13 +31,14 @@ Not using it might give you a little slowdown. We use it in the benchmarks.
 
 ## Deep linear model
 
-There is no overhead during kernel computation.
-The only possible cost is before the kernel launches.
+Pytorch Functional cannot change the kernel runtime.
+The only place where it _might_ introduce a slowdown, is before the kernel launches.
+To see if it does, we will maximize the number of kernel calls.
 
 We will look at a very thin and deep model with linear layers only.
 Each layer will have only 4 features.
-_If_ there's any overhead induced by FunctionalModel, it should be visible here.
-In larger models, the overhead can be hidden by the kernel computation.
+If there's _any_ overhead induced by FunctionalModel, it should be visible here.
+In larger models, the overhead could be hidden by the kernel computation.
 
 #### Data
 
@@ -69,15 +70,16 @@ For such small subsequent matrix multiplications,
 it can be faster to launch the model on the CPU.
 
 ![images/from_250_to_1000_linear_layers.png](images/from_250_to_1000_linear_layers.png)
-> Percentile intervals [25, 75] are visible. Sequential model seems to perform
-> be different from the others. This can be explained by additional operations
+> Percentile intervals [25, 75] are visible. Sequential model seems to be
+> slower from the others. This can be explained by additional operations
 > introduced by the iterator in `nn.Sequential`.
-> It is slowing down more, as number of layers is increasing.
+> It is slowing down more, as the number of layers is increasing.
 > The other two seem to be equal!
 
 ## Toy ResNet
 
-This model is presented in [Quick Start](quick_start.md), it was also used in TensorFlow documentation.
+This model is presented in [Quick Start](quick_start.md),
+it was also used as an example in TensorFlow documentation.
 It is a shallower and thiner version of normally used ResNet networks.
 
 #### Data
@@ -97,7 +99,7 @@ Definition can be found in [Quick Start](quick_start.md).
 ### Inference (gpu)
 
 ![images/toy_resnet.png](images/toy_resnet.png)
-> CUDA Graphs have a huge advantage here due to the small batch size.
+> CUDA Graphs have a huge advantage here due to the small batch size and image size.
 > For non CUDA Graphed models GPU is executing kernels much faster than CPU
 > is scheduling the work.
 > This is why we don't see any slowdown when the image resolution increases.
@@ -109,7 +111,7 @@ Definition can be found in [Quick Start](quick_start.md).
 
 ## How is `FunctionalModel` optimized?
 
-Functional models reside on a underlying graph structure.
+Functional models reside on underlying graph structures.
 Each `SymbolicTensor` is a node and each layer is an edge that connects two nodes.
 Initialy, the forward pass was implemented lazily:
 by executing `forward` in a layer only when
@@ -156,7 +158,7 @@ def _generated_forward(self,i00,i01):
 ## Cuda Graphs
 
 Additionaly, with Pytorch Functional it's very simple to enable CUDA Graphs
-when GPU runtime is available. CUDA Graphs is a novel feature in PyTorch that can greatly
+when GPU runtime is available. CUDA Graphs are a novel feature in PyTorch that can greatly
 increase the performance of some models by reducing GPU idle time
 and removing the overhead caused by CPU making GPU calls.
 
