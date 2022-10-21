@@ -36,7 +36,7 @@ class DetachedSymbolicModel(nn.Module):
 
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
-        self.forward = MethodType(scope["_generated_forward"], self)  # type: ignore
+        self.forward = MethodType(scope["forward"], self)  # type: ignore
 
 
 class SymbolicModel(nn.Module):
@@ -171,7 +171,7 @@ class SymbolicModel(nn.Module):
         )
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
-        self.forward = MethodType(scope["_generated_forward"], self)
+        self.forward = MethodType(scope["forward"], self)
 
     def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
         msg = (
