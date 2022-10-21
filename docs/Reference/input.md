@@ -1,6 +1,6 @@
 # Input
 
-::: pytorch_functional.Input
+::: pytorch_symbolic.Input
     options:
         show_source: false
         heading_level: 2

@@ -6,7 +6,7 @@ This is a flexible implementation of VGG architecture.
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input
+from pytorch_symbolic import Input, SymbolicModel
 
 from .common import classifier
 
@@ -51,5 +51,5 @@ def VGG(
             flow = flow(nn.BatchNorm2d(flow.channels))(activation)
 
     outs = classifier(flow, n_classes, final_pooling)
-    model = FunctionalModel(inputs=inputs, outputs=outs)
+    model = SymbolicModel(inputs=inputs, outputs=outs)
     return model

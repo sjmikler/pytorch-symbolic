@@ -20,7 +20,7 @@ class SymbolicTensor:
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
-        """Node in a Functional Model.
+        """Node in a SymbolicModel.
 
         This might represent input or intermediate values of the neural network.
 
@@ -29,7 +29,7 @@ class SymbolicTensor:
         value
             x object representing example of value that will flow through the node.
         parents
-            Tuple of parent nodes - other Placeholders.
+            Tuple of parent nodes - other SymbolicTensors.
         depth
             How deep the node is in the tree. It is defined as maximum of parents' depth plus 1.
         layer
@@ -273,7 +273,7 @@ class Input(SymbolicTensor):
         max_value: float = 1.0,
         custom_tensor: torch.Tensor | None = None,
     ):
-        """Input to the Functional Model.
+        """Input to the SymbolicModel.
 
         It should be treated as a placeholder value that will be replaced with
         real data after the model is created.

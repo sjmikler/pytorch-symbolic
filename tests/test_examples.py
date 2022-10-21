@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 import examples
-from pytorch_functional import FunctionalModel, Input, model_tools
+from pytorch_symbolic import Input, SymbolicModel, model_tools
 
 
 def test_example_toy_resnet():
@@ -59,7 +59,7 @@ def test_resnet():
     x = nn.Dropout(0.5)(x)
     outputs = nn.Linear(x.features, 10)(x)
 
-    model = FunctionalModel(inputs, outputs)
+    model = SymbolicModel(inputs, outputs)
     assert model_tools.get_parameter_count(model) == 223242
 
 
@@ -115,5 +115,5 @@ def test_detached_resnet():
     x = nn.Dropout(0.5)(x)
     outputs = nn.Linear(x.features, 10)(x)
 
-    model = FunctionalModel(inputs, outputs).detach_from_graph()
+    model = SymbolicModel(inputs, outputs).detach_from_graph()
     assert model_tools.get_parameter_count(model) == 223242

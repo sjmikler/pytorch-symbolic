@@ -7,7 +7,7 @@ from typing import Callable, Dict, Hashable, List, Tuple
 from torch import nn
 
 from . import useful_layers
-from .functional_model import SymbolicTensor
+from .symbolic_model import SymbolicTensor
 
 
 def add_module_to_model(module, *args):

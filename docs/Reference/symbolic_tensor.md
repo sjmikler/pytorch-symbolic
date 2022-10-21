@@ -8,9 +8,9 @@ Examples:
 
 1. ``nn.Linear(10, 10)(symbolic_tensor)``
 2. ``symbolic_tensor(nn.Linear(10, 10))`` - equivalent to 1.
-3. ``model = FunctionalModel(inputs=(symbolic_1, symbolic_2), outputs=symbolic_3)``
+3. ``model = SymbolicModel(inputs=(symbolic_1, symbolic_2), outputs=symbolic_3)``
 
-::: pytorch_functional.SymbolicTensor
+::: pytorch_symbolic.SymbolicTensor
     options:
         show_source: false
         heading_level: 2

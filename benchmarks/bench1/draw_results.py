@@ -82,12 +82,12 @@ for x, reference_for_x in references.groupby(lambda row: row[X], return_keys=Tru
     avg = np.median(reference_for_x.get(Y))
     reference_y_for_x[x] = avg
 
-fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(12, 8), constrained_layout=True, dpi=300)
+    fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(12, 10), constrained_layout=True, dpi=300)
 
 names = {
     "oct20,vanilla,call_optimization": "Inheriting from nn.Module",
     "oct20,sequential,call_optimization": "nn.Sequential",
-    "oct20,functional,call_optimization": "FunctionalModel",
+    "oct20,symbolic,call_optimization": "SymbolicModel",
 }
 
 for tags, group in tagged.groupby("tags", return_keys=True):

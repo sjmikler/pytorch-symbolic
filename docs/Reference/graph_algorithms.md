@@ -1,6 +1,6 @@
 # graph_algorithms
 
-::: pytorch_functional.graph_algorithms
+::: pytorch_symbolic.graph_algorithms
     options:
         show_source: false
         heading_level: 2

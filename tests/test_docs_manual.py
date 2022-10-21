@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, model_tools, useful_layers
+from pytorch_symbolic import Input, SymbolicModel, model_tools, useful_layers
 
 
 def test_1():
@@ -25,7 +25,7 @@ def test_1():
     x = x(nn.Dropout(0.5))
     outputs = x(nn.Linear(x.features, 10))
 
-    model = FunctionalModel(inputs, outputs)
+    model = SymbolicModel(inputs, outputs)
     assert model_tools.get_parameter_count(model) == 223242
 
 
@@ -51,7 +51,7 @@ def test_2():
 
     x = x(nn.Flatten())
     outputs = x(nn.Linear(in_features=x.features, out_features=10))
-    model = FunctionalModel(inputs=inputs, outputs=outputs)
+    model = SymbolicModel(inputs=inputs, outputs=outputs)
     assert model.output_shape == (None, 10)
     assert model_tools.get_parameter_count(model) == 83562
 
@@ -77,7 +77,7 @@ def test_3():
     task1_outputs = x(nn.Linear(x.features, 10))
     task2_outputs = x(nn.Linear(x.features, 10))
 
-    model = FunctionalModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
+    model = SymbolicModel(inputs=(task1_input, task2_input), outputs=(task1_outputs, task2_outputs))
     assert model_tools.get_parameter_count(model) == 614228
 
 

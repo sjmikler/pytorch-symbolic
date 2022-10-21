@@ -15,9 +15,9 @@ from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .symbolic_tensor import SymbolicTensor
 
 
-class DetachedFunctionalModel(nn.Module):
+class DetachedSymbolicModel(nn.Module):
     def __init__(self, names: List[str], layers: List[nn.Module], forward_src: str):
-        """A tiny model detached from the FunctionalModel graph structure.
+        """A tiny model detached from the SymbolicModel graph structure.
 
         It can live, even if the graph structure is removed!
         """
@@ -39,7 +39,7 @@ class DetachedFunctionalModel(nn.Module):
         self.forward = MethodType(scope["_generated_forward"], self)  # type: ignore
 
 
-class FunctionalModel(nn.Module):
+class SymbolicModel(nn.Module):
     def __init__(
         self,
         inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
@@ -58,7 +58,7 @@ class FunctionalModel(nn.Module):
             input2 = Input((10,))
             x = input1 + input2
             x = nn.Linear(x.features, 1)(x)
-            model = FunctionalModel((input1, input2), x)
+            model = SymbolicModel((input1, input2), x)
 
         Parameters
         ----------
@@ -69,7 +69,7 @@ class FunctionalModel(nn.Module):
         outputs
             A collection of SymbolicTensors that will end the computations.
             These nodes return your final computation result.
-            So if you have mulitple outputs, FunctionalModel will return a tuple of tensors.
+            So if you have mulitple outputs, SymbolicModel will return a tuple of tensors.
         enable_cuda_graphs
             If True, after the model creation, model will be converted to CUDA Graph.
             This requires CUDA capable device.
@@ -78,7 +78,7 @@ class FunctionalModel(nn.Module):
             includes some non-deterministic behaviour, it likely won't work.
         """
         super().__init__()
-        logging.info("Creating a Functional Model...")
+        logging.info("Creating a SymbolicModel...")
 
         if isinstance(inputs, SymbolicTensor):
             inputs = (inputs,)
@@ -149,7 +149,7 @@ class FunctionalModel(nn.Module):
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
 
-    def detach_from_graph(self) -> DetachedFunctionalModel:
+    def detach_from_graph(self) -> DetachedSymbolicModel:
         if self._enable_cuda_graphs:
             logging.warning("This might fail after converting to CUDA Graphs!")
 
@@ -160,7 +160,7 @@ class FunctionalModel(nn.Module):
             self._execution_order_nodes,
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
-        return DetachedFunctionalModel(names, self._execution_order_layers, forward_src)
+        return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
 
     def _replace_forward_with_codegen(self):
         self._generated_forward_source = code_generator.generate_forward_with_loops(

@@ -13,7 +13,7 @@ import torch
 from dllogger import DLLLoggerAlreadyInitialized, JSONStreamBackend, StdOutBackend, Verbosity
 
 from benchmarks.bench2 import define_models
-from pytorch_functional import optimize_module_calls
+from pytorch_symbolic import optimize_module_calls
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -101,8 +101,6 @@ def log(name, time_per_run):
 
 if __name__ == "__main__":
     device = torch.device(DEVICE)
-
-    sys.setrecursionlimit(10000)
 
     models = define_models.create_toy_resnets(BATCH_SIZE, IMG_SIZE)
     tags, model = models[args.model_idx]

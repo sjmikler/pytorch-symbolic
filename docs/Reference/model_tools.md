@@ -1,6 +1,6 @@
 # model_tools
 
-::: pytorch_functional.model_tools
+::: pytorch_symbolic.model_tools
     options:
         show_source: false
         heading_level: 2

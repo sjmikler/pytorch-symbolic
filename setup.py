@@ -18,7 +18,7 @@ setup(
     author_email="sjmikler@gmail.com",
     license="MIT",
     description="Provides functional API for model creation in PyTorch.",
-    packages=["pytorch_functional"],
+    packages=["pytorch_symbolic"],
     python_requires=">=3.7",
     classifiers=[
         "License :: OSI Approved :: MIT License",

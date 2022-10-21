@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, model_tools
+from pytorch_symbolic import Input, SymbolicModel, model_tools
 
 
 def AlwaysTheSameConv(in_channels, out_channels):
@@ -38,7 +38,7 @@ def test_models_from_slice():
     for i in range(0, 20, 5):
         nodes_slice = nodes[i : i + 5]
 
-        model = FunctionalModel(inputs=nodes_slice[0], outputs=nodes_slice[-1])
+        model = SymbolicModel(inputs=nodes_slice[0], outputs=nodes_slice[-1])
         models.append(model)
 
     data = torch.rand(16, 3, 10, 10)
@@ -69,7 +69,7 @@ def test_detached_models_from_slice():
     for i in range(0, 20, 5):
         nodes_slice = nodes[i : i + 5]
 
-        model = FunctionalModel(inputs=nodes_slice[0], outputs=nodes_slice[-1]).detach_from_graph()
+        model = SymbolicModel(inputs=nodes_slice[0], outputs=nodes_slice[-1]).detach_from_graph()
         models.append(model)
 
     data = torch.rand(16, 3, 10, 10)

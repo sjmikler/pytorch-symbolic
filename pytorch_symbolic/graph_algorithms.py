@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Set, Tupl
 from .symbolic_tensor import SymbolicTensor
 
 if TYPE_CHECKING:
-    from .functional_model import FunctionalModel
+    from .symbolic_model import SymbolicModel
 
 from collections import defaultdict
 
@@ -27,7 +27,7 @@ def check_for_missing_inputs(
         x1 = Input(shape=(32,))
         x2 = Input(shape=(32,))
         x3 = x1 + x2
-        model = FunctionalModel(inputs=x1, outputs=x3)
+        model = SymbolicModel(inputs=x1, outputs=x3)
 
     Model cannot execute defined operations unless ``x2`` is given, because ``x3`` requires it.
     """
@@ -170,7 +170,7 @@ def variable_name_resolver(namespace):
 
 def draw_graph(
     *,
-    model: FunctionalModel | None = None,
+    model: SymbolicModel | None = None,
     inputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
     outputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
     node_text_func: Callable[[SymbolicTensor], str] | None = None,
@@ -182,13 +182,13 @@ def draw_graph(
     """Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
 
     This is not suitable for large graphs or large neural networks. This is a simple tool that
-    was designed to demonstrate that Pytorch Functional creates sensible graphs that are nice
+    was designed to demonstrate that Pytorch Symbolic creates sensible graphs that are nice
     to visualize.
 
     Parameters
     ----------
     model
-        A FunctionalModel to be plotted. This or ``inputs`` must be provided.
+        A SymbolicModel to be plotted. This or ``inputs`` must be provided.
     inputs
         Input in the graph of SymbolicTensor computations. This or ``model`` must be provided.
     node_text_func
@@ -213,8 +213,7 @@ def draw_graph(
         )
         raise e
 
-    from .functional_model import FunctionalModel
-    from .symbolic_tensor import SymbolicTensor
+    from .symbolic_model import SymbolicModel
 
     if node_text_func is None:
         if node_text_namespace is not None:
@@ -226,7 +225,7 @@ def draw_graph(
         edge_text_func = default_edge_text
 
     if model is not None:
-        assert isinstance(model, FunctionalModel)
+        assert isinstance(model, SymbolicModel)
         inputs = model.inputs
         outputs = model.outputs
 

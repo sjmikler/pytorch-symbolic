@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input
+from pytorch_symbolic import Input, SymbolicModel
 
 
 class Vanilla(nn.Module):
@@ -27,7 +27,7 @@ def create_sequential_multi_layer(n_layers, n_features):
         x = x(layer)
 
     models = [
-        (("functional",), FunctionalModel(inputs, x)),
+        (("functional",), SymbolicModel(inputs, x)),
         (("sequential",), nn.Sequential(*layers)),
         (("vanilla",), Vanilla(layers)),
     ]

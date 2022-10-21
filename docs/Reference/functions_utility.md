@@ -13,8 +13,8 @@ For this to work, there must be at least one SymbolicTensor in ``*args, **kwds``
 Example for using ``torch.concat``:
 
 ```python
-from pytorch_functional import Input
-from pytorch_functional.functions_utility import add_to_model
+from pytorch_symbolic import Input
+from pytorch_symbolic.functions_utility import add_to_model
 import torch
 
 
@@ -35,7 +35,7 @@ a small call time overhead every time you register a custom function in the mode
 Recommended way to use a custom functions is to write yourself an ``nn.Module`` that does
 the same as the function. Then you can use it as usually and Pytorch Functional will be overhead free!
 
-::: pytorch_functional.functions_utility
+::: pytorch_symbolic.functions_utility
     options:
         show_source: false
         heading_level: 2
