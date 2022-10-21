@@ -9,7 +9,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="pytorch-functional",
-    version="0.6.0",
+    version="0.7.0",
     url="https://github.com/gahaalt/pytorch-functional.git",
     project_urls={
         "Documentation": "https://pytorch-functional.readthedocs.io/",
