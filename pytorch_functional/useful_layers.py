@@ -19,6 +19,9 @@ class NamedAnyOpLayer(nn.Module):
     def __repr__(self):
         return self.name
 
+    def _get_name(self):
+        return self.name
+
 
 class CallbackLayer(nn.Module):
     def __init__(self, op):

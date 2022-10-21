@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 import torch
 from torch import nn
@@ -132,19 +132,27 @@ class SymbolicTensor:
             logging.info(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
-    def _get_all_nodes_below(self, layer_list: List[SymbolicTensor]):
-        if self in layer_list:
-            return layer_list
-        layer_list.append(self)
-        for child in self.children:
-            child._get_all_nodes_below(layer_list)
+    def _get_all_nodes_above(self) -> Set[SymbolicTensor]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for parent in node.parents:
+                if parent not in nodes_seen:
+                    to_expand.append(parent)
+                    nodes_seen.add(parent)
+        return nodes_seen
 
-    def _get_all_nodes_above(self, layer_list: List[SymbolicTensor]):
-        if self in layer_list:
-            return layer_list
-        layer_list.append(self)
-        for parent in self.parents:
-            parent._get_all_nodes_above(layer_list)
+    def _get_all_nodes_below(self) -> Set[SymbolicTensor]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for child in node.children:
+                if child not in nodes_seen:
+                    to_expand.append(child)
+                    nodes_seen.add(child)
+        return nodes_seen
 
     def _launch_input(self, x):
         self._output = x
