@@ -72,7 +72,7 @@ def default_node_text(plh: SymbolicTensor) -> str:
     return str(plh.shape)
 
 
-def default_edge_text(layer: nn.Module | None) -> str:
+def default_edge_text(layer: nn.Module) -> str:
     return layer._get_name()
 
 
@@ -174,7 +174,7 @@ def draw_graph(
     inputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
     outputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
     node_text_func: Callable[[SymbolicTensor], str] | None = None,
-    edge_text_func: Callable[[nn.Module | None], str] | None = None,
+    edge_text_func: Callable[[nn.Module], str] | None = None,
     node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
     rotate_labels: bool = False,
@@ -276,6 +276,7 @@ def draw_graph(
         for parent in node.parents:
             if parent not in used_nodes:
                 continue
+            assert node.layer is not None
             graph.add_edge(parent, node, layer=node.layer)
             edge_labels[parent, node] = edge_text_func(node.layer)
 
