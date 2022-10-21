@@ -22,17 +22,20 @@ Features:
 * Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
-* Reduces the amount of code that you need to write
+* It is faster or just as fast as equivalent models [(see benchmarks)](https://pytorch-functional.readthedocs.io/en/latest/benchmarks/)
+* Reduces the amount of code you write
 * Works well with complex architectures
-* Package and documentation automatically tested
+* Code and documentation is automatically tested
 
 ## Example
 
 To create a functional model, you'll use symbolic tensors and nn.Modules.
-You can add new ``nn.Module`` to your model by calling ``module(symbolic_tensor)`` or equivalently ``symbolic_tensor(module)``.
+You can add any layer inheriting from ``nn.Module`` to your model by calling 
+``layer(symbolic_tensor)`` or equivalently ``symbolic_tensor(layer)``.
 
 You can create functional model just like in Keras:
-by calling the modules and symbolic tensors as if they were normal tensors. Layers will be then automagically registered in your model.
+by calling the modules and symbolic tensors as if they were normal tensors.
+Layers will be automagically registered in your model.
 
 ```python
 from torch import nn

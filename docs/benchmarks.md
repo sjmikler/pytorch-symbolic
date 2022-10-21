@@ -1,22 +1,16 @@
 # Benchmarks
 
-Functional API speeds up prototyping and developement process.
-But does it sacrifice speed of the model itself?
+Functional API simplifies and speeds up prototyping
+and developement process.
+But does it sacrifice performance of the model itself?
 
-One of the most important principles in building this library was to avoid this.
+One of the most important principles in building this library was to
+avoid this.
 It was made with performance in mind.
 
-Standard, class-based model implementation is a baseline for us.
-This library aims to be just as fast in all scenarios.
-
-## Hardwarde
-
-Unless stated otherwise, experiments were run on following PC:
-
-```
-CPU: i7-12700KF
-GPU: RTX 3080 10GB
-```
+Standard model definition: a class inheriting form `nn.Module`
+is a baseline for us.
+Functional API aims to create models just as fast in all scenarios.
 
 ## Tweaks
 
@@ -37,12 +31,17 @@ Not using it might give you a little slowdown. We use it in the benchmarks.
 
 ## Deep linear model
 
-This is a very thin and deep neural networks with linear layers only.
-In such a deep network, if there's overhead in automatically generated `forward` function,
-it should be visible here. In larger models, the overhead will be hidden by the layers computation.
-This is not a realistic neural network, however.
+There is no overhead during kernel computation.
+The only possible cost is before the kernel launches.
+
+We will look at a very thin and deep model with linear layers only.
+Each layer will have only 4 features.
+_If_ there's any overhead induced by FunctionalModel, it should be visible here.
+In larger models, the overhead can be hidden by the kernel computation.
 
 #### Data
+
+Data is randomly generated.
 
 ```py
 import torch
@@ -66,9 +65,15 @@ model = FunctionalModel(inputs, x)
 
 ### Inference (cpu)
 
+For such small subsequent matrix multiplications,
+it can be faster to launch the model on the CPU.
+
 ![images/from_250_to_1000_linear_layers.png](images/from_250_to_1000_linear_layers.png)
-> Percentile intervals [25, 75] are visible. Only sequential model seems to be a
-> few percents slower than the other two. It is slowing down more, as number of layers is increasing.
+> Percentile intervals [25, 75] are visible. Sequential model seems to perform
+> be different from the others. This can be explained by additional operations
+> introduced by the iterator in `nn.Sequential`.
+> It is slowing down more, as number of layers is increasing.
+> The other two seem to be equal!
 
 ## Toy ResNet
 
@@ -77,10 +82,12 @@ It is a shallower and thiner version of normally used ResNet networks.
 
 #### Data
 
+Data is randomly generated.
+
 ```py
 import torch
 
-data = torch.rand(size=(4, 3, 16, 16))  # Resolution varies from 16x16 to 64x64
+data = torch.rand(size=(4, 3, 16, 16))  # Resolution from 16x16 to 64x64
 ```
 
 #### Model definition
@@ -91,26 +98,31 @@ Definition can be found in [Quick Start](quick_start.md).
 
 ![images/toy_resnet.png](images/toy_resnet.png)
 > CUDA Graphs have a huge advantage here due to the small batch size.
-> For non CUDA Graphed models GPU is executing kernels much faster than CPU is scheduling the work.
+> For non CUDA Graphed models GPU is executing kernels much faster than CPU
+> is scheduling the work.
 > This is why we don't see any slowdown when the image resolution increases.
-> FunctionalModel is slightly faster than the Vanilla model. This is due to implementation details.
-> For example, it is quite slow to access layer by `self.layer` in forward function and automatically generated
-> forward function in FunctionalModel does not need to do this.
+> FunctionalModel is slightly faster than the Vanilla model. 
+> This is due to implementation details.
+> For example, it is quite slow to access a layer by `__getattr__` (`self.layer`)
+> in forward function.
+> In FunctionalModel there is no need to do this.
 
 ## How is `FunctionalModel` optimized?
 
 Functional models reside on a underlying graph structure.
 Each `SymbolicTensor` is a node and each layer is an edge that connects two nodes.
-Initialy, the forward pass was implemented lazily: by executing `forward` in a layer only when
-it was needed by a child node. But such back-calling to the parents creates unecessary overhead.
-We are able to precompute the exact order in which the layers needs to be called,
+Initialy, the forward pass was implemented lazily:
+by executing `forward` in a layer only when
+its output was needed by a child node. 
+But such back-and-forth between parents and children created an unecessary overhead.
+To avoid this, we precompute the exact order in which the layers needs to be called,
 using topological ordering of the underlying graph structure.
 
 Even when we know the order of the layers, there's one more trick.
 Accessing structures has significant overhead in Python, so we want to avoid this.
-We generate code for `forward` function dynamically, when the model is created.
+When the model is created we dynamically generate code for `forward` function.
 Thanks to this, `FunctionalModel` executes exactly the same code it would if you
-wrote it as a class.
+were to write it as a class.
 
 You can even see the generated code yourself:
 
@@ -158,3 +170,12 @@ model = FunctionalModel(inputs, outputs, enable_cuda_graphs=True)
 When using CUDA Graphs, please remember to cast your inputs to GPU.
 In general, when using CUDA Graphs, you might get some silent errors, for example when you forget to cast your data to GPU.
 Always check if everything is working _without_ CUDA Graphs before enabling them.
+
+## Hardware
+
+Unless stated otherwise, experiments were run on a following PC:
+
+```
+CPU: i7-12700KF
+GPU: RTX 3080 10GB
+```
