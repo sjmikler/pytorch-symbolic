@@ -20,7 +20,7 @@ class NamedAnyOpLayer(nn.Module):
         return self.name
 
     def _get_name(self):
-        return self.names
+        return self.name
 
 
 class CallbackLayer(nn.Module):
