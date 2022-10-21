@@ -5,7 +5,6 @@ import gc
 import logging
 import os
 import socket
-import sys
 import time
 from copy import deepcopy
 
