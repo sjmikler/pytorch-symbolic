@@ -2,7 +2,7 @@
 
 import torch
 
-from pytorch_functional import FunctionalModel, Input, optimize_module_calls
+from pytorch_symbolic import Input, SymbolicModel, optimize_module_calls
 
 
 def test_all():
@@ -21,7 +21,7 @@ def test_all():
         x1 @ x2,
         x1**x2,
     ]
-    model1 = FunctionalModel(inputs=(x1, x2), outputs=sum(results1))
+    model1 = SymbolicModel(inputs=(x1, x2), outputs=sum(results1))
 
     results2 = [
         x1 + const,
@@ -32,7 +32,7 @@ def test_all():
         x1 @ const,
         x1**const,
     ]
-    model2 = FunctionalModel(inputs=(x1, x2), outputs=sum(results2))
+    model2 = SymbolicModel(inputs=(x1, x2), outputs=sum(results2))
 
     results3 = [
         const + x2,
@@ -43,7 +43,7 @@ def test_all():
         const @ x2,
         const**x2,
     ]
-    model3 = FunctionalModel(inputs=(x1, x2), outputs=sum(results3))
+    model3 = SymbolicModel(inputs=(x1, x2), outputs=sum(results3))
 
     for _ in range(10):
         x1 = torch.rand(5, 5)
@@ -77,7 +77,7 @@ def test_all_optimized():
         x1 @ x2,
         x1**x2,
     ]
-    model1 = FunctionalModel(inputs=(x1, x2), outputs=sum(results1))
+    model1 = SymbolicModel(inputs=(x1, x2), outputs=sum(results1))
 
     results2 = [
         x1 + const,
@@ -88,7 +88,7 @@ def test_all_optimized():
         x1 @ const,
         x1**const,
     ]
-    model2 = FunctionalModel(inputs=(x1, x2), outputs=sum(results2))
+    model2 = SymbolicModel(inputs=(x1, x2), outputs=sum(results2))
 
     results3 = [
         const + x2,
@@ -99,7 +99,7 @@ def test_all_optimized():
         const @ x2,
         const**x2,
     ]
-    model3 = FunctionalModel(inputs=(x1, x2), outputs=sum(results3))
+    model3 = SymbolicModel(inputs=(x1, x2), outputs=sum(results3))
 
     optimize_module_calls()
 

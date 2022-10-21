@@ -1,6 +1,6 @@
-# FunctionalModel
+# SymbolicModel
 
-::: pytorch_functional.FunctionalModel
+::: pytorch_symbolic.SymbolicModel
     options:
         show_source: false
         heading_level: 2

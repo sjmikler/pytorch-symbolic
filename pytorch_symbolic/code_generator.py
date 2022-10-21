@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from pytorch_functional.symbolic_tensor import SymbolicTensor
+from pytorch_symbolic.symbolic_tensor import SymbolicTensor
 
 
 def generate_forward_basic(

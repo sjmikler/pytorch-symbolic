@@ -7,7 +7,7 @@ It allows for creation of standard ResNet v2 or Wide ResNet variants.
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input
+from pytorch_symbolic import Input, SymbolicModel
 
 from .common import classifier
 
@@ -37,7 +37,7 @@ def ToyResNet(input_shape, n_classes):
             stride = 1
     flow = flow(nn.BatchNorm2d(flow.channels))(nn.ReLU())
     outs = classifier(flow, n_classes, pooling="avgpool")
-    model = FunctionalModel(inputs=inputs, outputs=outs)
+    model = SymbolicModel(inputs=inputs, outputs=outs)
     return model
 
 
@@ -136,5 +136,5 @@ def ResNet(
     # BUILDING THE CLASSIFIER
     flow = flow(nn.BatchNorm2d(flow.channels))(activation)
     outs = classifier(flow, n_classes, pooling=final_pooling)
-    model = FunctionalModel(inputs=inputs, outputs=outs)
+    model = SymbolicModel(inputs=inputs, outputs=outs)
     return model

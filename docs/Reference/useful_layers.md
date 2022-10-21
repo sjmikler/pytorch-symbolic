@@ -2,9 +2,9 @@
 
 Collection of simple ``nn.Modules``.
 
-Some of them might be useful when building models using Pytorch Functional.
+Some of them might be useful when building models using Pytorch Symbolic.
 
-::: pytorch_functional.useful_layers
+::: pytorch_symbolic.useful_layers
     options:
         show_source: false
         heading_level: 2

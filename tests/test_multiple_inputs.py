@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, model_tools
+from pytorch_symbolic import Input, SymbolicModel, model_tools
 
 NUM_INPUTS = 17
 NUM_LAYERS = 11
@@ -51,7 +51,7 @@ def test_multiple_inputs():
     concatenated2 = WeightedConcatLayer(dim=1)(*transformed)
     concatenated2 = nn.Linear(concatenated2.features, FEATURES)(concatenated2)
     result = concatenated2 - sum(transformed)
-    model = FunctionalModel(inputs=inputs, outputs=result)
+    model = SymbolicModel(inputs=inputs, outputs=result)
 
     torch.manual_seed(SEED)
     vanilla_model = VanillaModel()
@@ -75,7 +75,7 @@ def test_detached_multiple_inputs():
     concatenated2 = WeightedConcatLayer(dim=1)(*transformed)
     concatenated2 = nn.Linear(concatenated2.features, FEATURES)(concatenated2)
     result = concatenated2 - sum(transformed)
-    model = FunctionalModel(inputs=inputs, outputs=result).detach_from_graph()
+    model = SymbolicModel(inputs=inputs, outputs=result).detach_from_graph()
 
     torch.manual_seed(SEED)
     vanilla_model = VanillaModel()

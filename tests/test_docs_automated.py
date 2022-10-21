@@ -6,9 +6,34 @@ import pathlib
 import re
 
 
+def get_header(msg):
+    msg_len = len(msg)
+    header = [
+        "#" * (msg_len + 6),
+        "## " + msg + " ##",
+        "#" * (msg_len + 6),
+    ]
+    return "\n".join(header) + "\n"
+
+
 def scan_for_code_blobs(text):
-    blobs = re.findall(r"```python\n([\s\S]+?)\n```", text)
-    return [blob for blob in blobs if "..." not in blob]
+    # Capture code blocks starting at py or python
+    blobs = re.findall(r"```(py|python)\n([\s\S]+?)\n```", text)
+
+    new_blobs = []
+    for mode, blob in blobs:
+        if "..." in blob:
+            continue
+        header = get_header(f"Generated ({mode})")
+        blob = header + blob
+
+        # For `py` code blocks, we append them to previous existing block
+        # But `python` block starts a new scope, so it needs to include imports
+        if mode == "py" and new_blobs:
+            new_blobs[-1] = new_blobs[-1] + "\n" + blob
+        else:
+            new_blobs.append(blob)
+    return new_blobs
 
 
 def test_all_code_blobs():

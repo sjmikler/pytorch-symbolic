@@ -26,7 +26,7 @@ def plot(
     linewidth: int | None = None,
 ):
     if fig is None or ax is None:
-        fig, ax = plt.subplots(figsize=(12, 6), constrained_layout=True, dpi=300)
+        fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=True, dpi=300)
 
     if reference_y:
         ys = df.apply(lambda row: reference_y[row[X]], axis=1)
@@ -70,7 +70,7 @@ Y = "data.throughput"
 
 filters = (lambda row: "call_optimization" in row.tags,)
 
-tagged = TaggedCollection.from_dllogs("benchmarks/logs/toy_resnet3.jsonl")
+tagged = TaggedCollection.from_dllogs("benchmarks/good_logs/bench2.jsonl")
 
 tagged = tagged.filter(*filters)
 assert len(tagged) > 0, "Empty query!"
@@ -87,8 +87,8 @@ ax = [ax]
 
 names = {
     "oct20,vanilla,call_optimization": "Inheriting from nn.Module",
-    "oct20,functional,call_optimization": "FunctionalModel",
-    "oct20,functional,cuda_graphs,call_optimization": "FunctionalModel with CUDA Graphs",
+    "oct20,symbolic,call_optimization": "SymbolicModel",
+    "oct20,symbolic,cuda_graphs,call_optimization": "SymbolicModel with CUDA Graphs",
 }
 
 for tags, group in tagged.groupby("tags", return_keys=True):

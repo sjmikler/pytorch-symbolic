@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input
+from pytorch_symbolic import Input, SymbolicModel
 
 
 class ToyResNet(nn.Module):
@@ -73,7 +73,7 @@ def functional_toy_resnet(bs, cuda_graphs, img_size):
     x = x(nn.Dropout(0.5))
     outputs = x(nn.Linear(x.features, 10))
 
-    return FunctionalModel(inputs, outputs, enable_cuda_graphs=cuda_graphs)
+    return SymbolicModel(inputs, outputs, enable_cuda_graphs=cuda_graphs)
 
 
 def create_toy_resnets(bs, img_size):

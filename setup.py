@@ -8,17 +8,17 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="pytorch-functional",
-    version="0.7.0",
-    url="https://github.com/gahaalt/pytorch-functional.git",
+    name="pytorch-symbolic",
+    version="0.7.3",
+    url="https://github.com/gahaalt/pytorch-symbolic.git",
     project_urls={
-        "Documentation": "https://pytorch-functional.readthedocs.io/",
+        "Documentation": "https://pytorch-symbolic.readthedocs.io/",
     },
     author="Szymon Mikler",
     author_email="sjmikler@gmail.com",
     license="MIT",
-    description="Provides functional API for model creation in PyTorch.",
-    packages=["pytorch_functional"],
+    description="Provides symbolic API for model creation in PyTorch.",
+    packages=["pytorch_symbolic"],
     python_requires=">=3.7",
     classifiers=[
         "License :: OSI Approved :: MIT License",

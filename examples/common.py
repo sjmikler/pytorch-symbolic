@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import useful_layers
+from pytorch_symbolic import useful_layers
 
 
 def classifier(flow, n_classes, pooling="avgpool"):

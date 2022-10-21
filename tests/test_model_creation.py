@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, model_tools, optimize_module_calls, useful_layers
+from pytorch_symbolic import Input, SymbolicModel, model_tools, optimize_module_calls, useful_layers
 
 
 def create_vanilla_pyt(seed):
@@ -34,7 +34,7 @@ def create_api_v1(seed):
 
     for _ in range(5):
         x = x(nn.Linear(10, 10))
-    return FunctionalModel(inputs, x)
+    return SymbolicModel(inputs, x)
 
 
 def create_api_v2(seed):
@@ -43,7 +43,7 @@ def create_api_v2(seed):
 
     for _ in range(5):
         x = nn.Linear(10, 10)(x)
-    return FunctionalModel(inputs, x)
+    return SymbolicModel(inputs, x)
 
 
 def test_equal_outputs():
@@ -127,7 +127,7 @@ def create_api_multi_in_out(seed):
 
     x_out1 = nn.Linear(10, 10)(x_cat)
     x_out2 = nn.Linear(10, 10)(x_cat)
-    return FunctionalModel((inputs1, inputs2), (x_out1, x_out2))
+    return SymbolicModel((inputs1, inputs2), (x_out1, x_out2))
 
 
 def test_equal_parameters_multi_in_out():

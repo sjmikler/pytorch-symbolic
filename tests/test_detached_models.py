@@ -2,7 +2,7 @@
 
 from torch import nn
 
-from pytorch_functional import FunctionalModel, Input, model_tools
+from pytorch_symbolic import Input, SymbolicModel, model_tools
 
 
 def test_on_resnet():
@@ -25,7 +25,7 @@ def test_on_resnet():
     x = nn.Dropout(0.5)(x)
     outputs = nn.Linear(x.features, 10)(x)
 
-    model = FunctionalModel(inputs, outputs)
+    model = SymbolicModel(inputs, outputs)
     detached_model = model.detach_from_graph()
 
     assert model_tools.model_similar(model, detached_model)
