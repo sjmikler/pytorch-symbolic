@@ -44,7 +44,7 @@ They both return a SymbolicTensor and they create identical models.
 
 **What is a Symbolic Tensor?**
 
-* Think of it as placeholder for your data.
+* Think of it as placeholder for your data
 * Use it like `torch.Tensor`
 
 Let's play with it:
@@ -225,7 +225,7 @@ x = add_to_model(torch.concat, (x1, x2), dim=1)
 x.shape  # (None, 8, 2, 3)
 ```
 
-But if you try this: `x = torch.abs(x)` you will get:
+But if you try this: `x = torch.abs(x)` you will fail:
 
 ```
 TypeError: abs(): argument 'input' (position 1) must be Tensor, not Input
