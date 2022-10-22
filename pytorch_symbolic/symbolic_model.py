@@ -136,7 +136,7 @@ class SymbolicModel(nn.Module):
     @property
     def output_shape(self):
         """Return shape of the output or in case of multiple outputs - a atuple of them."""
-        if len(self.outputs):
+        if len(self.outputs) == 1:
             return self.outputs[0].shape
         else:
             return tuple(node.shape for node in self.outputs)

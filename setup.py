@@ -33,4 +33,5 @@ setup(
     install_requires=["torch>=1.12.0"],
     long_description=long_description,
     long_description_content_type="text/markdown",
+    extras_require={"full": ["networkx", "matplotlib", "scipy"]},
 )

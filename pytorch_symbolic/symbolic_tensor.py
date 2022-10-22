@@ -266,7 +266,7 @@ class Input(SymbolicTensor):
     def __init__(
         self,
         shape: Tuple | List | None = None,
-        include_batch: bool = True,
+        batched: bool = True,
         batch_shape: Tuple | List | None = None,
         dtype=torch.float32,
         min_value: float = 0.0,
@@ -285,8 +285,8 @@ class Input(SymbolicTensor):
         ----------
         shape
             Shape of the real data NOT including the batch dimension.
-        include_batch
-            If True and ``batch_shape`` was not given, batch_shape will not be added to ``shape``.
+        batched
+            If True and ``batch_shape`` was not given, batch size will be displayed as ``None``.
         batch_shape
             Shape of the real data including the batch dimension.
             Should be provided instead ``shape`` if cuda graphs will be used.
@@ -308,7 +308,7 @@ class Input(SymbolicTensor):
             super().__init__(value=custom_tensor, batch_size_known=True)
             return
 
-        if batch_shape is None and not include_batch:
+        if batch_shape is None and not batched:
             batch_shape = shape
 
         if batch_shape is not None:

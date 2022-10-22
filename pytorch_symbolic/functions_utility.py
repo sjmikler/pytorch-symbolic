@@ -59,8 +59,8 @@ def add_to_model(func: Callable | nn.Module, *args, **kwds):
     Convolution func example::
 
         inputs = Input(shape=(3, 32, 32))
-        kernel = Input(shape=(16, 3, 3, 3), include_batch=False)
-        bias = Input(shape=(16,), include_batch=False)
+        kernel = Input(shape=(16, 3, 3, 3), batched=False)
+        bias = Input(shape=(16,), batched=False)
         output = add_function(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
     """
     if isinstance(func, nn.Module) and not kwds:

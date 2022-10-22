@@ -28,6 +28,7 @@ jobs:
                     python -m pip install --upgrade pip
                     pip install flake8 pytest mypy
                     pip install torch numpy
+                    pip install networkx matplotlib scipy
             -   name: Lint with flake8
                 run: |
                     flake8 .
