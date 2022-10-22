@@ -187,15 +187,19 @@ class SymbolicModel(nn.Module):
         input_tensors = tuple(x.v.cuda() for x in inputs)
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
 
-    @property
     def _used_nodes(self) -> Set[SymbolicTensor]:
         """Return a set of all nodes used in this model."""
         return figure_out_nodes_between(self.inputs, self.outputs)
 
     def _figure_out_execution_order(self):
-        # Exclude inputs, as we don't launch any layers in input nodes
-        used_nodes_excl_inputs = self._used_nodes - set(self.inputs)
-        self._execution_order_nodes = topological_sort(used_nodes_excl_inputs)
+        used_nodes = self._used_nodes()
+        execution_order = topological_sort(used_nodes)
+        assert len(execution_order) == len(used_nodes)
+
+        for input_node in used_nodes.intersection(self.inputs):  # Not all inputs are in `used_nodes`
+            execution_order.remove(input_node)  # Exclude inputs, as we don't execute any layers there
+
+        self._execution_order_nodes = execution_order
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
         num_layers = len(self._execution_order_nodes)
