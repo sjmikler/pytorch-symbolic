@@ -56,7 +56,7 @@ def generate_forward_with_loops(
         node_to_name[node] = f"o{str(idx).zfill(str_length)}"
 
     input_names = [node_to_name[node] for node in inputs]
-    forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
+    forward_definition = "def forward(self," + ",".join(input_names) + "):"
     code_lines = [forward_definition]
 
     TAB = " " * 4

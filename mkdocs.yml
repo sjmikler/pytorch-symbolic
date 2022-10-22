@@ -1,5 +1,5 @@
-site_name: pytorch-functional
-repo_url: https://github.com/gahaalt/pytorch-functional
+site_name: pytorch-symbolic
+repo_url: https://github.com/gahaalt/pytorch-symbolic
 
 nav:
     - README: README.md

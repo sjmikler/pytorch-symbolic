@@ -16,7 +16,6 @@ Defining complex models in PyTorch requires creating classes and writing boilerp
 [Defining models in Keras is easier](https://www.tensorflow.org/guide/keras/symbolic).
 Pytorch Symbolic makes it just as easy.
 
-
 Features:
 
 * Small extension of PyTorch
@@ -30,7 +29,7 @@ Features:
 ## Example
 
 To create a symbolic model, you'll use symbolic tensors and nn.Modules.
-Add layers by calling ``layer(symbolic_tensor)`` or equivalently ``symbolic_tensor(layer)``. 
+Add layers by calling ``layer(symbolic_tensor)`` or equivalently ``symbolic_tensor(layer)``.
 That's all!
 
 Create symbolic model just like in Keras:
@@ -59,7 +58,7 @@ Using symbolic tensors, we can define a working classificator in a few lines of 
 
 ```python
 from torch import nn
-from pytorch_symbolic import SymbolicModel, Input
+from pytorch_symbolic import Input, SymbolicModel
 
 inputs = Input(shape=(1, 28, 28))
 x = nn.Flatten()(inputs)
