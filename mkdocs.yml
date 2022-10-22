@@ -4,12 +4,13 @@ repo_url: https://github.com/gahaalt/pytorch-symbolic
 nav:
     - README: README.md
     - quick_start.md
+    - full_guide.md
     - benchmarks.md
     - Reference:
-        - Reference/functions_utility.md
-        - Reference/symbolic_model.md
-        - Reference/graph_algorithms.md
         - Reference/input.md
+        - Reference/symbolic_model.md
+        - Reference/functions_utility.md
+        - Reference/graph_algorithms.md
         - Reference/model_tools.md
         - Reference/symbolic_tensor.md
         - Reference/useful_layers.md
