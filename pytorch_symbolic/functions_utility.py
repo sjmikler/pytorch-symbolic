@@ -45,7 +45,7 @@ def _replace_symbolic_with_value(container, extracted, navigation):
     return container
 
 
-def add_to_model(func: Callable | nn.Module, *args, **kwds):
+def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     """Register a custom func or module in the computation graph.
 
     This should work will arbitrary functions and modules.

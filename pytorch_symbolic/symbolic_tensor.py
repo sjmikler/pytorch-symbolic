@@ -42,9 +42,10 @@ class SymbolicTensor:
         self.children: List[SymbolicTensor] = []
         self.layer = layer
         self.depth = depth
+        self.batch_size_known = batch_size_known
+
         self._output = None
         self._parents_outputs: List[torch.Tensor] = []
-        self.batch_size_known = batch_size_known
 
     @property
     def features(self) -> int:

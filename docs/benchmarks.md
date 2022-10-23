@@ -3,18 +3,17 @@
 Symbolic API simplifies and speeds up prototyping
 and developement process.
 But does it sacrifice performance of the model itself?
-
 One of the most important principles in building this library was to
 avoid this.
 It was made with performance in mind.
-
 Standard model definition: a class inheriting form `nn.Module`
 is a baseline for us.
 Symbolic API aims to create models just as fast in all scenarios.
 
 ## Tweaks
 
-When using SymbolicModel for performance critical use case, you should use `optimize_module_calls` after all models are created.
+When using SymbolicModel for performance critical use case, you can use `optimize_module_calls` after all
+models are created.
 
 ```python
 from torch import nn
@@ -27,7 +26,8 @@ model = SymbolicModel(inputs, x)
 optimize_module_calls()
 ```
 
-Not using it might give you a little slowdown. We use it in the benchmarks.
+Not using it might give you a little slowdown in CPU limited workflows.
+We use it in our benchmarks.
 
 ## Deep linear model
 
@@ -103,11 +103,11 @@ Definition can be found in [Quick Start](quick_start.md).
 > For non CUDA Graphed models GPU is executing kernels much faster than CPU
 > is scheduling the work.
 > This is why we don't see any slowdown when the image resolution increases.
-> SymbolicModel is slightly faster than the Vanilla model. 
+> `SymbolicModel` is slightly faster than the Vanilla model.
 > This is due to implementation details.
 > For example, it is quite slow to access a layer by `__getattr__` (`self.layer`)
 > in forward function.
-> In SymbolicModel there is no need to do this.
+> In `SymbolicModel` there is no need to do this.
 
 ## How is `SymbolicModel` optimized?
 
@@ -115,7 +115,7 @@ Symbolic models reside on underlying graph structures.
 Each `SymbolicTensor` is a node and each layer is an edge that connects two nodes.
 Initialy, the forward pass was implemented lazily:
 by executing `forward` in a layer only when
-its output was needed by a child node. 
+its output was needed by a child node.
 But such back-and-forth between parents and children created an unecessary overhead.
 To avoid this, we precompute the exact order in which the layers needs to be called,
 using topological ordering of the underlying graph structure.
@@ -130,6 +130,7 @@ You can even see the generated code yourself:
 
 ```python
 ...
+config.CODEGEN_MIN_LOOP_LENGTH = 10
 print(model._generated_forward_source)
 ```
 
@@ -170,7 +171,8 @@ model = SymbolicModel(inputs, outputs, enable_cuda_graphs=True)
 ```
 
 When using CUDA Graphs, please remember to cast your inputs to GPU.
-In general, when using CUDA Graphs, you might get some silent errors, for example when you forget to cast your data to GPU.
+In general, when using CUDA Graphs, you might get some silent errors, for example when you forget to cast your
+data to GPU.
 Always check if everything is working _without_ CUDA Graphs before enabling them.
 
 ## Hardware
@@ -178,6 +180,6 @@ Always check if everything is working _without_ CUDA Graphs before enabling them
 Unless stated otherwise, experiments were run on a following PC:
 
 ```
-CPU: i7-12700KF
-GPU: RTX 3080 10GB
+CPU: Intel i7-12700KF
+GPU: NVIDIA RTX 3080 10GB
 ```

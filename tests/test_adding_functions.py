@@ -9,8 +9,8 @@ def test_func_concat():
     in1 = Input((10, 20))
     in2 = Input((10, 20))
 
-    cat1 = functions_utility.add_to_model(torch.concat, (in1, in2), dim=2)
-    cat2 = functions_utility.add_to_model(torch.concat, tensors=(in1, in2), dim=2)
+    cat1 = functions_utility.add_to_graph(torch.concat, (in1, in2), dim=2)
+    cat2 = functions_utility.add_to_graph(torch.concat, tensors=(in1, in2), dim=2)
 
     model1 = SymbolicModel(inputs=(in1, in2), outputs=cat1)
     model2 = SymbolicModel(inputs=(in1, in2), outputs=cat2)
@@ -27,8 +27,8 @@ def test_detached_func_concat():
     in1 = Input((10, 20))
     in2 = Input((10, 20))
 
-    cat1 = functions_utility.add_to_model(torch.concat, (in1, in2), dim=2)
-    cat2 = functions_utility.add_to_model(torch.concat, tensors=(in1, in2), dim=2)
+    cat1 = functions_utility.add_to_graph(torch.concat, (in1, in2), dim=2)
+    cat2 = functions_utility.add_to_graph(torch.concat, tensors=(in1, in2), dim=2)
 
     model1 = SymbolicModel(inputs=(in1, in2), outputs=cat1).detach_from_graph()
     model2 = SymbolicModel(inputs=(in1, in2), outputs=cat2).detach_from_graph()
@@ -56,7 +56,7 @@ def test_func_complicated_input():
 
     other = torch.rand(10, 20)
 
-    summed1 = functions_utility.add_to_model(
+    summed1 = functions_utility.add_to_graph(
         sum_list_recursively,
         5,
         [
@@ -68,7 +68,7 @@ def test_func_complicated_input():
             [[[other], [[[[other, other]]], [other, [sym3, [other]]]]]],
         ],
     )
-    summed2 = functions_utility.add_to_model(
+    summed2 = functions_utility.add_to_graph(
         sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]]
     )
 
@@ -94,7 +94,7 @@ def test_detached_func_complicated_input():
 
     other = torch.rand(10, 20)
 
-    summed1 = functions_utility.add_to_model(
+    summed1 = functions_utility.add_to_graph(
         sum_list_recursively,
         5,
         [
@@ -106,7 +106,7 @@ def test_detached_func_complicated_input():
             [[[other], [[[[other, other]]], [other, [sym3, [other]]]]]],
         ],
     )
-    summed2 = functions_utility.add_to_model(
+    summed2 = functions_utility.add_to_graph(
         sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]]
     )
 

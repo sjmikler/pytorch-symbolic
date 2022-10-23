@@ -4,7 +4,7 @@ repo_url: https://github.com/gahaalt/pytorch-symbolic
 nav:
     - README: README.md
     - quick_start.md
-    - full_guide.md
+    - advanced_stuff.md
     - benchmarks.md
     - Reference:
         - Reference/input.md

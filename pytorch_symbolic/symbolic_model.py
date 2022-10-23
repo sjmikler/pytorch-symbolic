@@ -142,8 +142,8 @@ class SymbolicModel(nn.Module):
             return tuple(node.shape for node in self.outputs)
 
     def add_output(self, node: SymbolicTensor):
-        assert node not in self.inputs, "Node is an input!"
-        assert node in self._execution_order_nodes, "Node is not in the graph!"
+        assert node not in self.inputs, "Node is an input of this SymbolicModel!"
+        assert node in self._execution_order_nodes, "Node is out of reach for this SymbolicModel!"
 
         self.outputs = (*self.outputs, node)
         if self._enable_forward_codegen:

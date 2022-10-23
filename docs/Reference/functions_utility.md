@@ -16,12 +16,12 @@ Example for using ``torch.concat``:
 
 ```python
 from pytorch_symbolic import Input
-from pytorch_symbolic.functions_utility import add_to_model
+from pytorch_symbolic.functions_utility import add_to_graph
 import torch
 
 v1 = Input((10,))
 v2 = Input((20,))
-output = add_to_model(torch.concat, tensors=(v1, v2), dim=1)
+output = add_to_graph(torch.concat, tensors=(v1, v2), dim=1)
 output
 ```
 
