@@ -21,7 +21,7 @@ Features:
 * Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
-* Overhead free, tested in [benchmarks](https://pytorch-symbolic.readthedocs.io/en/latest/benchmarks/)
+* Overhead free, tested in [benchmarks](benchmarks.md)
 * Reduces the amount of code you write
 * Works well with complex architectures
 * Code and documentation is automatically tested
@@ -51,7 +51,7 @@ print(x)
 <SymbolicTensor at 0x7fafea899f10; child of 1; parent of 0>
 ```
 
-Using symbolic tensors, we can define a working classificator in a few lines of code:
+Using symbolic tensors, we can define a working classifier in a few lines of code:
 
 ```python
 from torch import nn
@@ -72,11 +72,11 @@ SymbolicModel(
 )
 ```
 
-**See more examples in [Quick Start](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start/).**
+**See more examples in [Documentation Quick Start](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start/).**
 
 ## Gentle introduction
 
-There's a notebook showing the basic usage of Pytorch Symbolic. You will:
+There's a jupyter notebook showing the basic usage of Pytorch Symbolic. You will:
 
 * Learn Pytorch Symbolic in an interactive way
 * Try the package before installing it on your computer
@@ -87,7 +87,7 @@ Click:
 
 ## Installation
 
-Install easily with pip:
+Install Pytorch Symbolic easily with pip:
 
 ```bash
 pip install pytorch-symbolic

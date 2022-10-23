@@ -2,17 +2,17 @@
 
 ## Features
 
-* Keras-like Functional API
+* Counterpart of Keras Functional API
 * No overhead during execution
 * Supports advanced stuff:
 	* Reusing layers
 	* Shared layers
 	* Multiple inputs and outputs
-	* Custom, user-defined modules
+	* Custom, user-defined modules and functions
 
 ## Introduction
 
-To create a linear classificator without hidden layers, you can write the following:
+To create a linear classifier without hidden layers, you can write the following:
 
 ```python
 from torch import nn
@@ -36,7 +36,7 @@ model = SymbolicModel(inputs, outputs)
 
 To register a new layer, e.g. ``nn.Linear`` in Pytorch Symbolic, you have two options:
 
-* `layer(symbolic_tensor)` (like in Keras Symbolic API)
+* `layer(symbolic_tensor)` (like in Keras Functional API)
 * `symbolic_tensor(layer)` (like nowhere else)
 
 There are no differences between them.
@@ -61,7 +61,7 @@ print(inputs)
 <SymbolicTensor at 0x7f73f2d49ac0; child of 0; parent of 2>
 ```
 
-At first, `inputs` was a parent to `outputs` only.
+At first, `inputs` was parent to `outputs` only.
 
 But when we wrote `inputs + 1`, a new node was registered as
 the second child of `inputs`.
@@ -96,19 +96,19 @@ Doing this, we:
 2. Register new modules in the model. There are a few ways:
 	* `outputs = inputs(layer)`
 	* `outputs = layer(inputs)`
-	* `outputs = add_to_model(layer, inputs)`
-3. Use standard operations on Symbolic Tensors: `+`, `-`, `*`, `/`, `**` and `abs`:
+	* `outputs = add_to_graph(layer, inputs)`
+3. Use standard operations on Symbolic Tensors: `+, -, *, **, /, //, %` and `abs`:
 	* For example, `x=2+inputs` or `x=inputs%y` will work as expected.
 4. To concatenate (similarly for stacking) Symbolic Tensors:
 	* use `useful_layers.ConcatOpLayer(dim=1)`
-	* add custom function to the model:  `add_to_model(torch.concat, (x, y), dim=1)`
+	* add custom function to the model:  `add_to_graph(torch.concat, (x, y), dim=1)`
 5. When working with Symbolic Tensors, use `.shape` property or its handy shortcuts:
 	* `.C` and `.channels` equals `.shape[1]` for RGB data
 	* `.H` equals `.shape[2]` for RGB data
 	* `.W` equals `.shape[3]` for RGB data
 	* `.HW` is (height, width) tuple for RGB data
-6. Finally, create the model: `model = SymbolicModel(inputs, outputs)`.
-7. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible.
+6. Finally, create the model: `model = SymbolicModel(inputs, outputs)`
+7. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible
 
 ### Sequential topology example
 
@@ -143,13 +143,19 @@ assert model.output_shape == (None, 10)
 
 There's nothing stopping you from using multiple input and output nodes.
 
+Just create multiple inputs:
+
 ```python
 from torch import nn
 from pytorch_symbolic import Input, SymbolicModel
 
 task1_input = x = Input(shape=(3, 32, 32))
 task2_input = y = Input(shape=(64,))
+```
 
+And use them in your model:
+
+```py
 x = x(nn.Conv2d(x.channels, 16, 3))
 x = x(nn.MaxPool2d(3))(nn.ReLU())(nn.Flatten())
 head1_out = x(nn.Linear(x.features, 200))
@@ -163,10 +169,15 @@ x = x(nn.Linear(x.features, 400))(nn.ReLU())
 task1_out = x(nn.Linear(x.features, 10))
 task2_out = x(nn.Linear(x.features, 1))
 
-model = SymbolicModel((task1_input, task2_input), (task1_out, task2_out))
 ```
 
-You can use this model in following way:
+Create the model, passing tuples or lists as inputs and outputs:
+
+```py
+model = SymbolicModel([task1_input, task2_input], [task1_out, task2_out])
+```
+
+You can use this model in a following way:
 
 ```py
 import torch
@@ -185,7 +196,7 @@ If you want to use function from `torch.nn.functional` or basically
 any custom function in your model, you have a few options.
 The recommended way is to wrap it in a `nn.Module`.
 
-For example:
+For example let's say you have a function you want to use:
 
 ```python
 from torch import nn
@@ -194,13 +205,18 @@ from torch import nn
 def custom_func(*args):
     print("Arguments: ", *args)
     return args
+```
 
+Our function just prints whatever is passed and returns it.
 
+A custom `nn.Module` that uses it can look like this:
+
+```py
 class CustomModule(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, *args, **kwds):
+    def forward(self, *args):
         return custom_func(*args)
 ```
 
@@ -217,21 +233,21 @@ You can register almost any function in your Symbolic Model:
 ```python
 import torch
 from pytorch_symbolic import Input
-from pytorch_symbolic.functions_utility import add_to_model
+from pytorch_symbolic.functions_utility import add_to_graph
 
 x1 = Input(shape=(3, 3))
 x2 = Input(shape=(5, 3))
-x = add_to_model(torch.concat, (x1, x2), dim=1)
+x = add_to_graph(torch.concat, (x1, x2), dim=1)
 x.shape  # (None, 8, 2, 3)
 ```
 
-But if you try this: `x = torch.abs(x)` you will fail:
+Attempting to use a function without `add_to_graph`, e.g.  `x = torch.abs(x)`, will fail:
 
 ```
 TypeError: abs(): argument 'input' (position 1) must be Tensor, not Input
 ```
 
-You need to use `add_to_model` like `add_to_model(torch.abs, x)`.
+You need to use `add_to_graph` like `add_to_graph(torch.abs, x)`.
 
 ### Modules with multiple inputs
 
