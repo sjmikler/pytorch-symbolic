@@ -263,7 +263,7 @@ There's also another way of achieving similar effect, this one modifies the orig
 
 ```py
 classifier.add_output(features)
-print(classificator.output_shape)
+print(classifier.output_shape)
 ```
 
 ```stdout
