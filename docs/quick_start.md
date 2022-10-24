@@ -79,7 +79,7 @@ print(inputs.features)
 ```
 
 ```stdout
-(None, 784)
+(1, 784)
 784
 ```
 
@@ -139,7 +139,7 @@ x = nn.MaxPool2d(kernel_size=2)(x)(nn.ReLU())(nn.Flatten())
 
 outputs = nn.Linear(in_features=x.features, out_features=10)(x)
 model = SymbolicModel(inputs=inputs, outputs=outputs)
-assert model.output_shape == (None, 10)
+assert model.output_shape == (1, 10)
 ```
 
 ### Multiple inputs example
@@ -240,7 +240,7 @@ from pytorch_symbolic.functions_utility import add_to_graph
 x1 = Input(shape=(3, 3))
 x2 = Input(shape=(5, 3))
 x = add_to_graph(torch.concat, (x1, x2), dim=1)
-x.shape  # (None, 8, 3)
+x.shape  # (1, 8, 3)
 ```
 
 Attempting to use a function without `add_to_graph`, e.g.  `x = torch.abs(x)`, will fail:
@@ -263,12 +263,12 @@ from pytorch_symbolic import Input, useful_layers
 x1 = Input(shape=(1, 2, 3))
 x2 = Input(shape=(5, 2, 3))
 x = useful_layers.ConcatLayer(dim=1)(x1, x2)
-x.shape  # (None, 6, 2, 3)
+x.shape  # (1, 6, 2, 3)
 ```
 
 Alternatively, using the other notation, do it like this `symbolic_tensor(layer, *other_args)`:
 
 ```py
 x = x1(useful_layers.ConcatLayer(dim=1), x2)
-x.shape  # (None, 6, 2, 3)
+x.shape  # (1, 6, 2, 3)
 ```

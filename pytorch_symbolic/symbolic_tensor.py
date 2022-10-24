@@ -16,6 +16,7 @@ class SymbolicTensor:
         self,
         value: torch.Tensor,
         parents: Tuple[SymbolicTensor, ...] = tuple(),
+        layer_outputs: Tuple[SymbolicTensor, ...] = tuple(),
         depth: int = 0,
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
@@ -30,22 +31,22 @@ class SymbolicTensor:
             x object representing example of value that will flow through the node.
         parents
             Tuple of parent nodes - other SymbolicTensors.
+        layer_outputs
+            Layer associated with this tuple might have multiple outputs.
+            This is a tuple of those outputs, including this SymbolicTensor.
         depth
             How deep the node is in the tree. It is defined as maximum of parents' depth plus 1.
         layer
             nn.Module object that transformed parents into this object.
-        batch_size_known
-            If False, the batch size will be replaced with ``None`` when displaying it.
         """
         self.v = value
         self.layer = layer
         self.depth = depth
-        self.batch_size_known = batch_size_known
 
         self._output = None
         self._children: List[SymbolicTensor] = []
         self._parents: Tuple[SymbolicTensor, ...] = parents
-        self._parents_outputs: List[torch.Tensor] = []
+        self._layer_outputs: Tuple[SymbolicTensor, ...] = layer_outputs
 
     @property
     def parents(self) -> Tuple[SymbolicTensor, ...]:
@@ -101,45 +102,92 @@ class SymbolicTensor:
 
     @property
     def batch_size(self) -> int | None:
-        """If known - batch size of the data. Else None."""
-        if self.batch_size_known:
-            return self.v.shape[0]
-        else:
-            return None
+        """Batch size of the data. Will be default if was not provided."""
+        return self.v.shape[0]
 
     @property
     def shape(self) -> Tuple[int | None, ...]:
         """Shape of the placeholder, including batch size."""
-        if self.batch_size_known:
-            return self.v.shape
-        else:
-            return (None, *self.v.shape[1:])
+        return self.v.shape
 
     @property
     def numel(self) -> int:
         """Number of the values in placeholder. If batch size is known, it is used too."""
         return self.v.shape.numel()
 
-    def apply_module(self, layer: nn.Module, *others: SymbolicTensor) -> SymbolicTensor:
+    def reshape(self, *shape) -> SymbolicTensor:
+        reshape_layer = useful_layers.ReshapeLayer(batch_size_included=True, shape=shape)
+        return reshape_layer(self)
+
+    def view(self, *shape) -> SymbolicTensor:
+        view_copy_layer = useful_layers.ViewCopyLayer(batch_size_included=True, shape=shape)
+        return view_copy_layer(self)
+
+    def t(self) -> SymbolicTensor:
+        transpose_layer = useful_layers.AnyOpLayer(op=lambda x: x.t())
+        return transpose_layer(self)
+
+    @property
+    def T(self) -> SymbolicTensor:
+        return self.t()
+
+    def mean(self, dim=None, keepdim=False) -> SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def sum(self, dim=None, keepdim=False) -> SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.sum, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def median(self, dim=None, keepdim=False) -> SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.median, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def argmax(self, dim=None, keepdim=False) -> SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.argmax, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def argmin(self, dim=None, keepdim=False) -> SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def flatten(self) -> SymbolicTensor:
+        return nn.Flatten()(self)
+
+    def apply_module(
+        self, layer: nn.Module, *others: SymbolicTensor
+    ) -> SymbolicTensor | Tuple[SymbolicTensor, ...]:
         """Register a new layer in the graph. Layer must be nn.Module."""
         assert all([isinstance(other, SymbolicTensor) for other in others])
 
         parents = (self, *others)
         new_depth = max(parent.depth for parent in parents) + 1
-        new_output = layer.__call__(self.v, *(o.v for o in others))
-        batch_size_known = all([parent.batch_size_known for parent in parents])
+        new_outputs = layer.__call__(self.v, *(o.v for o in others))
 
-        new_layer_node = SymbolicTensor(
-            value=new_output,
-            parents=parents,
-            layer=layer,
-            depth=new_depth,
-            batch_size_known=batch_size_known,
+        if not isinstance(new_outputs, tuple):  # in case of 1 output nn.Module
+            new_outputs = (new_outputs,)
+
+        new_layer_nodes = tuple(
+            SymbolicTensor(
+                value=new_output,
+                parents=parents,
+                layer=layer,
+                depth=new_depth,
+            )
+            for new_output in new_outputs
         )
+        for new_layer_node in new_layer_nodes:
+            new_layer_node._layer_outputs = new_layer_nodes
+
         for parent in parents:
-            parent._children.append(new_layer_node)
-            logging.info(f"Added {new_layer_node} as child of {parent}")
-        return new_layer_node
+            parent._children.extend(new_layer_nodes)
+            for new_layer_node in new_layer_nodes:
+                logging.info(f"Added {new_layer_node} as child of {parent}")
+
+        if len(new_layer_nodes) == 1:
+            return new_layer_nodes[0]
+        else:
+            return new_layer_nodes
 
     def _get_all_nodes_above(self) -> Set[SymbolicTensor]:
         nodes_seen = {self}
@@ -167,7 +215,8 @@ class SymbolicTensor:
         self._output = x
 
     def _launch(self):
-        self._output = self.layer(*(parent._output for parent in self._parents))
+        for node in self._layer_outputs:
+            node._output = self.layer(*(parent._output for parent in self._parents))
 
     def __call__(self, *args):
         return self.apply_module(*args)
@@ -296,7 +345,7 @@ class Input(SymbolicTensor):
         shape
             Shape of the real data NOT including the batch dimension.
         batched
-            If True and ``batch_shape`` was not given, batch size will be displayed as ``None``.
+            If True and ``batch_shape`` was not given, batch size will set to 1.
         batch_shape
             Shape of the real data including the batch dimension.
             Should be provided instead ``shape`` if cuda graphs will be used.
@@ -305,8 +354,8 @@ class Input(SymbolicTensor):
             Dtype of the real data that will be the input of the network.
         min_value
             In rare cases, if real world data is very specific and some values
-            cannot work with the model, this should be used to set the
-            reasonable minimal value that the model will work on.
+            cannot work with the model, this should be used to set a
+            reasonable minimal value that the model can take as an input.
         max_value
             As above, but the maximal value.
         custom_tensor
@@ -314,8 +363,7 @@ class Input(SymbolicTensor):
             If this is the case, no shape or dtype is needed as they will be inferred from the tensor.
         """
         if custom_tensor is not None:
-            self.was_batch_size_provided = True
-            super().__init__(value=custom_tensor, batch_size_known=True)
+            super().__init__(value=custom_tensor)
             return
 
         if batch_shape is None and not batched:
@@ -324,15 +372,13 @@ class Input(SymbolicTensor):
         if batch_shape is not None:
             batch_size = batch_shape[0]
             shape = batch_shape[1:]
-            batch_size_known = True
         elif shape is not None:
             # We use batch_size of 1 under the hood
             # but we don't tell it to the user
             batch_size = 1
-            batch_size_known = False
         else:
             raise ValueError("Shape argument is required!")
 
         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
-        super().__init__(value=value, batch_size_known=batch_size_known)
+        super().__init__(value=value)

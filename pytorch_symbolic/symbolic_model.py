@@ -45,7 +45,7 @@ class SymbolicModel(nn.Module):
         inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
         enable_cuda_graphs=False,
-        enable_forward_codegen=True,
+        enable_forward_codegen=None,
     ):
         """A PyTorch model that applies operations defined by the graph.
 
@@ -97,6 +97,8 @@ class SymbolicModel(nn.Module):
         self._execution_order_layers: List[nn.Module] = []
         self._figure_out_execution_order()
 
+        if enable_forward_codegen is None:
+            enable_forward_codegen = config.CODEGEN_BY_DEFAULT
         self._enable_forward_codegen = enable_forward_codegen
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
@@ -157,7 +159,8 @@ class SymbolicModel(nn.Module):
         forward_src = code_generator.generate_forward_with_loops(
             self.inputs,
             self.outputs,
-            self._execution_order_nodes,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
@@ -166,7 +169,8 @@ class SymbolicModel(nn.Module):
         self._generated_forward_source = code_generator.generate_forward_with_loops(
             self.inputs,
             self.outputs,
-            self._execution_order_nodes,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         scope = {"self": self}
@@ -191,15 +195,33 @@ class SymbolicModel(nn.Module):
         """Return a set of all nodes used in this model."""
         return figure_out_nodes_between(self.inputs, self.outputs)
 
+    def _remove_repeated_execution(self, execution_order_nodes: List[SymbolicTensor]) -> List[SymbolicTensor]:
+        """In case of multiple outputs, we need only one of the output node to launch the layer."""
+        nodes_without_repeated_execution = []
+
+        already_executed: Set[SymbolicTensor] = set()
+        for node in execution_order_nodes:
+            if node in already_executed:
+                continue
+            nodes_without_repeated_execution.append(node)
+            already_executed.update(node._layer_outputs)
+
+        assert len(already_executed) == len(execution_order_nodes)
+        return nodes_without_repeated_execution
+
     def _figure_out_execution_order(self):
         used_nodes = self._used_nodes()
-        execution_order = topological_sort(used_nodes)
-        assert len(execution_order) == len(used_nodes)
+        execution_order_nodes = topological_sort(used_nodes)
+        assert len(execution_order_nodes) == len(used_nodes)
 
         for input_node in used_nodes.intersection(self.inputs):  # Not all inputs are in `used_nodes`
-            execution_order.remove(input_node)  # Exclude inputs, as we don't execute any layers there
+            execution_order_nodes.remove(input_node)  # Exclude inputs, as we don't execute any layers there
 
-        self._execution_order_nodes = execution_order
+        # To avoid calling layers twice when they have multiple outputs
+        # We remove all nodes with already executed layer from execution order
+        execution_order_nodes = self._remove_repeated_execution(execution_order_nodes)
+
+        self._execution_order_nodes = execution_order_nodes
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
         num_layers = len(self._execution_order_nodes)

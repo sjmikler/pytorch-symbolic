@@ -2,72 +2,65 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 from pytorch_symbolic.symbolic_tensor import SymbolicTensor
-
-
-def generate_forward_basic(
-    inputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-    outputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-    execution_order: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-):
-    str_length = len(str(max(len(inputs), len(outputs), len(execution_order))))
-    node_to_name = {}
-    for idx, node in enumerate(inputs):
-        node_to_name[node] = f"i{str(idx).zfill(str_length)}"
-    for idx, node in enumerate(execution_order):
-        node_to_name[node] = f"h{str(idx).zfill(str_length)}"
-    for idx, node in enumerate(outputs):
-        node_to_name[node] = f"o{str(idx).zfill(str_length)}"
-
-    input_names = [node_to_name[node] for node in inputs]
-    forward_definition = "def _generated_forward(self," + ",".join(input_names) + "):"
-    code_lines = [forward_definition]
-
-    TAB = " " * 4
-    code_lines.append(TAB + "l = self._execution_order_layers")
-
-    for exec_id, node in enumerate(execution_order):
-        input_names = [node_to_name[node] for node in node.parents]
-        output_name = node_to_name[node]
-        code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
-        code_lines.append(code_line)
-
-    return_line = TAB + "return " + ",".join(node_to_name[node] for node in outputs)
-    code_lines.append(return_line)
-    generated_forward = "\n".join(code_lines) + "\n"
-    return generated_forward
 
 
 def generate_forward_with_loops(
     inputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
     outputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
     execution_order: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
+    nodes_in_subgraph: Set[SymbolicTensor],
     min_loop_length: int | float = float("inf"),
-):
+) -> str:
+    """Generate code for forward function of SymbolicModel.
+
+    Parameters
+    ----------
+    inputs
+        Inputs to the model
+    outputs
+        Outputs of the model
+    execution_order
+        Contains the exact order in which the nodes should be executed.
+        If there are multiple output layers, this won't be equivalent to `nodes_in_subgraph`.
+        In such case, only one of the outputs of each layer will be in the execution_order.
+    nodes_in_subgraph
+        All nodes covered by the subgraph, including all nodes created by multiple-output layers.
+    min_loop_length
+        Minimal sequence length to replace sequential layer execution with a loop.
+
+    Returns
+    -------
+    str
+        Generated code.
+    """
+    assert min_loop_length > 1, "Smallest allowed loop length is 2!"
+
     str_length = len(str(max(len(inputs), len(outputs), len(execution_order))))
     node_to_name = {}
     for idx, node in enumerate(inputs):
         node_to_name[node] = f"i{str(idx).zfill(str_length)}"
     for idx, node in enumerate(execution_order):
-        node_to_name[node] = f"h{str(idx).zfill(str_length)}"
+        node_to_name[node] = f"x{str(idx).zfill(str_length)}"
+    for idx, node in enumerate(nodes_in_subgraph.difference(execution_order)):
+        node_to_name[node] = f"y{str(idx).zfill(str_length)}"
     for idx, node in enumerate(outputs):
         node_to_name[node] = f"o{str(idx).zfill(str_length)}"
 
     input_names = [node_to_name[node] for node in inputs]
-    forward_definition = "def forward(self," + ",".join(input_names) + "):"
+    forward_definition = "def forward(self," + ", ".join(input_names) + "):"
     code_lines = [forward_definition]
 
     TAB = " " * 4
     code_lines.append(TAB + "l = self._execution_order_layers")
 
     nodes_looped_over = set()
-    all_nodes_used = {*inputs, *execution_order}
     # All parents must be in the graph. Otherwise, forward is impossible.
     parents = {node: node.parents for node in execution_order}
     # We only count children in the graph. Thus the intersection.
-    children = {node: list(all_nodes_used.intersection(node.children)) for node in execution_order}
+    children = {node: list(nodes_in_subgraph.intersection(node.children)) for node in execution_order}
 
     for exec_id, node in enumerate(execution_order):
         if node in nodes_looped_over:
@@ -93,10 +86,10 @@ def generate_forward_with_loops(
             code_lines.append(TAB + TAB + f"{output_name} = layer({output_name})")
             nodes_looped_over.update(sequence)
         else:
-            output_name = node_to_name[node]
-            code_line = TAB + output_name + f" = l[{exec_id}](" + ",".join(input_names) + ")"
+            output_names = [node_to_name[n] for n in node._layer_outputs]
+            code_line = TAB + ", ".join(output_names) + f" = l[{exec_id}](" + ", ".join(input_names) + ")"
             code_lines.append(code_line)
 
-    code_lines.append(TAB + "return " + ",".join(node_to_name[node] for node in outputs))
+    code_lines.append(TAB + "return " + ", ".join(node_to_name[node] for node in outputs))
     generated_forward = "\n".join(code_lines) + "\n"
     return generated_forward
