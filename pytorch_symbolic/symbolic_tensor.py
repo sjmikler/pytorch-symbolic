@@ -38,14 +38,22 @@ class SymbolicTensor:
             If False, the batch size will be replaced with ``None`` when displaying it.
         """
         self.v = value
-        self.parents = parents
-        self.children: List[SymbolicTensor] = []
         self.layer = layer
         self.depth = depth
         self.batch_size_known = batch_size_known
 
         self._output = None
+        self._children: List[SymbolicTensor] = []
+        self._parents: Tuple[SymbolicTensor, ...] = parents
         self._parents_outputs: List[torch.Tensor] = []
+
+    @property
+    def parents(self) -> Tuple[SymbolicTensor, ...]:
+        return tuple(self._parents)
+
+    @property
+    def children(self) -> Tuple[SymbolicTensor, ...]:
+        return tuple(self._children)
 
     @property
     def features(self) -> int:
@@ -129,7 +137,7 @@ class SymbolicTensor:
             batch_size_known=batch_size_known,
         )
         for parent in parents:
-            parent.children.append(new_layer_node)
+            parent._children.append(new_layer_node)
             logging.info(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
@@ -138,7 +146,7 @@ class SymbolicTensor:
         to_expand = [self]
         while to_expand:
             node = to_expand.pop()
-            for parent in node.parents:
+            for parent in node._parents:
                 if parent not in nodes_seen:
                     to_expand.append(parent)
                     nodes_seen.add(parent)
@@ -149,7 +157,7 @@ class SymbolicTensor:
         to_expand = [self]
         while to_expand:
             node = to_expand.pop()
-            for child in node.children:
+            for child in node._children:
                 if child not in nodes_seen:
                     to_expand.append(child)
                     nodes_seen.add(child)
@@ -159,7 +167,7 @@ class SymbolicTensor:
         self._output = x
 
     def _launch(self):
-        self._output = self.layer(*(parent._output for parent in self.parents))
+        self._output = self.layer(*(parent._output for parent in self._parents))
 
     def __call__(self, *args):
         return self.apply_module(*args)
@@ -255,8 +263,9 @@ class SymbolicTensor:
             return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
 
     def __repr__(self):
-        addr = f"SymbolicTensor at {hex(id(self))};"
-        info = f"child of {len(self.parents)}; parent of {len(self.children)}"
+        addr = f"{self.__class__.__name__} at {hex(id(self))};"
+        # info = f"child of {len(self._parents)}; parent of {len(self._children)}"
+        info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
     def __hash__(self):

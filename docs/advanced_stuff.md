@@ -2,7 +2,7 @@
 
 ## Underlying graphs
 
-Deep neural networks can be represented as directed acyclic graphs where:
+Deep neural networks can be represented as directed acyclic graphs (DAGs) where:
 
 * nodes are inputs, outputs or intermediate states
 * edges are layers (in general transformations or functions)
@@ -11,7 +11,7 @@ In such graph,
 there exists a nonempty set of input nodes and a nonempty set of output nodes.
 If your architecture meets the above conditions, it can be created in a symbolic manner.
 
-When you create an `Input`, you create a node in the graph.
+Every time you create an `Input`, you create a node in the graph.
 
 ```python
 from pytorch_symbolic import Input
@@ -21,11 +21,28 @@ print(x)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f2580812730; child of 0; parent of 0>
+<Input at 0x7f127158fd60; 0 parents; 0 children>
 ```
 
-`Input` is a special instance of `SymbolicTensor`. There's nothing special about it.
+`Input` is inheriting from `SymbolicTensor` and there's nothing different about using them,
+besides how you create them.
 In fact, you'll be able to use non-input `SymbolicTensor` as an input to your model.
+
+Three rules you should not break:
+
+1. `Input` has no parents 
+2. every other `SymbolicTensor` has at least one parent
+3. every other `SymbolicTensor` is a result of operation on `Input` or `SymbolicTensor`
+
+The provided public API will not let you break these, 
+but if you are really determined, you can break them by modifying private variables.
+This can lead to directed cycles in your graph! If this happens, you won't be able to
+create the model from your graph, instead you'll be attacked with an assertion error.
+
+One exception is when your graph has directed cycles,
+but you create the model from a subgraph
+(all nodes between `inputs` and `outputs` induce the subgraph)
+that doesn't contain any directed cycle. Then you'll be fine and the model will be created.
 
 In general, when you transform any `SymbolicTensor`, a new `SymbolicTensor` is created.
 
@@ -35,7 +52,7 @@ print(y)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f252e166550; child of 1; parent of 0>
+<SymbolicTensor at 0x7f121e11adf0; 1 parents; 0 children>
 ```
 
 This _transformation_ is always just an `nn.Module`. Even when you use `+` or `-`.
@@ -52,13 +69,14 @@ AnyOpLayer()
 
 When you add new nodes to the graph,
 they will be registered as children of other nodes.
-You can check children or parents of every node. For each node, you can run:
+You can check children or parents of every node. For each node, you can access:
 
-* `node.children: List[SymbolicTensor]`
 * `node.parents: Tuple[SymbolicTensor, ...]`
+* `node.children: Tuple[SymbolicTensor, ...]`
 
-It's possible to create new children, but it's impossible to modify parents.
-Each operation on a `SymbolicNode` creates at leas one new child.
+It's impossible to modify parents after `SymbolicTensor` is created,
+but new children can always be added.
+Every operation on `SymbolicNode` creates at least one new child.
 If your `nn.Module` has more than one output, more children will be created.
 Usually modules have just one output:
 
@@ -71,9 +89,9 @@ print(y)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f252e166550; child of 1; parent of 0>
-<SymbolicTensor at 0x7f252e166550; child of 1; parent of 1>
-<SymbolicTensor at 0x7f252e166550; child of 1; parent of 2>
+<SymbolicTensor at 0x7f121e11adf0; 1 parents; 0 children>
+<SymbolicTensor at 0x7f121e11adf0; 1 parents; 1 children>
+<SymbolicTensor at 0x7f121e11adf0; 1 parents; 2 children>
 ```
 
 We created a bunch of children for `y`. Let's see them:
@@ -83,12 +101,12 @@ print(y.children)
 ```
 
 ```stdout
-[<SymbolicTensor at 0x7f252e170e80; child of 1; parent of 0>,
- <SymbolicTensor at 0x7f252e170ac0; child of 1; parent of 0>]
+(<SymbolicTensor at 0x7f121e107d00; 1 parents; 0 children>,
+ <SymbolicTensor at 0x7f121e107760; 1 parents; 0 children>)
 ```
 
-But if we are working with large graphs, it might not be very fun to inspect
-the graph by printing children and parents to stdout. There is a nicer alternative though.
+But when working with large graphs, it might not be very fun to inspect
+them by printing children and parents to stdout. There is a nicer alternative though.
 
 Pytorch Symbolic provides a basic graph drawing utility.
 It will work only if you have optional dependencies installed:
@@ -97,7 +115,7 @@ It will work only if you have optional dependencies installed:
 * matplotlib
 * scipy
 
-You can install them directly from pip `pip install pytorch-symbolic[full]`.
+You can install them manually or using `pip install pytorch-symbolic[full]`.
 
 > If you don't have optional dependencies, you can use the package without drawing utility.
 
@@ -111,14 +129,16 @@ graph_algorithms.draw_graph(inputs=x, node_text_namespace=globals())
 
 ![images/draw_graph1.png](images/draw_graph1.png)
 
-We use `node_text_namespace=globals()` so that Pytorch Symbolic will attempt
-to display correct variable names on nodes.
+We use `node_text_namespace=globals()` so that Pytorch Symbolic attempts
+to display variable names on nodes.
+This is nice for understanding what is going on in the graph.
 It can be more difficult, e.g. when graph was defined in a local namespace.
-Instead, you can use `node_text_func` to display anything you want.
-It takes `SymbolicTensor` as input and returns `str` as output. By default, it displays tensor shape.
+Instead, you can use `node_text_func` to define custom labels on nodes.
+This argument is a `Callable` that takes `SymbolicTensor` as input and returns `str` as output. By default, it displays tensor shape.
 
-Be careful! It is not very refined, so it might not work well for large neural networks.
-You can tune figure size and other stuff using matplotlib.
+Be careful! Drawing utility is not very refined,
+so it might not work well for large neural networks.
+You can tune the figure size and other stuff using matplotlib:
 
 ```py
 import matplotlib.pyplot as plt
@@ -138,8 +158,8 @@ graph_algorithms.draw_graph(
 
 ![images/draw_graph2.png](images/draw_graph2.png)
 
-Use `edge_text_func` to display custom information on the edges.
-By default it is name of the layer, e.g. `Linear` or `Conv2d`.
+Use `edge_text_func` to display custom labels on the edges.
+By default it is the name of the layer, e.g. `Linear` or `Conv2d`.
 
 ## Creating models
 
@@ -161,7 +181,7 @@ x = nn.Linear(x.features, 10)(x)
 model = SymbolicModel(inputs, x)
 ```
 
-You can use the plotting utility directly on your model.
+You can use the plotting utility directly on your model:
 
 ```py
 from pytorch_symbolic import graph_algorithms
@@ -191,8 +211,10 @@ graph_algorithms.draw_graph(model=model)
 
 ![images/draw_graph4.png](images/draw_graph4.png)
 
-Notice that we used custom `add_n` module here instead of just `sum(*symbolic_tensors)`.
-In the end, they will produce equivalent models, but the underlying graph will be different.
+Notice that we used custom `add_n` module instead
+of just `intermediate = sum(inputs)`.
+Both versions would be correct.
+In fact, they produce equivalent models, but their underlying graphs are different.
 
 Let us compare two examples:
 
@@ -210,12 +232,12 @@ graph_algorithms.draw_graph(inputs=inputs, outputs=sum(inputs))
 ```
 
 ![images/draw_graph6.png](images/draw_graph6.png)
-That's because `sum` is in fact executing multiple `+` operations.
+This is because `sum` is executing multiple `+ / __add__` operations under the hood.
 
 ## Reusing existing layers
 
 Each node except input is associated with some `nn.Module`.
-When you are reusing a part of the graph, you are reusing underlying `nn.Module` too.
+When you are reusing a part of the graph, you are reusing all underlying `nn.Module` too.
 In fact, you can have multiple models sharing the same weights.
 Or one model reusing the same weights multiple times.
 
@@ -256,10 +278,10 @@ print(feature_extractor.output_shape)
 
 This model, `feature_extractor`, uses the same underlying weights
 as already trained `classifier`,
-but it outputs the intermediate features you want to inspect.
+but it outputs the intermediate features you wanted to inspect.
 It does so without modifying the original model!
 
-There's also another way of achieving similar effect, this one modifies the original model:
+There's also another way of achieving the end result, this one modifies the original model:
 
 ```py
 classifier.add_output(features)
@@ -272,10 +294,11 @@ print(classifier.output_shape)
 
 ## Nested models
 
-Instance of `SymbolicModel` is just an `nn.Module` and you should use it as such.
+Instance of `SymbolicModel` is just an `nn.Module` and you can use it as such.
 This means you can use it anywhere, including another `SymbolicModel` or vanilla model.
 Create new models, using the existing ones.
-Here we create a model that calculates how similar are two feature maps:
+Here we create a model that calculates how similar are two feature maps generated 
+by previously defined `feature_extractor`:
 
 ```py
 import torch
@@ -304,7 +327,7 @@ graph_algorithms.draw_graph(model=strange_model)
 
 We took an example of a toy ResNet from
 [tensorflow guide](https://www.tensorflow.org/guide/keras/symbolic) and
-recreated it in a few different ways. Note that their example is **16 lines long**,
+recreated it in a few different ways. Note that their example is **16 lines of code long**,
 excluding imports and utilities.
 
 > In [benchmarks](benchmarks.md) you can see this model benchmarked!
@@ -337,8 +360,9 @@ outputs = nn.Linear(x.features, 10)(x)
 model = SymbolicModel(inputs, outputs)
 ```
 
-In fact, each line of code in Pytorch Symbolic and Keras is functionally equivalent. For example this line in
-Keras:
+In fact, every line of code in Pytorch Symbolic and Keras is functionally equivalent.
+
+For example this line in Keras:
 
 ```python
 ... = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
@@ -350,16 +374,16 @@ is equivalent to this line in Pytorch Symbolic:
 ... = nn.Conv2d(x.C, 64, 3, padding=1)(x)(nn.ReLU())
 ```
 
-Let's analyze what happens the above lines:
+Let's analyze what happens in the above lines:
 
 * `nn.Conv2d` is PyTorch equivalent of Keras `layers.Conv2d` layer
 * Input channels:
-	* In Keras we don't pass it openly - it'll be calculated automatically from the inputs
-	* In Pytorch Symbolic we also calculate it automatically using `x.C`, but we pass it openly as an argument
-* In both frameworks `64, 3` is the number of output channels and size of the kernel
+	* In Keras we don't pass them openly - they'll be calculated automatically from the inputs
+	* In Pytorch Symbolic we also calculate them automatically using `x.C`, but we pass them openly as an argument
+* In both frameworks `64, 3` are the number of output channels and the size of the kernel
 * Padding:
 	* We use `padding="same"` in Keras
-	* We use `padding=1` in PyTorch
+	* We use `padding=1` in PyTorch (for kernel size 3)
 * Activation:
 	* In Keras we simply add an argument `activation='relu'`
 	* in Pytorch Symbolic we add `nn.ReLU()` as a transformation that happens after `nn.Conv2d(...)`
@@ -398,18 +422,9 @@ You can register new layers in whichever way you want or you can mix them.
 
 ### Vanilla PyTorch
 
-A usual way to define the model in PyTorch is to create a class that inherits from `nn.Module`.
+A usual way to define a model in PyTorch is to create a class that inherits from `nn.Module`.
 
-Steps:
-
-1. define a class that inherits from `nn.Module`
-2. define all the necessary layers in `__init__` method
-	* You might have to calculate some things by hand: e.g. the number of input features for nn.Linear
-3. define the order in which layers are executed in `forward` method
-
-The separation of steps 2 and 3 often makes network creation tedious and more complicated than it should be.
-
-PyTorch non-symbolic example (toy ResNet equivalent from previous section):
+PyTorch non-symbolic example of toy ResNet from previous section:
 
 ```python
 from torch import nn
@@ -463,7 +478,3 @@ model = ToyResNet()
 ```
 
 This took over 30 lines of code.
-
-## References
-
-* [https://www.tensorflow.org/guide/keras/functional](https://www.tensorflow.org/guide/keras/functional)

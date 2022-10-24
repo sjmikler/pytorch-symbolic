@@ -47,8 +47,8 @@ print(x)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7faf5779d130; child of 0; parent of 0>
-<SymbolicTensor at 0x7fafea899f10; child of 1; parent of 0>
+<Input at 0x7f12715771f0; 0 parents; 0 children>
+<SymbolicTensor at 0x7f1271577d60; 1 parents; 0 children>
 ```
 
 Using symbolic tensors, we can define a working classifier in a few lines of code:
@@ -59,7 +59,7 @@ from pytorch_symbolic import Input, SymbolicModel
 
 inputs = Input(shape=(1, 28, 28))
 x = nn.Flatten()(inputs)
-x = nn.Linear(x.shape[1], 10)(x)(nn.ReLU())
+x = nn.Linear(x.shape[1], 10)(x)(nn.Softmax(1))
 model = SymbolicModel(inputs=inputs, outputs=x)
 model
 ```
