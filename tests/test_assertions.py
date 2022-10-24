@@ -12,8 +12,8 @@ def test_cycle1():
     x4 = nn.Linear(2, 2)(x3)
     x5 = nn.Linear(2, 2)(x4)
 
-    x5.children.append(x1)
-    x1.parents = (x5,)
+    x5._children.append(x1)
+    x1._parents = (x5,)
 
     try:
         _ = SymbolicModel(inputs=x2, outputs=x4)
@@ -31,7 +31,7 @@ def test_cycle2():
     x6 = nn.Linear(2, 2)(x5)
     x7 = nn.Linear(2, 2)(x6)
 
-    x4.parents = (x3, x5)  # introduce a cycle
+    x4._parents = (x3, x5)  # introduce a cycle
 
     try:
         _ = SymbolicModel(inputs=x2, outputs=x7)

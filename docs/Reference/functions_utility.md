@@ -1,14 +1,14 @@
 # functions_utility
 
-This module provides a way to add custom functions to the model.
+This module provides a way to add custom functions to the graph.
 
-To register a function in your model, instead of doing
+To register a function in your graph, instead of doing
 
-- ``function(*args, **kwds)``
+- ``x = function(*args, **kwds)``
 
 do this:
 
-- ``add_to_model(function, *args, **kwds)``.
+- ``x = add_to_graph(function, *args, **kwds)``.
 
 For this to work, there must be at least one SymbolicTensor among ``*args, **kwds``.
 
@@ -30,11 +30,13 @@ output
 ```
 
 This will work for most of the use cases, even if Symbolic Tensors
-are hidden in nested tuples, lists or dicts, but you should know that there's
-a small call time overhead every time you register a custom function in the model.
+are hidden in nested tuples, lists or dicts. You should also know that there's
+a small time overhead for `__call__` during runtime for every function registered this way.
+This overhead _should not_ be present when dealing with large models on GPU,
+because then CPU does its work before GPU finishes kernel computation. 
 
-Recommended way to use a custom functions is to write yourself an ``nn.Module`` that does
-the same as the function. Then you can use it as usually and Pytorch Functional will be overhead free!
+Recommended, overhead-free way to use custom functions is to write yourself an ``nn.Module`` that does
+the same as the function. Then you can use it as usually without sacrificing performance.
 
 ::: pytorch_symbolic.functions_utility
 	options:

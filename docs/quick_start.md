@@ -2,7 +2,7 @@
 
 ## Features
 
-* Counterpart of Keras Functional API
+* Counterpart of [Keras Functional API](https://keras.io/guides/functional_api/)
 * No overhead during execution
 * Supports advanced stuff:
 	* Reusing layers
@@ -34,7 +34,7 @@ outputs = inputs(nn.Linear(in_features=inputs.features, out_features=10))
 model = SymbolicModel(inputs, outputs)
 ```
 
-To register a new layer, e.g. ``nn.Linear`` in Pytorch Symbolic, you have two options:
+To register a new layer, e.g. ``nn.Linear`` in your model, you have two options:
 
 * `layer(symbolic_tensor)` (like in Keras Functional API)
 * `symbolic_tensor(layer)` (like nowhere else)
@@ -44,21 +44,24 @@ They both return a SymbolicTensor and they create identical models.
 
 **What is a Symbolic Tensor?**
 
+Under the hood of Pytorch Symbolic, there's a computation graph.
+
+Every `SymbolicTensor` is a node in it. You should:
+
 * Think of it as placeholder for your data
 * Use it like `torch.Tensor`
 
-Let's play with it:
+Let's play with the previously created `SymbolicTensor`:
 
 ```py
 print(inputs)
-print(inputs + 1)
+_ = inputs + 1
 print(inputs)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f73f2d49ac0; child of 0; parent of 1>
-<SymbolicTensor at 0x7f73e3fc4970; child of 1; parent of 0>
-<SymbolicTensor at 0x7f73f2d49ac0; child of 0; parent of 2>
+<Input at 0x7f121e131dc0; 0 parents; 1 children>
+<Input at 0x7f121e131dc0; 0 parents; 2 children>
 ```
 
 At first, `inputs` was parent to `outputs` only.
@@ -67,7 +70,7 @@ But when we wrote `inputs + 1`, a new node was registered as
 the second child of `inputs`.
 
 Symbolic Tensors have useful attributes.
-Using them we can instantly obtain shapes of intermediate outputs,
+Using them we can, for example, instantly obtain shapes of intermediate outputs,
 instead of deriving them by hand. For example:
 
 ```py
@@ -114,7 +117,7 @@ Doing this, we:
 
 In PyTorch, there's `nn.Sequential` that allows creating simple sequential models.
 
-In Pytorch Symbolic, you can do it as well, but it is *much* more flexible.
+In Pytorch Symbolic, you can create them easily too, but it is *much* more flexible.
 
 ```python
 from torch import nn
@@ -143,7 +146,7 @@ assert model.output_shape == (None, 10)
 
 There's nothing stopping you from using multiple input and output nodes.
 
-Just create multiple inputs:
+Just create multiple `SymbolicTensor` objects:
 
 ```python
 from torch import nn
@@ -153,7 +156,7 @@ task1_input = x = Input(shape=(3, 32, 32))
 task2_input = y = Input(shape=(64,))
 ```
 
-And use them in your model:
+Define the operations on them:
 
 ```py
 x = x(nn.Conv2d(x.channels, 16, 3))
@@ -168,10 +171,9 @@ x = head1_out + head2_out  # elementwise sum
 x = x(nn.Linear(x.features, 400))(nn.ReLU())
 task1_out = x(nn.Linear(x.features, 10))
 task2_out = x(nn.Linear(x.features, 1))
-
 ```
 
-Create the model, passing tuples or lists as inputs and outputs:
+And create the model, passing tuples or lists as inputs and outputs:
 
 ```py
 model = SymbolicModel([task1_input, task2_input], [task1_out, task2_out])
@@ -209,7 +211,7 @@ def custom_func(*args):
 
 Our function just prints whatever is passed and returns it.
 
-A custom `nn.Module` that uses it can look like this:
+An equivalent `nn.Module` can call this function directly:
 
 ```py
 class CustomModule(nn.Module):
@@ -238,7 +240,7 @@ from pytorch_symbolic.functions_utility import add_to_graph
 x1 = Input(shape=(3, 3))
 x2 = Input(shape=(5, 3))
 x = add_to_graph(torch.concat, (x1, x2), dim=1)
-x.shape  # (None, 8, 2, 3)
+x.shape  # (None, 8, 3)
 ```
 
 Attempting to use a function without `add_to_graph`, e.g.  `x = torch.abs(x)`, will fail:
@@ -266,15 +268,7 @@ x.shape  # (None, 6, 2, 3)
 
 Alternatively, using the other notation, do it like this `symbolic_tensor(layer, *other_args)`:
 
-```python
-from pytorch_symbolic import Input, useful_layers
-
-x1 = Input(shape=(1, 2, 3))
-x2 = Input(shape=(5, 2, 3))
+```py
 x = x1(useful_layers.ConcatLayer(dim=1), x2)
 x.shape  # (None, 6, 2, 3)
 ```
-
-## References
-
-* [https://www.tensorflow.org/guide/keras/functional](https://www.tensorflow.org/guide/keras/functional)

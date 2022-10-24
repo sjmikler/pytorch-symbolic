@@ -1,12 +1,12 @@
 # Benchmarks
 
 Symbolic API simplifies and speeds up prototyping
-and developement process.
+and development process.
 But does it sacrifice performance of the model itself?
 One of the most important principles in building this library was to
 avoid this.
 It was made with performance in mind.
-Standard model definition: a class inheriting form `nn.Module`
+Standard model definition: a class inheriting form `nn.Module`,
 is a baseline for us.
 Symbolic API aims to create models just as fast in all scenarios.
 
@@ -26,12 +26,13 @@ model = SymbolicModel(inputs, x)
 optimize_module_calls()
 ```
 
-Not using it might give you a little slowdown in CPU limited workflows.
+Not using it might give you a small slowdown in CPU limited workflows,
+but should not affect large models on GPU.
 We use it in our benchmarks.
 
 ## Deep linear model
 
-Pytorch Symbolic cannot change the kernel runtime.
+Pytorch Symbolic won't change the kernel runtime.
 The only place where it _might_ introduce a slowdown, is before the kernel launches.
 To see if it does, we will maximize the number of kernel calls.
 
@@ -42,7 +43,7 @@ In larger models, the overhead could be hidden by the kernel computation.
 
 #### Data
 
-Data is randomly generated.
+Data is randomly generated:
 
 ```python
 import torch
@@ -70,21 +71,21 @@ For such small subsequent matrix multiplications,
 it can be faster to launch the model on the CPU.
 
 ![images/many_linear_layers.png](images/many_linear_layers.png)
-> Percentile intervals [25, 75] are visible. Sequential model seems to be
-> slower from the others. This can be explained by additional operations
-> introduced by the iterator in `nn.Sequential`.
-> It is slowing down more, as the number of layers is increasing.
+> Percentile intervals [25, 75] are visible. Sequential model is visibly 
+> slower than the others. This can be explained by operations
+> introduced by the iterator added in `nn.Sequential`.
+> Also, Sequential model seems to be slowing down more, as the number of layers is increasing.
 > The other two seem to be equal!
 
 ## Toy ResNet
 
-This model is presented in [Quick Start](quick_start.md),
+This model is presented in [Advanced stuff](advanced_stuff.md),
 it was also used as an example in TensorFlow documentation.
-It is a shallower and thiner version of normally used ResNet networks.
+It is a shallower and thinner version of often used ResNet network.
 
 #### Data
 
-Data is randomly generated.
+Data is randomly generated:
 
 ```python
 import torch
@@ -94,7 +95,7 @@ data = torch.rand(size=(4, 3, 16, 16))  # Resolution from 16x16 to 64x64
 
 #### Model definition
 
-Definition can be found in [Quick Start](quick_start.md).
+Definition can be found in [Advanced stuff](advanced_stuff.md).
 
 ### Inference (gpu)
 
@@ -103,20 +104,19 @@ Definition can be found in [Quick Start](quick_start.md).
 > For non CUDA Graphed models GPU is executing kernels much faster than CPU
 > is scheduling the work.
 > This is why we don't see any slowdown when the image resolution increases.
-> `SymbolicModel` is slightly faster than the Vanilla model.
-> This is due to implementation details.
-> For example, it is quite slow to access a layer by `__getattr__` (`self.layer`)
-> in forward function.
+> Nevertheless, `SymbolicModel` is slightly faster than the Vanilla model.
+> This is due to some implementation details.
+> For example, it is quite slow to access a layer by `__getattr__`  in forward function.
 > In `SymbolicModel` there is no need to do this.
 
 ## How is `SymbolicModel` optimized?
 
 Symbolic models reside on underlying graph structures.
 Each `SymbolicTensor` is a node and each layer is an edge that connects two nodes.
-Initialy, the forward pass was implemented lazily:
+Initially, the forward pass was implemented lazily:
 by executing `forward` in a layer only when
 its output was needed by a child node.
-But such back-and-forth between parents and children created an unecessary overhead.
+But such back-and-forth between parents and children created an unnecessary overhead.
 To avoid this, we precompute the exact order in which the layers needs to be called,
 using topological ordering of the underlying graph structure.
 
@@ -129,12 +129,12 @@ were to write it as a class.
 You can even see the generated code yourself:
 
 ```python
-...
 config.CODEGEN_MIN_LOOP_LENGTH = 10
+...
 print(model._generated_forward_source)
 ```
 
-```
+```python
 def _generated_forward(self,i00,i01):
     l = self._execution_order_layers
     h09 = i01
