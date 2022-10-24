@@ -10,7 +10,7 @@ from . import useful_layers
 from .symbolic_model import SymbolicTensor
 
 
-def add_module_to_model(module, *args):
+def add_module_to_graph(module, *args):
     assert isinstance(args[0], SymbolicTensor)
     return args[0](module, *args[1:])
 
@@ -61,10 +61,10 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
         inputs = Input(shape=(3, 32, 32))
         kernel = Input(shape=(16, 3, 3, 3), batched=False)
         bias = Input(shape=(16,), batched=False)
-        output = add_function(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
+        output = add_to_graph(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
     """
     if isinstance(func, nn.Module) and not kwds:
-        return add_module_to_model(func, *args)
+        return add_module_to_graph(func, *args)
 
     extracted_symbols: List[SymbolicTensor] = []
 
