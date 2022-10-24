@@ -1,7 +1,7 @@
 # Benchmarks
 
 Symbolic API simplifies and speeds up prototyping
-and developement process.
+and development process.
 But does it sacrifice performance of the model itself?
 One of the most important principles in building this library was to
 avoid this.
