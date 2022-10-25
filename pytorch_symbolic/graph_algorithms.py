@@ -183,7 +183,7 @@ def draw_graph(
     node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
     rotate_labels: bool = False,
-) -> None:
+):
     """Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
 
     This is not suitable for large graphs or large neural networks. This is a simple tool that
@@ -207,6 +207,11 @@ def draw_graph(
         If True, text on edges will be rotated in the direction of the arrow.
     rotate_graph
         If True, the consecutive layers will be shown to the right, instead of downwards.
+
+    Returns
+    -------
+    plt.Figure
+        Matplotlib figure
     """
     try:
         import matplotlib.patches
@@ -322,6 +327,7 @@ def draw_graph(
         matplotlib.patches.Patch(color=OTHER_COLOR, label="Hidden node"),
     ]
     plt.legend(handles=handles)
+    return plt.gcf()
 
 
 def topological_sort(nodes: Set[SymbolicData]) -> List[SymbolicData]:

@@ -138,6 +138,10 @@ class SymbolicData:
         for node, out in zip(self._layer_siblings, outputs):
             node._output = out
 
+    def __getitem__(self, idx):
+        layer = useful_layers.SliceLayer(idx)
+        return layer(self)
+
     def __call__(self, *args):
         return self.apply_module(*args)
 

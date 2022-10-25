@@ -153,3 +153,12 @@ class UnpackLayer(nn.Module):
 
     def forward(self, *args):
         return args
+
+
+class SliceLayer(nn.Module):
+    def __init__(self, idx):
+        super().__init__()
+        self.idx = idx
+
+    def forward(self, arg):
+        return arg[self.idx]
