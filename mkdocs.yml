@@ -12,7 +12,7 @@ nav:
         - Reference/functions_utility.md
         - Reference/graph_algorithms.md
         - Reference/model_tools.md
-        - Reference/symbolic_tensor.md
+        - Reference/symbolic_data.md
         - Reference/useful_layers.md
 
 copyright:

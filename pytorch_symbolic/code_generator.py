@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from typing import List, Set, Tuple
 
-from pytorch_symbolic.symbolic_tensor import SymbolicTensor
+from pytorch_symbolic.symbolic_data import SymbolicData
 
 
 def generate_forward_with_loops(
-    inputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-    outputs: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-    execution_order: List[SymbolicTensor] | Tuple[SymbolicTensor, ...],
-    nodes_in_subgraph: Set[SymbolicTensor],
+    inputs: List[SymbolicData] | Tuple[SymbolicData, ...],
+    outputs: List[SymbolicData] | Tuple[SymbolicData, ...],
+    execution_order: List[SymbolicData] | Tuple[SymbolicData, ...],
+    nodes_in_subgraph: Set[SymbolicData],
     min_loop_length: int | float = float("inf"),
 ) -> str:
     """Generate code for forward function of SymbolicModel.
@@ -62,6 +62,8 @@ def generate_forward_with_loops(
     # We only count children in the graph. Thus the intersection.
     children = {node: list(nodes_in_subgraph.intersection(node.children)) for node in execution_order}
 
+    siblings = {node: list(nodes_in_subgraph.intersection(node._layer_siblings)) for node in execution_order}
+
     for exec_id, node in enumerate(execution_order):
         if node in nodes_looped_over:
             continue
@@ -85,9 +87,19 @@ def generate_forward_with_loops(
             code_lines.append(TAB + f"for layer in l[{exec_id}:{exec_id + len(sequence)}]:")
             code_lines.append(TAB + TAB + f"{output_name} = layer({output_name})")
             nodes_looped_over.update(sequence)
+        elif len(node._layer_siblings) > 1:
+            output_names = []
+            for n in node._layer_siblings:
+                if n in siblings[node]:
+                    output_names.append(node_to_name[n])
+                else:
+                    output_names.append("_")
+
+            assert len(input_names) == 1, "Layer that has siblings cannot have more than 1 input!"
+            code_line = TAB + ", ".join(output_names) + f" = l[{exec_id}](" + "*" + input_names[0] + ")"
+            code_lines.append(code_line)
         else:
-            output_names = [node_to_name[n] for n in node._layer_outputs]
-            code_line = TAB + ", ".join(output_names) + f" = l[{exec_id}](" + ", ".join(input_names) + ")"
+            code_line = TAB + node_to_name[node] + f" = l[{exec_id}](" + ", ".join(input_names) + ")"
             code_lines.append(code_line)
 
     code_lines.append(TAB + "return " + ", ".join(node_to_name[node] for node in outputs))

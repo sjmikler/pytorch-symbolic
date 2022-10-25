@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Set, Tuple
 
-from .symbolic_tensor import SymbolicTensor
+from .symbolic_data import SymbolicData, SymbolicTensor, SymbolicTuple
 
 if TYPE_CHECKING:
     from .symbolic_model import SymbolicModel
@@ -15,8 +15,8 @@ from torch import nn
 
 
 def check_for_missing_inputs(
-    used_nodes: Set[SymbolicTensor],
-    inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor],
+    used_nodes: Set[SymbolicData],
+    inputs: Tuple[SymbolicData, ...] | List[SymbolicData],
 ):
     """Check if there exist nodes which require input from outside of the graph.
 
@@ -41,18 +41,18 @@ def check_for_missing_inputs(
 
 
 def figure_out_nodes_between(
-    inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | None = None,
-    outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | None = None,
-) -> Set[SymbolicTensor]:
+    inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None,
+    outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None,
+) -> Set[SymbolicData]:
     """Returns intersection of predecessors tree of outputs and succesors tree of inputs."""
 
-    all_nodes_above: List[SymbolicTensor] = []
+    all_nodes_above: List[SymbolicData] = []
     if outputs is not None:
         for output_leaf in outputs:
             nodes_above = output_leaf._get_all_nodes_above()
             all_nodes_above.extend(nodes_above)
 
-    all_nodes_below: List[SymbolicTensor] = []
+    all_nodes_below: List[SymbolicData] = []
     if inputs is not None:
         for input_leaf in inputs:
             nodes_below = input_leaf._get_all_nodes_below()
@@ -68,8 +68,13 @@ def figure_out_nodes_between(
     return used_nodes
 
 
-def default_node_text(plh: SymbolicTensor) -> str:
-    return str(plh.shape)
+def default_node_text(sym: SymbolicData) -> str:
+    if isinstance(sym, SymbolicTensor):
+        return str(sym.shape)
+    if isinstance(sym, SymbolicTuple):
+        return f"LEN({len(sym)})"
+    else:
+        return str(type(sym.v))
 
 
 def default_edge_text(layer: nn.Module) -> str:
@@ -171,9 +176,9 @@ def variable_name_resolver(namespace):
 def draw_graph(
     *,
     model: SymbolicModel | None = None,
-    inputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
-    outputs: Iterable[SymbolicTensor] | SymbolicTensor | None = None,
-    node_text_func: Callable[[SymbolicTensor], str] | None = None,
+    inputs: Iterable[SymbolicData] | SymbolicData | None = None,
+    outputs: Iterable[SymbolicData] | SymbolicData | None = None,
+    node_text_func: Callable[[SymbolicData], str] | None = None,
     edge_text_func: Callable[[nn.Module], str] | None = None,
     node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
@@ -190,7 +195,7 @@ def draw_graph(
     model
         A SymbolicModel to be plotted. This or ``inputs`` must be provided.
     inputs
-        Input in the graph of SymbolicTensor computations. This or ``model`` must be provided.
+        Input in the graph of Symbolic computations. This or ``model`` must be provided.
     node_text_func
         A function that returns text that will be written on Nodes.
     edge_text_func
@@ -231,14 +236,14 @@ def draw_graph(
 
     elif inputs is not None or outputs is not None:
         if inputs is not None:
-            if isinstance(inputs, SymbolicTensor):
+            if isinstance(inputs, SymbolicData):
                 inputs = (inputs,)
-            assert all(isinstance(x, SymbolicTensor) for x in inputs)
+            assert all(isinstance(x, SymbolicData) for x in inputs)
             inputs = tuple(inputs)
         if outputs is not None:
-            if isinstance(outputs, SymbolicTensor):
+            if isinstance(outputs, SymbolicData):
                 outputs = (outputs,)
-            assert all(isinstance(x, SymbolicTensor) for x in outputs)
+            assert all(isinstance(x, SymbolicData) for x in outputs)
             outputs = tuple(outputs)
 
     else:
@@ -319,7 +324,7 @@ def draw_graph(
     plt.legend(handles=handles)
 
 
-def topological_sort(nodes: Set[SymbolicTensor]) -> List[SymbolicTensor]:
+def topological_sort(nodes: Set[SymbolicData]) -> List[SymbolicData]:
     """In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
     linear ordering of its nodes in which each node comes before all nodes to which it has outbound edges.
     Every DAG has one or more topological sorts."""

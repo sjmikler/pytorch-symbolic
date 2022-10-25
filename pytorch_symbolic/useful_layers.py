@@ -138,10 +138,18 @@ class AggregateLayer(nn.Module):
         self.dim = dim
         self.keepdim = keepdim
         if self.dim is None:
-            self.forward = self.forward_nodim
+            setattr(self, "forward", self.forward_nodim)
 
     def forward(self, tensor):
         return self.op(input=tensor, dim=self.dim, keepdim=self.keepdim)
 
     def forward_nodim(self, tensor):
         return self.op(input=tensor)
+
+
+class UnpackLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, *args):
+        return args

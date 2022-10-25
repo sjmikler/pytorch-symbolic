@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Set, Tuple
+from typing import Any, List, Set, Tuple
 
 import torch
 from torch import nn
@@ -11,50 +11,156 @@ from torch import nn
 from . import useful_layers
 
 
-class SymbolicTensor:
+class SymbolicData:
     def __init__(
         self,
-        value: torch.Tensor,
-        parents: Tuple[SymbolicTensor, ...] = tuple(),
-        layer_outputs: Tuple[SymbolicTensor, ...] = tuple(),
+        value: Any,
+        parents: Tuple[SymbolicData, ...] = tuple(),
         depth: int = 0,
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
-        """Node in a SymbolicModel.
-
-        This might represent input or intermediate values of the neural network.
-
-        Parameters
-        ----------
-        value
-            x object representing example of value that will flow through the node.
-        parents
-            Tuple of parent nodes - other SymbolicTensors.
-        layer_outputs
-            Layer associated with this tuple might have multiple outputs.
-            This is a tuple of those outputs, including this SymbolicTensor.
-        depth
-            How deep the node is in the tree. It is defined as maximum of parents' depth plus 1.
-        layer
-            nn.Module object that transformed parents into this object.
-        """
         self.v = value
         self.layer = layer
         self.depth = depth
+        self.batch_size_known = batch_size_known
 
         self._output = None
-        self._children: List[SymbolicTensor] = []
-        self._parents: Tuple[SymbolicTensor, ...] = parents
-        self._layer_outputs: Tuple[SymbolicTensor, ...] = layer_outputs
+        self._children: List[SymbolicData] = []
+        self._parents: Tuple[SymbolicData, ...] = parents
+        self._layer_siblings: Tuple[SymbolicData, ...] = (self,)
 
     @property
-    def parents(self) -> Tuple[SymbolicTensor, ...]:
+    def parents(self) -> Tuple[SymbolicData, ...]:
         return tuple(self._parents)
 
     @property
-    def children(self) -> Tuple[SymbolicTensor, ...]:
+    def children(self) -> Tuple[SymbolicData, ...]:
         return tuple(self._children)
+
+    def __len__(self) -> int:
+        """Shape of the placeholder, including batch size."""
+        return len(self.v)
+
+    def apply_module(
+        self, layer: nn.Module, *others: SymbolicData
+    ) -> SymbolicData | Tuple[SymbolicData, ...]:
+        """Register a new layer in the graph. Layer must be nn.Module."""
+        # assert all([isinstance(other, SymbolicTensor) for other in others])
+
+        parents = (self, *others)
+        new_depth = max(parent.depth for parent in parents) + 1
+        new_output = layer.__call__(self.v, *(o.v for o in others))
+
+        cls = SymbolicData
+        if isinstance(new_output, torch.Tensor):
+            cls = SymbolicTensor
+        elif isinstance(new_output, tuple):
+            cls = SymbolicTuple
+
+        new_layer_node = cls(
+            value=new_output,
+            parents=parents,
+            layer=layer,
+            depth=new_depth,
+            batch_size_known=self.batch_size_known,
+        )
+        for parent in parents:
+            parent._children.append(new_layer_node)
+            logging.info(f"Added {new_layer_node} as child of {parent}")
+        return new_layer_node
+
+    def __iter__(self):
+        """Create the only node that has multiple children from one operation.
+
+        Suitable for unpacking results, even nested ones.
+        """
+        layer = useful_layers.UnpackLayer()
+        new_outputs = layer.__call__(*self.v)
+
+        new_layer_nodes = []
+        for new_output in new_outputs:
+
+            cls = SymbolicData
+            if isinstance(new_output, torch.Tensor):
+                cls = SymbolicTensor
+            elif isinstance(new_output, tuple):
+                cls = SymbolicTuple
+
+            new_layer_nodes.append(
+                cls(
+                    value=new_output,
+                    parents=(self,),
+                    layer=layer,
+                    depth=self.depth + 1,
+                    batch_size_known=self.batch_size_known,
+                )
+            )
+        for new_layer_node in new_layer_nodes:
+            new_layer_node._layer_siblings = tuple(new_layer_nodes)
+
+        self._children.extend(new_layer_nodes)
+        for new_layer_node in new_layer_nodes:
+            logging.info(f"Added {new_layer_node} as child of {self}")
+        for node in new_layer_nodes:
+            yield node
+
+    def _get_all_nodes_above(self) -> Set[SymbolicData]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for parent in node._parents:
+                if parent not in nodes_seen:
+                    to_expand.append(parent)
+                    nodes_seen.add(parent)
+        return nodes_seen
+
+    def _get_all_nodes_below(self) -> Set[SymbolicData]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for child in node._children:
+                if child not in nodes_seen:
+                    to_expand.append(child)
+                    nodes_seen.add(child)
+        return nodes_seen
+
+    def _launch_input(self, x):
+        self._output = x
+
+    def _launch_single_out(self):
+        self._output = self.layer(*(parent._output for parent in self._parents))
+
+    def _launch_unpack(self):
+        outputs = self.layer(*self._parents[0])
+        for node, out in zip(self._layer_siblings, outputs):
+            node._output = out
+
+    def __call__(self, *args):
+        return self.apply_module(*args)
+
+    def __repr__(self):
+        addr = f"{self.__class__.__name__} at {hex(id(self))};"
+        # info = f"child of {len(self._parents)}; parent of {len(self._children)}"
+        info = f"{len(self._parents)} parents; {len(self._children)} children"
+        return "<" + addr + " " + info + ">"
+
+    def __hash__(self):
+        return id(self)
+
+
+class SymbolicTuple(SymbolicData):
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        assert isinstance(self.v, Tuple)
+
+
+class SymbolicTensor(SymbolicData):
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        assert isinstance(self.v, torch.Tensor)
 
     @property
     def features(self) -> int:
@@ -154,73 +260,6 @@ class SymbolicTensor:
     def flatten(self) -> SymbolicTensor:
         return nn.Flatten()(self)
 
-    def apply_module(
-        self, layer: nn.Module, *others: SymbolicTensor
-    ) -> SymbolicTensor | Tuple[SymbolicTensor, ...]:
-        """Register a new layer in the graph. Layer must be nn.Module."""
-        assert all([isinstance(other, SymbolicTensor) for other in others])
-
-        parents = (self, *others)
-        new_depth = max(parent.depth for parent in parents) + 1
-        new_outputs = layer.__call__(self.v, *(o.v for o in others))
-
-        if not isinstance(new_outputs, tuple):  # in case of 1 output nn.Module
-            new_outputs = (new_outputs,)
-
-        new_layer_nodes = tuple(
-            SymbolicTensor(
-                value=new_output,
-                parents=parents,
-                layer=layer,
-                depth=new_depth,
-            )
-            for new_output in new_outputs
-        )
-        for new_layer_node in new_layer_nodes:
-            new_layer_node._layer_outputs = new_layer_nodes
-
-        for parent in parents:
-            parent._children.extend(new_layer_nodes)
-            for new_layer_node in new_layer_nodes:
-                logging.info(f"Added {new_layer_node} as child of {parent}")
-
-        if len(new_layer_nodes) == 1:
-            return new_layer_nodes[0]
-        else:
-            return new_layer_nodes
-
-    def _get_all_nodes_above(self) -> Set[SymbolicTensor]:
-        nodes_seen = {self}
-        to_expand = [self]
-        while to_expand:
-            node = to_expand.pop()
-            for parent in node._parents:
-                if parent not in nodes_seen:
-                    to_expand.append(parent)
-                    nodes_seen.add(parent)
-        return nodes_seen
-
-    def _get_all_nodes_below(self) -> Set[SymbolicTensor]:
-        nodes_seen = {self}
-        to_expand = [self]
-        while to_expand:
-            node = to_expand.pop()
-            for child in node._children:
-                if child not in nodes_seen:
-                    to_expand.append(child)
-                    nodes_seen.add(child)
-        return nodes_seen
-
-    def _launch_input(self, x):
-        self._output = x
-
-    def _launch(self):
-        for node in self._layer_outputs:
-            node._output = self.layer(*(parent._output for parent in self._parents))
-
-    def __call__(self, *args):
-        return self.apply_module(*args)
-
     def __abs__(self):
         return self(useful_layers.AnyOpLayer(lambda x: abs(x)))
 
@@ -311,15 +350,6 @@ class SymbolicTensor:
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
 
-    def __repr__(self):
-        addr = f"{self.__class__.__name__} at {hex(id(self))};"
-        # info = f"child of {len(self._parents)}; parent of {len(self._children)}"
-        info = f"{len(self._parents)} parents; {len(self._children)} children"
-        return "<" + addr + " " + info + ">"
-
-    def __hash__(self):
-        return id(self)
-
 
 class Input(SymbolicTensor):
     def __init__(
@@ -366,6 +396,8 @@ class Input(SymbolicTensor):
             super().__init__(value=custom_tensor)
             return
 
+        batch_size_known = True
+
         if batch_shape is None and not batched:
             batch_shape = shape
 
@@ -376,9 +408,10 @@ class Input(SymbolicTensor):
             # We use batch_size of 1 under the hood
             # but we don't tell it to the user
             batch_size = 1
+            batch_size_known = False
         else:
             raise ValueError("Shape argument is required!")
 
         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)
-        super().__init__(value=value)
+        super().__init__(value=value, batch_size_known=batch_size_known)

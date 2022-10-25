@@ -36,8 +36,8 @@ model = SymbolicModel(inputs, outputs)
 
 To register a new layer, e.g. ``nn.Linear`` in your model, you have two options:
 
-* `layer(symbolic_tensor)` (like in Keras Functional API)
-* `symbolic_tensor(layer)` (like nowhere else)
+* `layer(symbolic_data)` (like in Keras Functional API)
+* `symbolic_data(layer)` (like nowhere else)
 
 There are no differences between them.
 They both return a SymbolicTensor and they create identical models.
@@ -266,7 +266,7 @@ x = useful_layers.ConcatLayer(dim=1)(x1, x2)
 x.shape  # (1, 6, 2, 3)
 ```
 
-Alternatively, using the other notation, do it like this `symbolic_tensor(layer, *other_args)`:
+Alternatively, using the other notation, do it like this `symbolic_data(layer, *other_args)`:
 
 ```py
 x = x1(useful_layers.ConcatLayer(dim=1), x2)
