@@ -7,23 +7,23 @@ from typing import Callable, Dict, Hashable, List, Tuple
 from torch import nn
 
 from . import useful_layers
-from .symbolic_model import SymbolicTensor
+from .symbolic_data import SymbolicData
 
 
 def add_module_to_graph(module, *args):
-    assert isinstance(args[0], SymbolicTensor)
+    assert isinstance(args[0], SymbolicData)
     return args[0](module, *args[1:])
 
 
 def _replace_symbolic_with_value(container, extracted, navigation):
-    """Search recursively for all occurences of SymbolicTensor and replace them with their value.
+    """Search recursively for all occurences of Symbolic and replace them with their value.
 
     At the same time save navigation to know, how to do indexing to get to them.
 
     If navigation for container ends up as [..., [1, 2, 0, "TEST", 5], ...]
     this means that to get the element you should index container[1][2][0]["TEST"][5].
     """
-    if isinstance(container, SymbolicTensor):
+    if isinstance(container, SymbolicData):
         navigation.append(navigation[-1].copy())
         extracted.append(container)
         return container.v
@@ -66,7 +66,7 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     if isinstance(func, nn.Module) and not kwds:
         return add_module_to_graph(func, *args)
 
-    extracted_symbols: List[SymbolicTensor] = []
+    extracted_symbols: List[SymbolicData] = []
 
     real_call_args = []
     real_call_kwds = {}
@@ -77,7 +77,7 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     navigation.pop()
 
     assert len(extracted_symbols) > 0, "No Symbolic Tensors detected in the input!"
-    assert all((isinstance(symbol, SymbolicTensor) for symbol in extracted_symbols))
+    assert all((isinstance(symbol, SymbolicData) for symbol in extracted_symbols))
     assert len(extracted_symbols) == len(navigation)
 
     def wrapper_function(*args):

@@ -29,8 +29,8 @@ Features:
 ## Example
 
 To create a symbolic model, create Symbolic Tensors and nn.Modules. 
-Add layers by calling ``layer(symbolic_tensor)`` or
-equivalently ``symbolic_tensor(layer)``. That's all!
+Add layers by calling ``layer(symbolic_data)`` or
+equivalently ``symbolic_data(layer)``. That's all!
 
 Layers will be automagically registered in your model.
 

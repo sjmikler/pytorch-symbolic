@@ -52,7 +52,7 @@ def test_2():
     x = x(nn.Flatten())
     outputs = x(nn.Linear(in_features=x.features, out_features=10))
     model = SymbolicModel(inputs=inputs, outputs=outputs)
-    assert model.output_shape == (None, 10)
+    assert model.output_shape == (1, 10)
     assert model_tools.get_parameter_count(model) == 83562
 
 
@@ -85,4 +85,4 @@ def test_4():
     x1 = Input(shape=(1, 2, 3))
     x2 = Input(shape=(5, 2, 3))
     x = x1(useful_layers.ConcatLayer(dim=1), x2)
-    assert x.shape == (None, 6, 2, 3)
+    assert x.shape == (1, 6, 2, 3)

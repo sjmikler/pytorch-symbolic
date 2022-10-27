@@ -12,7 +12,7 @@ from torch import nn
 
 from . import code_generator, config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
-from .symbolic_tensor import SymbolicTensor
+from .symbolic_data import SymbolicData
 
 
 class DetachedSymbolicModel(nn.Module):
@@ -36,16 +36,16 @@ class DetachedSymbolicModel(nn.Module):
 
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
-        self.forward = MethodType(scope["forward"], self)  # type: ignore
+        setattr(self, "forward", MethodType(scope["forward"], self))
 
 
 class SymbolicModel(nn.Module):
     def __init__(
         self,
-        inputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
-        outputs: Tuple[SymbolicTensor, ...] | List[SymbolicTensor] | SymbolicTensor,
+        inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
+        outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
         enable_cuda_graphs=False,
-        enable_forward_codegen=True,
+        enable_forward_codegen=None,
     ):
         """A PyTorch model that applies operations defined by the graph.
 
@@ -80,23 +80,25 @@ class SymbolicModel(nn.Module):
         super().__init__()
         logging.info("Creating a SymbolicModel...")
 
-        if isinstance(inputs, SymbolicTensor):
+        if isinstance(inputs, SymbolicData):
             inputs = (inputs,)
-        assert all(isinstance(x, SymbolicTensor) for x in inputs)
-        self.inputs: Tuple[SymbolicTensor, ...] = tuple(inputs)
+        assert all(isinstance(x, SymbolicData) for x in inputs)
+        self.inputs: Tuple[SymbolicData, ...] = tuple(inputs)
 
-        if isinstance(outputs, SymbolicTensor):
+        if isinstance(outputs, SymbolicData):
             outputs = (outputs,)
-        assert all(isinstance(x, SymbolicTensor) for x in outputs)
-        self.outputs: Tuple[SymbolicTensor, ...] = tuple(outputs)
+        assert all(isinstance(x, SymbolicData) for x in outputs)
+        self.outputs: Tuple[SymbolicData, ...] = tuple(outputs)
 
         # Initialize helper variables
-        self._node_to_layer_name: Dict[SymbolicTensor, str] = {}
-        self._layer_name_to_node: Dict[str, SymbolicTensor] = {}
-        self._execution_order_nodes: List[SymbolicTensor] = []
+        self._node_to_layer_name: Dict[SymbolicData, str] = {}
+        self._layer_name_to_node: Dict[str, SymbolicData] = {}
+        self._execution_order_nodes: List[SymbolicData] = []
         self._execution_order_layers: List[nn.Module] = []
         self._figure_out_execution_order()
 
+        if enable_forward_codegen is None:
+            enable_forward_codegen = config.CODEGEN_BY_DEFAULT
         self._enable_forward_codegen = enable_forward_codegen
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
@@ -141,7 +143,7 @@ class SymbolicModel(nn.Module):
         else:
             return tuple(node.shape for node in self.outputs)
 
-    def add_output(self, node: SymbolicTensor):
+    def add_output(self, node: SymbolicData):
         assert node not in self.inputs, "Node is an input of this SymbolicModel!"
         assert node in self._execution_order_nodes, "Node is out of reach for this SymbolicModel!"
 
@@ -157,7 +159,8 @@ class SymbolicModel(nn.Module):
         forward_src = code_generator.generate_forward_with_loops(
             self.inputs,
             self.outputs,
-            self._execution_order_nodes,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
@@ -166,14 +169,15 @@ class SymbolicModel(nn.Module):
         self._generated_forward_source = code_generator.generate_forward_with_loops(
             self.inputs,
             self.outputs,
-            self._execution_order_nodes,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
         self.forward = MethodType(scope["forward"], self)
 
-    def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicTensor, ...]):
+    def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicData, ...]):
         msg = (
             "CUDA Graphs can result in undefined behaviour! "
             "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
@@ -187,19 +191,38 @@ class SymbolicModel(nn.Module):
         input_tensors = tuple(x.v.cuda() for x in inputs)
         torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
 
-    def _used_nodes(self) -> Set[SymbolicTensor]:
+    def _used_nodes(self) -> Set[SymbolicData]:
         """Return a set of all nodes used in this model."""
         return figure_out_nodes_between(self.inputs, self.outputs)
 
+    def _remove_repeated_execution(self, execution_order_nodes: List[SymbolicData]) -> List[SymbolicData]:
+        """In case of multiple outputs, we need only one of the output node to launch the layer."""
+        nodes_without_repeated_execution = []
+        used_nodes = self._used_nodes()
+
+        already_executed: Set[SymbolicData] = set()
+        for node in execution_order_nodes:
+            if node in already_executed:
+                continue
+            nodes_without_repeated_execution.append(node)
+            already_executed.update(used_nodes.intersection(node._layer_full_siblings))
+
+        assert len(already_executed) == len(execution_order_nodes)
+        return nodes_without_repeated_execution
+
     def _figure_out_execution_order(self):
         used_nodes = self._used_nodes()
-        execution_order = topological_sort(used_nodes)
-        assert len(execution_order) == len(used_nodes)
+        execution_order_nodes = topological_sort(used_nodes)
+        assert len(execution_order_nodes) == len(used_nodes)
 
         for input_node in used_nodes.intersection(self.inputs):  # Not all inputs are in `used_nodes`
-            execution_order.remove(input_node)  # Exclude inputs, as we don't execute any layers there
+            execution_order_nodes.remove(input_node)  # Exclude inputs, as we don't execute any layers there
 
-        self._execution_order_nodes = execution_order
+        # To avoid calling layers twice when they have multiple outputs
+        # We remove all nodes with already executed layer from execution order
+        execution_order_nodes = self._remove_repeated_execution(execution_order_nodes)
+
+        self._execution_order_nodes = execution_order_nodes
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
         num_layers = len(self._execution_order_nodes)
