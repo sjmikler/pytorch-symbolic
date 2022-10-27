@@ -1,6 +1,6 @@
 #  Copyright (c) 2022 Szymon Mikler
 
-from . import graph_algorithms, model_tools
+from . import graph_algorithms, model_tools, symbolic_data
 from .config import optimize_module_calls
 from .functions_utility import add_to_graph
 from .symbolic_data import Input
@@ -13,4 +13,5 @@ __all__ = [
     "graph_algorithms",
     "model_tools",
     "optimize_module_calls",
+    "symbolic_data",
 ]

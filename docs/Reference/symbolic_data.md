@@ -12,7 +12,7 @@ Examples:
 2. ``symbolic(nn.Linear(10, 10))`` - equivalent to 1.
 3. ``model = SymbolicModel(inputs=(symbolic_1, symbolic_2), outputs=symbolic_3)``
 
-::: pytorch_symbolic.Input
+::: pytorch_symbolic.symbolic_data.Input
     options:
         show_source: false
         heading_level: 2
@@ -26,7 +26,7 @@ Examples:
         merge_init_into_class: true
         show_root_full_path: true
 
-::: pytorch_symbolic.SymbolicData
+::: pytorch_symbolic.symbolic_data.SymbolicData
     options:
         show_source: false
         heading_level: 2
@@ -40,7 +40,7 @@ Examples:
         merge_init_into_class: true
         show_root_full_path: true
 
-::: pytorch_symbolic.SymbolicTensor
+::: pytorch_symbolic.symbolic_data.SymbolicTensor
     options:
         show_source: false
         heading_level: 2
@@ -54,7 +54,7 @@ Examples:
         merge_init_into_class: true
         show_root_full_path: true
 
-::: pytorch_symbolic.SymbolicTuple
+::: pytorch_symbolic.symbolic_data.SymbolicTuple
     options:
         show_source: false
         heading_level: 2
