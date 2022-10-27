@@ -4,7 +4,7 @@
 
 * Counterpart of [Keras Functional API](https://keras.io/guides/functional_api/)
 * No overhead during execution
-* Supports advanced stuff:
+* Supports advanced control flow:
 	* Reusing layers
 	* Shared layers
 	* Multiple inputs and outputs
@@ -36,22 +36,22 @@ model = SymbolicModel(inputs, outputs)
 
 To register a new layer, e.g. ``nn.Linear`` in your model, you have two options:
 
-* `layer(symbolic_data)` (like in Keras Functional API)
+* `layer(symbolic_data)` (just like in [Keras Functional API](https://keras.io/guides/functional_api/))
 * `symbolic_data(layer)` (like nowhere else)
 
-There are no differences between them.
-They both return a SymbolicTensor and they create identical models.
+There are no differences between these methods.
+Models produced with them will be identical.
 
 **What is a Symbolic Tensor?**
 
-Under the hood of Pytorch Symbolic, there's a computation graph.
+Under the hood of Pytorch Symbolic, there lives a computation graph.
 
-Every `SymbolicTensor` is a node in it. You should:
+Every `SymbolicTensor` is a node in it. When interacting with it, you shall:
 
 * Think of it as placeholder for your data
-* Use it like `torch.Tensor`
+* Use it like `torch.Tensor` (slicing and iterating included)
 
-Let's play with the previously created `SymbolicTensor`:
+Let us play with the previously created `SymbolicTensor`:
 
 ```py
 print(inputs)
@@ -66,12 +66,12 @@ print(inputs)
 
 At first, `inputs` was parent to `outputs` only.
 
-But when we wrote `inputs + 1`, a new node was registered as
+But when we executed `inputs + 1`, a new node was registered as
 the second child of `inputs`.
 
 Symbolic Tensors have useful attributes.
 Using them we can, for example, instantly obtain shapes of intermediate outputs,
-instead of deriving them by hand. For example:
+instead of deriving them by hand. Let's see it:
 
 ```py
 print(inputs.shape)
@@ -96,12 +96,12 @@ Doing this, we:
 	* `inputs = Input(shape=(C, H, W))`
 	* `inputs = Input(shape=(B, C, H, W), batched=False)`
 	* `inputs = Input(batch_shape=(B, C, H, W))`
-2. Register new modules in the model. There are a few ways:
+2. Register new modules in the graph. There are a few ways:
 	* `outputs = inputs(layer)`
 	* `outputs = layer(inputs)`
 	* `outputs = add_to_graph(layer, inputs)`
 3. Use standard operations on Symbolic Tensors: `+, -, *, **, /, //, %` and `abs`:
-	* For example, `x=2+inputs` or `x=inputs%y` will work as expected.
+	* For example, `x = 2 + inputs` or `x = inputs % y[0]` will work as expected
 4. To concatenate (similarly for stacking) Symbolic Tensors:
 	* use `useful_layers.ConcatOpLayer(dim=1)`
 	* add custom function to the model:  `add_to_graph(torch.concat, (x, y), dim=1)`
@@ -198,7 +198,7 @@ If you want to use function from `torch.nn.functional` or basically
 any custom function in your model, you have a few options.
 The recommended way is to wrap it in a `nn.Module`.
 
-For example let's say you have a function you want to use:
+As an example, let's say this is the function you want to use:
 
 ```python
 from torch import nn
@@ -209,9 +209,9 @@ def custom_func(*args):
     return args
 ```
 
-Our function just prints whatever is passed and returns it.
+This function just prints whatever is passed to it and returns it.
 
-An equivalent `nn.Module` can call this function directly:
+An equivalent `nn.Module` can use this function directly:
 
 ```py
 class CustomModule(nn.Module):
@@ -230,7 +230,7 @@ They are available in `pytorch_symbolic.useful_layers`.
 
 If you really hate classes or you are in a hurry, we got you covered.
 
-You can register almost any function in your Symbolic Model:
+You can add almost any function to your Symbolic Model:
 
 ```python
 import torch

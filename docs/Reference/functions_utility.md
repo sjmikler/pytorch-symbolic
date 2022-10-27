@@ -2,7 +2,7 @@
 
 This module provides a way to add custom functions to the graph.
 
-To register a function in your graph, instead of doing
+To register a function in your graph, instead of doing:
 
 - ``x = function(*args, **kwds)``
 
@@ -36,7 +36,8 @@ This overhead _should not_ be present when dealing with large models on GPU,
 because then CPU does its work before GPU finishes kernel computation. 
 
 Recommended, overhead-free way to use custom functions is to write yourself an ``nn.Module`` that does
-the same as the function. Then you can use it as usually without sacrificing performance.
+the same as your function of choice.
+Then you can use the model without sacrificing performance.
 
 ::: pytorch_symbolic.functions_utility
 	options:

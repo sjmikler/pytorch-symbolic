@@ -8,12 +8,12 @@ Inheritance tree:
 
 ![../images/draw_graph8.png](../images/draw_graph8.png)
 
-A ``SymbolicTensor`` and ``Input`` are similar to ``torch.Tensor`` object,
+``SymbolicTensor`` and ``Input`` are similar to ``torch.Tensor`` object,
 but they are used only to define the graph, not to perform actual computations. 
 You should use them to register new layers in your computation graph and later to create the model.
-They have some common methods implemented, e.g. `tensor.t()` for transposition.
+They have some common methods implemented, e.g. `tensor.t()` or `tensor.T` for transposition.
 
-``SymbolicData`` support slicing, so you can do:
+``SymbolicData`` supports slicing too, so you can do:
 ```python
 from pytorch_symbolic import Input, SymbolicModel
 
@@ -29,7 +29,7 @@ model = SymbolicModel(x, y)
 But be careful! Each slice operation creates a new layer,
 so if you do a lot of slicing, 
 it is better enclose it in a custom module.
-However, being able to do in on ``SymbolicData`` is great for prototyping.
+However, being able to do it directly on ``SymbolicData`` is great for prototyping.
 
 
 ::: pytorch_symbolic.Input
