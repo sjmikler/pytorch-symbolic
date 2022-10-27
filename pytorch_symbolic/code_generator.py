@@ -36,7 +36,7 @@ def generate_forward_with_loops(
     str
         Generated code.
     """
-    assert min_loop_length > 1, "Smallest allowed loop length is 2!"
+    assert min_loop_length >= 2, "Loop length cannot be smaller than 2!"
 
     str_length = len(str(max(len(inputs), len(outputs), len(execution_order))))
     node_to_name = {}
@@ -62,7 +62,9 @@ def generate_forward_with_loops(
     # We only count children in the graph. Thus the intersection.
     children = {node: list(nodes_in_subgraph.intersection(node.children)) for node in execution_order}
 
-    siblings = {node: list(nodes_in_subgraph.intersection(node._layer_siblings)) for node in execution_order}
+    siblings = {
+        node: list(nodes_in_subgraph.intersection(node._layer_full_siblings)) for node in execution_order
+    }
 
     for exec_id, node in enumerate(execution_order):
         if node in nodes_looped_over:
@@ -73,6 +75,7 @@ def generate_forward_with_loops(
         last_node = node
         while (
             len(children[last_node]) == 1
+            and len(last_node._layer_full_siblings) == 1
             # this should never be false, but just in case we make sure the child is next in execution order
             and children[last_node][0] is execution_order[exec_id + len(sequence)]
             and len(parents[last_node]) == 1
@@ -87,15 +90,15 @@ def generate_forward_with_loops(
             code_lines.append(TAB + f"for layer in l[{exec_id}:{exec_id + len(sequence)}]:")
             code_lines.append(TAB + TAB + f"{output_name} = layer({output_name})")
             nodes_looped_over.update(sequence)
-        elif len(node._layer_siblings) > 1:
+        elif len(node._layer_full_siblings) > 1:  # Must unpack all siblings, even if not all are used
             output_names = []
-            for n in node._layer_siblings:
+            for n in node._layer_full_siblings:
                 if n in siblings[node]:
                     output_names.append(node_to_name[n])
                 else:
-                    output_names.append("_")
+                    output_names.append("_")  # If sibling not used, we don't save it as a variable
 
-            assert len(input_names) == 1, "Layer that has siblings cannot have more than 1 input!"
+            assert len(input_names) == 1, "Layer that has full siblings cannot have more than 1 input!"
             code_line = TAB + ", ".join(output_names) + f" = l[{exec_id}](" + "*" + input_names[0] + ")"
             code_lines.append(code_line)
         else:

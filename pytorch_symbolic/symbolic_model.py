@@ -120,10 +120,7 @@ class SymbolicModel(nn.Module):
             input_node._launch_input(input_data)
 
         for node in self._execution_order_nodes:
-            if len(node._layer_siblings) > 1:
-                node._launch_unpack()
-            else:
-                node._launch_single_out()
+            node._launch()
 
         if len(self.outputs) == 1:
             return self.outputs[0]._output
@@ -208,7 +205,7 @@ class SymbolicModel(nn.Module):
             if node in already_executed:
                 continue
             nodes_without_repeated_execution.append(node)
-            already_executed.update(used_nodes.intersection(node._layer_siblings))
+            already_executed.update(used_nodes.intersection(node._layer_full_siblings))
 
         assert len(already_executed) == len(execution_order_nodes)
         return nodes_without_repeated_execution

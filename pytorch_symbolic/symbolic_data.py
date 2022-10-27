@@ -28,7 +28,7 @@ class SymbolicData:
         self._output = None
         self._children: List[SymbolicData] = []
         self._parents: Tuple[SymbolicData, ...] = parents
-        self._layer_siblings: Tuple[SymbolicData, ...] = (self,)
+        self._layer_full_siblings: Tuple[SymbolicData, ...] = (self,)
 
     @property
     def parents(self) -> Tuple[SymbolicData, ...]:
@@ -97,7 +97,7 @@ class SymbolicData:
                 )
             )
         for new_layer_node in new_layer_nodes:
-            new_layer_node._layer_siblings = tuple(new_layer_nodes)
+            new_layer_node._layer_full_siblings = tuple(new_layer_nodes)
 
         self._children.extend(new_layer_nodes)
         for new_layer_node in new_layer_nodes:
@@ -130,13 +130,14 @@ class SymbolicData:
     def _launch_input(self, x):
         self._output = x
 
-    def _launch_single_out(self):
-        self._output = self.layer(*(parent._output for parent in self._parents))
-
-    def _launch_unpack(self):
-        outputs = self.layer(*self._parents[0])
-        for node, out in zip(self._layer_siblings, outputs):
-            node._output = out
+    def _launch(self):
+        if len(self._layer_full_siblings) > 1:
+            assert len(self._parents) == 1
+            outputs = self.layer(*self._parents[0]._output)
+            for node, out in zip(self._layer_full_siblings, outputs):
+                node._output = out
+        else:
+            self._output = self.layer(*(parent._output for parent in self._parents))
 
     def __getitem__(self, idx):
         layer = useful_layers.SliceLayer(idx)
