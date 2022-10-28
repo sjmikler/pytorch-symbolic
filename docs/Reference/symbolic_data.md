@@ -1,18 +1,38 @@
-# SymbolicTensor
+# symbolic_data
 
-A ``SymbolicTensor`` and ``Input`` are similar to ``torch.Tensor`` object, but it is used only when 
-defining the graph, not to perform actual computations. 
-You should use it to register new layers in your computation graph and later to create the model.
+This is a collection of symbolic data types. 
 
-``SymbolicTensor`` and ``Input`` support slicing and common methods, e.g. `tensor.t()` for transposition.
+The main class and grandfather for all other classes is `SymbolicData`. 
 
-Examples:
+Inheritance tree:
 
-1. ``nn.Linear(10, 10)(symbolic)``
-2. ``symbolic(nn.Linear(10, 10))`` - equivalent to 1.
-3. ``model = SymbolicModel(inputs=(symbolic_1, symbolic_2), outputs=symbolic_3)``
+![../images/draw_graph8.png](../images/draw_graph8.png)
 
-::: pytorch_symbolic.symbolic_data.Input
+``SymbolicTensor`` and ``Input`` are similar to ``torch.Tensor`` object,
+but they are used only to define the graph, not to perform actual computations. 
+You should use them to register new layers in your computation graph and later to create the model.
+They have some common methods implemented, e.g. `tensor.t()` or `tensor.T` for transposition.
+
+``SymbolicData`` supports slicing too, so you can do:
+```python
+from pytorch_symbolic import Input, SymbolicModel
+
+x = Input(batch_shape=(3, 4, 5))
+
+y = x[0]
+for row in x[1:]:
+	y += row
+	
+model = SymbolicModel(x, y)
+```
+
+But be careful! Each slice operation creates a new layer,
+so if you do a lot of slicing, 
+it is better enclose it in a custom module.
+However, being able to do it directly on ``SymbolicData`` is great for prototyping.
+
+
+::: pytorch_symbolic.Input
     options:
         show_source: false
         heading_level: 2

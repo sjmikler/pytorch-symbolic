@@ -20,6 +20,7 @@ class SymbolicData:
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
+        """Grandfather of all Symbolic datatypes."""
         self.v = value
         self.layer = layer
         self.depth = depth
@@ -32,14 +33,16 @@ class SymbolicData:
 
     @property
     def parents(self) -> Tuple[SymbolicData, ...]:
+        """Acces the tuple of parents of this node."""
         return tuple(self._parents)
 
     @property
     def children(self) -> Tuple[SymbolicData, ...]:
+        """Acces the tuple of children of this node."""
         return tuple(self._children)
 
     def __len__(self) -> int:
-        """Shape of the placeholder, including batch size."""
+        """Length of the symbolic data."""
         return len(self.v)
 
     def apply_module(
@@ -71,7 +74,7 @@ class SymbolicData:
         return new_layer_node
 
     def __iter__(self):
-        """Create the only node that has multiple children from one operation.
+        """Creates the only layer that has multiple children from one operation.
 
         Suitable for unpacking results, even nested ones.
         """
@@ -158,12 +161,14 @@ class SymbolicData:
 
 class SymbolicTuple(SymbolicData):
     def __init__(self, *args, **kwds):
+        """Symbolic datatype whose whole purpose is to handle unpacking outputs."""
         super().__init__(*args, **kwds)
         assert isinstance(self.v, Tuple)
 
 
 class SymbolicTensor(SymbolicData):
     def __init__(self, *args, **kwds):
+        """Most common Symbolic datatype. It mimics ``torch.Tensor``."""
         super().__init__(*args, **kwds)
         assert isinstance(self.v, torch.Tensor)
 
@@ -359,7 +364,7 @@ class SymbolicTensor(SymbolicData):
 class Input(SymbolicTensor):
     def __init__(
         self,
-        shape: Tuple | List | None = None,
+        shape: Tuple | List = tuple(),
         batched: bool = True,
         batch_shape: Tuple | List | None = None,
         dtype=torch.float32,
@@ -371,7 +376,7 @@ class Input(SymbolicTensor):
 
         It should be treated as a placeholder value that will be replaced with
         real data after the model is created.
-        For calculation purposes, it can be treated as a normal numerical object,
+        For calculation purposes, it can be treated as normal ``torch.Tensor``,
         which means it can be added, subtracted, multiplied, taken absolute value of,
         etc.
 
@@ -409,13 +414,10 @@ class Input(SymbolicTensor):
         if batch_shape is not None:
             batch_size = batch_shape[0]
             shape = batch_shape[1:]
-        elif shape is not None:
-            # We use batch_size of 1 under the hood
-            # but we don't tell it to the user
+        else:
+            # We use batch_size of 1 under the hood but we don't tell it to the user
             batch_size = 1
             batch_size_known = False
-        else:
-            raise ValueError("Shape argument is required!")
 
         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
         value = value.to(dtype)

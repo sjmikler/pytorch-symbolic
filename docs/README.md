@@ -28,7 +28,7 @@ Features:
 
 ## Example
 
-To create a symbolic model, create Symbolic Tensors and nn.Modules. 
+To create a symbolic model, get Symbolic Tensors and nn.Modules. 
 Add layers by calling ``layer(symbolic_data)`` or
 equivalently ``symbolic_data(layer)``. That's all!
 
