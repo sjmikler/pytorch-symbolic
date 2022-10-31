@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_symbolic import Input, SymbolicModel, add_to_graph, optimize_module_calls
+from pytorch_symbolic import CustomInput, Input, SymbolicModel, add_to_graph, optimize_module_calls
 
 
 def test_all():
@@ -178,8 +178,8 @@ def test_all_optimized():
 
 def test_mmul_on_list_torch():
     A, B, C = 5, 5, 5
-    x = Input(custom_data=[[torch.rand(1) for _ in range(B)] for _ in range(A)])
-    y = Input(custom_data=[[torch.rand(1) for _ in range(C)] for _ in range(B)])
+    x = CustomInput(data=[[torch.rand(1) for _ in range(B)] for _ in range(A)])
+    y = CustomInput(data=[[torch.rand(1) for _ in range(C)] for _ in range(B)])
 
     r = None
     for i in range(len(x[0])):
@@ -216,8 +216,8 @@ def test_mmul_on_list_numpy():
     import numpy as np
 
     A, B, C = 5, 5, 5
-    x = Input(custom_data=[[np.random.rand() for _ in range(B)] for _ in range(A)])
-    y = Input(custom_data=[[np.random.rand() for _ in range(C)] for _ in range(B)])
+    x = CustomInput(data=[[np.random.rand() for _ in range(B)] for _ in range(A)])
+    y = CustomInput(data=[[np.random.rand() for _ in range(C)] for _ in range(B)])
 
     rs = []
     for i in range(len(x[0])):
@@ -251,8 +251,13 @@ def test_mmul_on_list_numpy():
 
 def test_anypow_layer():
     tensor = Input(shape=(10, 20))
-    power = Input(custom_data=1.5)
-    output = tensor**power
+    power = CustomInput(data=1.5)
+
+    class AnyPow(nn.Module):
+        def forward(self, tensor, power):
+            return tensor**power
+
+    output = AnyPow()(tensor, power)
 
     model = SymbolicModel(inputs=(tensor, power), outputs=output)
 

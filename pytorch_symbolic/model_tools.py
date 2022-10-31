@@ -6,10 +6,12 @@ import torch
 from torch import nn
 
 
-def get_parameter_count(model: nn.Module):
+def get_parameter_count(model: nn.Module, only_trainable=False):
     """Get the number of parameters of a model."""
     cnt = 0
     for param in model.parameters():
+        if only_trainable and not param.requires_grad:
+            continue
         cnt += param.shape.numel()
     return cnt
 

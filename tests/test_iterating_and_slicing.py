@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_symbolic import Input, SymbolicModel, add_to_graph
+from pytorch_symbolic import CustomInput, Input, SymbolicModel, add_to_graph
 
 
 def test_iter_sum():
@@ -50,7 +50,7 @@ def test_indexing_basic1():
 
 
 def test_unpacking_non_tensor():
-    x = Input(custom_data=[5, 6, 7])
+    x = CustomInput(data=[5, 6, 7])
 
     model = SymbolicModel(inputs=x, outputs=(*x,))
 

@@ -96,7 +96,7 @@ Doing this, we:
 
 1. Get your symbolic inputs. You can specify the batch size. There are a few ways to do it:
 	* `inputs = Input(shape=(C, H, W))`
-	* `inputs = Input(shape=(B, C, H, W), batched=False)`
+	* `inputs = Input(shape=(C, H, W), batch_size=B)`
 	* `inputs = Input(batch_shape=(B, C, H, W))`
 2. Register new modules in the graph. There are a few ways:
 	* `outputs = inputs(layer)`

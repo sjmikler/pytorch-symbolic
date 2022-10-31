@@ -10,11 +10,6 @@ from . import useful_layers
 from .symbolic_data import SymbolicData
 
 
-def add_module_to_graph(module, *args):
-    assert isinstance(args[0], SymbolicData)
-    return args[0](module, *args[1:])
-
-
 def _replace_symbolic_with_value(container, extracted, navigation):
     """Search recursively for all occurences of Symbolic and replace them with their value.
 
@@ -59,8 +54,8 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     Convolution func example::
 
         inputs = Input(shape=(3, 32, 32))
-        kernel = Input(shape=(16, 3, 3, 3), batched=False)
-        bias = Input(shape=(16,), batched=False)
+        kernel = Input(batch_size=(16, 3, 3, 3))
+        bias = Input(batch_size=(16,))
         output = add_to_graph(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
     """
     extracted_symbols: List[SymbolicData] = []

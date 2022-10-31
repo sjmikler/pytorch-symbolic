@@ -12,6 +12,7 @@ from torch import nn
 
 from . import code_generator, config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
+from .model_tools import get_parameter_count
 from .symbolic_data import SymbolicData
 
 
@@ -164,6 +165,13 @@ class SymbolicModel(nn.Module):
             min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
         )
         return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
+
+    def summary(self):
+        print("Summary")
+        parameter_count = get_parameter_count(self)
+        trainable_count = get_parameter_count(self, only_trainable=True)
+        print(f"Total parameters: {parameter_count}")
+        print(f"Trainable parameters: {trainable_count}")
 
     def _replace_forward_with_codegen(self):
         self._generated_forward_source = code_generator.generate_forward_with_loops(
