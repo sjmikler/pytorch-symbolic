@@ -79,8 +79,8 @@ it can be faster to launch the model on the CPU.
 
 ## Toy ResNet
 
-This model is presented in [Advanced stuff](advanced_stuff.md),
-it was also used as an example in TensorFlow documentation.
+This model is presented in [Advanced Stuff](advanced_stuff.md),
+it was also used as an example in Keras documentation.
 It is a shallower and thinner version of often used ResNet network.
 
 #### Data
@@ -156,7 +156,7 @@ def _generated_forward(self,i00,i01):
     return o00
 ```
 
-## Cuda Graphs
+## CUDA Graphs
 
 Additionaly, with Pytorch Symbolic it's very simple to enable CUDA Graphs
 when GPU runtime is available. CUDA Graphs are a novel feature in PyTorch that can greatly

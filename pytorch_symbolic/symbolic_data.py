@@ -49,17 +49,13 @@ class SymbolicData:
         self, layer: nn.Module, *others: SymbolicData
     ) -> SymbolicData | Tuple[SymbolicData, ...]:
         """Register a new layer in the graph. Layer must be nn.Module."""
-        # assert all([isinstance(other, SymbolicTensor) for other in others])
+        assert all([isinstance(other, SymbolicData) for other in others])
 
         parents = (self, *others)
         new_depth = max(parent.depth for parent in parents) + 1
         new_output = layer.__call__(self.v, *(o.v for o in others))
 
-        cls = SymbolicData
-        if isinstance(new_output, torch.Tensor):
-            cls = SymbolicTensor
-        elif isinstance(new_output, tuple):
-            cls = SymbolicTuple
+        cls = SymbolicTensor if isinstance(new_output, torch.Tensor) else SymbolicData
 
         new_layer_node = cls(
             value=new_output,
@@ -87,8 +83,6 @@ class SymbolicData:
             cls = SymbolicData
             if isinstance(new_output, torch.Tensor):
                 cls = SymbolicTensor
-            elif isinstance(new_output, tuple):
-                cls = SymbolicTuple
 
             new_layer_nodes.append(
                 cls(
@@ -150,20 +144,13 @@ class SymbolicData:
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"{self.__class__.__name__} at {hex(id(self))};"
-        # info = f"child of {len(self._parents)}; parent of {len(self._children)}"
+        addr = f"SymbolicData({self.v.__class__.__name__.capitalize()}) at {hex(id(self))};"
+        # addr = f"{self.__class__.__name__} at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
     def __hash__(self):
         return id(self)
-
-
-class SymbolicTuple(SymbolicData):
-    def __init__(self, *args, **kwds):
-        """Symbolic datatype whose whole purpose is to handle unpacking outputs."""
-        super().__init__(*args, **kwds)
-        assert isinstance(self.v, Tuple)
 
 
 class SymbolicTensor(SymbolicData):
@@ -361,64 +348,128 @@ class SymbolicTensor(SymbolicData):
             return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
 
 
-class Input(SymbolicTensor):
-    def __init__(
-        self,
-        shape: Tuple | List = tuple(),
-        batched: bool = True,
-        batch_shape: Tuple | List | None = None,
-        dtype=torch.float32,
-        min_value: float = 0.0,
-        max_value: float = 1.0,
-        custom_tensor: torch.Tensor | None = None,
-    ):
-        """Input to the SymbolicModel.
+# class Input(SymbolicTensor):
+#     def __init__(
+#         self,
+#         shape: Tuple | List = tuple(),
+#         batched: bool = True,
+#         batch_shape: Tuple | List | None = None,
+#         dtype=torch.float32,
+#         min_value: float = 0.0,
+#         max_value: float = 1.0,
+#         custom_data: torch.Tensor | None = None,
+#     ):
+#         """Input to the SymbolicModel.
+#
+#         It should be treated as a placeholder value that will be replaced with
+#         real data after the model is created.
+#         For calculation purposes, it can be treated as normal ``torch.Tensor``,
+#         which means it can be added, subtracted, multiplied, taken absolute value of,
+#         etc.
+#
+#         Parameters
+#         ----------
+#         shape
+#             Shape of the real data NOT including the batch dimension.
+#         batched
+#             If True and ``batch_shape`` was not given, batch size will set to 1.
+#         batch_shape
+#             Shape of the real data including the batch dimension.
+#             Should be provided instead ``shape`` if cuda graphs will be used.
+#             If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
+#         dtype
+#             Dtype of the real data that will be the input of the network.
+#         min_value
+#             In rare cases, if real world data is very specific and some values
+#             cannot work with the model, this should be used to set a
+#             reasonable minimal value that the model can take as an input.
+#         max_value
+#             As above, but the maximal value.
+#         custom_data
+#             If needed, a specific tensor can be provided to serve as the SymbolicTensor's value.
+#             If this is the case, no shape or dtype is needed as they will be inferred from the tensor.
+#         """
+#         if custom_data is not None:
+#             super().__init__(value=custom_data)
+#             return
+#
+#         batch_size_known = True
+#
+#         if batch_shape is None and not batched:
+#             batch_shape = shape
+#
+#         if batch_shape is not None:
+#             batch_size = batch_shape[0]
+#             shape = batch_shape[1:]
+#         else:
+#             # We use batch_size of 1 under the hood but we don't tell it to the user
+#             batch_size = 1
+#             batch_size_known = False
+#
+#         value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+#         value = value.to(dtype)
+#         super().__init__(value=value, batch_size_known=batch_size_known)
 
-        It should be treated as a placeholder value that will be replaced with
-        real data after the model is created.
-        For calculation purposes, it can be treated as normal ``torch.Tensor``,
-        which means it can be added, subtracted, multiplied, taken absolute value of,
-        etc.
 
-        Parameters
-        ----------
-        shape
-            Shape of the real data NOT including the batch dimension.
-        batched
-            If True and ``batch_shape`` was not given, batch size will set to 1.
-        batch_shape
-            Shape of the real data including the batch dimension.
-            Should be provided instead ``shape`` if cuda graphs will be used.
-            If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
-        dtype
-            Dtype of the real data that will be the input of the network.
-        min_value
-            In rare cases, if real world data is very specific and some values
-            cannot work with the model, this should be used to set a
-            reasonable minimal value that the model can take as an input.
-        max_value
-            As above, but the maximal value.
-        custom_tensor
-            If needed, a specific tensor can be provided to serve as the SymbolicTensor's value.
-            If this is the case, no shape or dtype is needed as they will be inferred from the tensor.
-        """
-        if custom_tensor is not None:
-            super().__init__(value=custom_tensor)
-            return
+def Input(
+    shape: Tuple | List = tuple(),
+    batched: bool = True,
+    batch_shape: Tuple | List | None = None,
+    dtype=torch.float32,
+    min_value: float = 0.0,
+    max_value: float = 1.0,
+    custom_data: torch.Tensor | None = None,
+):
+    """Input to the SymbolicModel. Creates SymbolicData.
 
-        batch_size_known = True
+    It should be treated as a placeholder value that will be replaced with
+    real data after the model is created.
+    For calculation purposes, it can be treated as normal ``torch.Tensor``,
+    which means it can be added, subtracted, multiplied, taken absolute value of,
+    etc.
 
-        if batch_shape is None and not batched:
-            batch_shape = shape
-
-        if batch_shape is not None:
-            batch_size = batch_shape[0]
-            shape = batch_shape[1:]
+    Parameters
+    ----------
+    shape
+        Shape of the real data NOT including the batch dimension.
+    batched
+        If True and ``batch_shape`` was not given, batch size will set to 1.
+    batch_shape
+        Shape of the real data including the batch dimension.
+        Should be provided instead ``shape`` if cuda graphs will be used.
+        If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
+    dtype
+        Dtype of the real data that will be the input of the network.
+    min_value
+        In rare cases, if real world data is very specific and some values
+        cannot work with the model, this should be used to set a
+        reasonable minimal value that the model can take as an input.
+    max_value
+        As above, but the maximal value.
+    custom_data
+        If needed, a specific data can be provided to serve as the SymbolicData value.
+        It can, but doesn't need to be a torch.Tensor.
+        If it is a Tensor, no shape or dtype is needed as they will be inferred from the data.
+    """
+    if custom_data is not None:
+        if isinstance(custom_data, torch.Tensor):
+            return SymbolicTensor(value=custom_data, batch_size_known=True)
         else:
-            # We use batch_size of 1 under the hood but we don't tell it to the user
-            batch_size = 1
-            batch_size_known = False
+            return SymbolicData(value=custom_data)
 
-        value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
-        value = value.to(dtype)
-        super().__init__(value=value, batch_size_known=batch_size_known)
+    batch_size_known = True
+
+    if batch_shape is None and not batched:
+        batch_shape = shape
+
+    if batch_shape is not None:
+        batch_size = batch_shape[0]
+        shape = batch_shape[1:]
+    else:
+        # We use batch_size of 1 under the hood but we don't tell it to the user
+        batch_size = 1
+        batch_size_known = False
+
+    value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+    value = value.to(dtype)
+    return SymbolicTensor(value=value, batch_size_known=batch_size_known)

@@ -42,32 +42,34 @@ To register a new layer, e.g. ``nn.Linear`` in your model, you have two options:
 There are no differences between these methods.
 Models produced with them will be identical.
 
-**What is a Symbolic Tensor?**
+### What is a Symbolic Tensor?
 
 Under the hood of Pytorch Symbolic, there lives a computation graph.
 
 Every `SymbolicTensor` is a node in it. When interacting with it, you shall:
 
 * Think of it as placeholder for your data
-* Use it like `torch.Tensor` (slicing and iterating included)
+* Use it like `torch.Tensor` (e.g. slicing and iterating over it)
 
-Let us play with the previously created `SymbolicTensor`:
+Let us play with `SymbolicTensor` and see what we can do:
 
-```py
+```python
+from pytorch_symbolic import Input
+
+inputs = Input((28 * 28,))
 print(inputs)
 _ = inputs + 1
 print(inputs)
 ```
 
 ```stdout
+<Input at 0x7f121e131dc0; 0 parents; 0 children>
 <Input at 0x7f121e131dc0; 0 parents; 1 children>
-<Input at 0x7f121e131dc0; 0 parents; 2 children>
 ```
 
-At first, `inputs` was parent to `outputs` only.
+At first, `inputs` was the only node in the graph. It had 0 parents and 0 children. 
 
-But when we executed `inputs + 1`, a new node was registered as
-the second child of `inputs`.
+But when we executed `inputs + 1`, a new node was registered as a child of `inputs`.
 
 Symbolic Tensors have useful attributes.
 Using them we can, for example, instantly obtain shapes of intermediate outputs,
@@ -92,7 +94,7 @@ Doing this, we:
 
 ### Model for RGB images
 
-1. Get your symbolic inputs. You can specify or skip batch size. There are a few ways to do it:
+1. Get your symbolic inputs. You can specify the batch size. There are a few ways to do it:
 	* `inputs = Input(shape=(C, H, W))`
 	* `inputs = Input(shape=(B, C, H, W), batched=False)`
 	* `inputs = Input(batch_shape=(B, C, H, W))`
@@ -115,7 +117,7 @@ Doing this, we:
 
 ### Sequential topology example
 
-In PyTorch, there's `nn.Sequential` that allows creating simple sequential models.
+In PyTorch, there's `torch.nn.Sequential` that allows creating simple sequential models.
 
 In Pytorch Symbolic, you can create them easily too, but it is *much* more flexible.
 
@@ -194,11 +196,11 @@ outs1, outs2 = model(data1, data2)
 
 ### Use custom functions on Symbolic Tensors
 
-If you want to use function from `torch.nn.functional` or basically
+If you want to use a function from `torch.nn.functional` or basically
 any custom function in your model, you have a few options.
-The recommended way is to wrap it in a `nn.Module`.
+The recommended way is to wrap it in a `torch.nn.Module`.
 
-As an example, let's say this is the function you want to use:
+As an example, let us say this is the function you want to use:
 
 ```python
 from torch import nn
@@ -211,7 +213,7 @@ def custom_func(*args):
 
 This function just prints whatever is passed to it and returns it.
 
-An equivalent `nn.Module` can use this function directly:
+An equivalent `torch.nn.Module` can use this function directly:
 
 ```py
 class CustomModule(nn.Module):
@@ -222,7 +224,7 @@ class CustomModule(nn.Module):
         return custom_func(*args)
 ```
 
-We already wrapped a few useful functions for you, e.g. `concat` and `stack`.
+We already wrapped a few useful functions for you, e.g. `torch.concat` and `torch.stack`.
 
 They are available in `pytorch_symbolic.useful_layers`.
 
@@ -230,7 +232,7 @@ They are available in `pytorch_symbolic.useful_layers`.
 
 If you really hate classes or you are in a hurry, we got you covered.
 
-You can add almost any function to your Symbolic Model:
+You can add almost any function to your `SymbolicModel`:
 
 ```python
 import torch
@@ -266,7 +268,7 @@ x = useful_layers.ConcatLayer(dim=1)(x1, x2)
 x.shape  # (1, 6, 2, 3)
 ```
 
-Alternatively, using the other notation, do it like this `symbolic_data(layer, *other_args)`:
+Alternatively, using the other notation, do it like this `arg0(layer, *other_args)`:
 
 ```py
 x = x1(useful_layers.ConcatLayer(dim=1), x2)

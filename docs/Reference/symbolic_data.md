@@ -4,14 +4,11 @@ This is a collection of symbolic data types.
 
 The main class and grandfather for all other classes is `SymbolicData`. 
 
-Inheritance tree:
-
-![../images/draw_graph8.png](../images/draw_graph8.png)
-
-``SymbolicTensor`` and ``Input`` are similar to ``torch.Tensor`` object,
-but they are used only to define the graph, not to perform actual computations. 
-You should use them to register new layers in your computation graph and later to create the model.
-They have some common methods implemented, e.g. `tensor.t()` or `tensor.T` for transposition.
+``SymbolicTensor`` has similar API to ``torch.Tensor`` object,
+but ``SymbolicTensor`` is used only to define the graph, not to perform actual computations. 
+You should use it to register new layers in your computation graph and later to create the model.
+It has some useful methods implemented, e.g. `tensor.t()` or `tensor.T` for transposition 
+or `tensor.reshape`.
 
 ``SymbolicData`` supports slicing too, so you can do:
 ```python
@@ -61,20 +58,6 @@ However, being able to do it directly on ``SymbolicData`` is great for prototypi
         show_root_full_path: true
 
 ::: pytorch_symbolic.symbolic_data.SymbolicTensor
-    options:
-        show_source: false
-        heading_level: 2
-        show_root_heading: true
-        members_order: source
-        show_object_full_path: false
-        docstring_section_style: table
-        show_signature_annotations: true
-        separate_signature: true
-        annotations_path: brief
-        merge_init_into_class: true
-        show_root_full_path: true
-
-::: pytorch_symbolic.symbolic_data.SymbolicTuple
     options:
         show_source: false
         heading_level: 2

@@ -237,8 +237,9 @@ This is because `sum` is executing multiple `+ / __add__` operations under the h
 
 ## Reusing existing layers
 
-Each node except input is associated with some `nn.Module`.
-When you are reusing a part of the graph, you are reusing all underlying `nn.Module` too.
+Each node except input is associated with some `torch.nn.Module`.
+When you are reusing a part of the graph, you are reusing all underlying
+`torch.nn.Module` too.
 In fact, you can have multiple models sharing the same weights.
 Or one model reusing the same weights multiple times.
 
@@ -295,7 +296,7 @@ print(classifier.output_shape)
 
 ## Nested models
 
-Instance of `SymbolicModel` is just an `nn.Module` and you can use it as such.
+Instance of `SymbolicModel` is just an `torch.nn.Module` and you can use it as such.
 This means you can use it anywhere, including another `SymbolicModel` or vanilla model.
 Create new models, using the existing ones.
 Here we create a model that calculates how similar are two feature maps generated
@@ -424,7 +425,7 @@ You can register new layers in whichever way you want or you can mix them.
 
 ### Vanilla PyTorch
 
-A usual way to define a model in PyTorch is to create a class that inherits from `nn.Module`.
+A usual way to define a model in PyTorch is to create a class that inherits from `torch.nn.Module`.
 
 PyTorch non-symbolic example of toy ResNet from previous section:
 
@@ -483,11 +484,11 @@ This took over 30 lines of code.
 
 ## Advanced custom functions
 
-If you read [quick_start](quick_start.md), you should know that the best way to include a custom
-function in your model is to not use a _function_, but an `nn.Module`.
-Just put the function body in `forward`. Remember that `forward` function
-can take only Tensors as arguments. If your function needs non-Tensor arguments,
-you can do it like this:
+If you read [Quick Start](quick_start.md), you should know that the best way to include a custom
+function in your model is to not use a _function_, but an `torch.nn.Module`.
+Just put the function body in its `forward`. But remember that `forward` function
+takes only `torch.Tensor` as arguments. If your function needs non-Tensor arguments,
+you can deal with them in `__init__`, like this:
 
 ```python
 import torch
@@ -503,7 +504,7 @@ class ConcatLayer(nn.Module):
         return torch.cat(tensors=tensors, dim=self.dim)
 ```
 
-This is the way that provides the fastest runtime. However, you might not want to write
+This way  provides the fastest runtime. However, you might not want to write
 so much boilerplate code. Luckily, with Pytorch Symbolic there are ways to avoid it!
 
 ```py
@@ -515,10 +516,10 @@ concatenated = add_to_graph(torch.cat, (x, y), dim=1)
 ```
 
 Function `add_to_graph` is powerful, but use it responsibly.
-It adds some CPU overhead, which will not matter in GPU heavy workloads, but
+It adds some CPU overhead, which won't matter in GPU heavy workloads, but
 might contribute to a slowdown in CPU limited scenarios.
 
-We will create a complicated example, just to give you an idea:
+Here is an over complicated example, just to give you an idea:
 
 ```python
 import torch
@@ -554,10 +555,13 @@ def execute_noisy(data_dict, *, add_noise: bool = False):
 
 
 outputs, noise = add_to_graph(execute_noisy, data_dict, add_noise=True)
-model = SymbolicModel(inputs=(x, y, z), outputs=(outputs, noise))
+model = SymbolicModel(inputs=(x, y, z), outputs=outputs)
 ```
 
-All outputs from `add_to_graph` will be `SymbolicData`.
+Your custom function must return one or a couple of `torch.Tensor`.
+Your function will be called by `add_to_graph` and it will be registered in the graph.
+This operation produces `SymbolicData` which you can use to define more operations 
+or to create a `SymbolicModel`.
 
 This model will be correctly executed during the runtime! Use it as always:
 
@@ -566,7 +570,7 @@ x = torch.rand((10, 20))
 y = torch.rand((20, 30))
 z = torch.rand((30, 10))
 
-outs, _ = model(x, y, z)
+outs = model(x, y, z)
 ```
 
 Everything that is _not_ a ``SymbolicData`` in `add_to_graph` is considered
