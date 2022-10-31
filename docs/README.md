@@ -49,7 +49,7 @@ model
 SymbolicModel(
   (module0_depth1): Flatten(start_dim=1, end_dim=-1)
   (module1_depth2): Linear(in_features=784, out_features=10, bias=True)
-  (module2_depth3): ReLU()
+  (module2_depth3): Softmax(dim=1)
 )
 ```
 

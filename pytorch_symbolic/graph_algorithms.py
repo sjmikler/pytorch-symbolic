@@ -183,6 +183,8 @@ def draw_graph(
     node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
     rotate_labels: bool = False,
+    show: bool = False,
+    figsize=None,
 ):
     """Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
 
@@ -207,11 +209,8 @@ def draw_graph(
         If True, text on edges will be rotated in the direction of the arrow.
     rotate_graph
         If True, the consecutive layers will be shown to the right, instead of downwards.
-
-    Returns
-    -------
-    plt.Figure
-        Matplotlib figure
+    show
+        Call matplotlib.pyplot.show
     """
     try:
         import matplotlib.patches
@@ -320,14 +319,21 @@ def draw_graph(
         rotate=rotate_labels,
         clip_on=False,
     )
-
     handles = [
         matplotlib.patches.Patch(color=INPUT_COLOR, label="Input node"),
         matplotlib.patches.Patch(color=OUTPUT_COLOR, label="Output node"),
         matplotlib.patches.Patch(color=OTHER_COLOR, label="Hidden node"),
     ]
     plt.legend(handles=handles)
-    # return plt.gcf()
+
+    fig: plt.Figure = plt.gcf()
+    if figsize:
+        fig.set_size_inches(*figsize)
+
+    fig.tight_layout()
+    return fig
+    # if show:
+    #     fig.show()
 
 
 def topological_sort(nodes: Set[SymbolicData]) -> List[SymbolicData]:

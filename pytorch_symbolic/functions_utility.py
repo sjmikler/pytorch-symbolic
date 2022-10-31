@@ -63,9 +63,6 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
         bias = Input(shape=(16,), batched=False)
         output = add_to_graph(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
     """
-    if isinstance(func, nn.Module) and not kwds:
-        return add_module_to_graph(func, *args)
-
     extracted_symbols: List[SymbolicData] = []
 
     real_call_args = []
@@ -92,5 +89,9 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
 
         return func(*real_call_args, **real_call_kwds)
 
-    module = useful_layers.NamedAnyOpLayer(op=wrapper_function, name=f"{func.__name__}({len(navigation)})")
+    if hasattr(func, "__name__"):
+        name = func.__name__
+    else:
+        name = func.__class__.__name__
+    module = useful_layers.NamedAnyOpLayer(op=wrapper_function, name=f"Wrap({name})({len(navigation)})")
     return extracted_symbols[0](module, *extracted_symbols[1:])

@@ -21,7 +21,7 @@ print(x)
 ```
 
 ```stdout
-<Input at 0x7f127158fd60; 0 parents; 0 children>
+<SymbolicTensor at 0x7f55dc437bb0; 0 parents; 0 children>
 ```
 
 `Input` is inheriting from `SymbolicTensor` and there's nothing different about using them,
@@ -52,7 +52,7 @@ print(y)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f121e11adf0; 1 parents; 0 children>
+<SymbolicTensor at 0x7f55dc437eb0; 1 parents; 0 children>
 ```
 
 This _transformation_ is always just an `nn.Module`. Even when you use `+` or `-`.
@@ -89,9 +89,9 @@ print(y)
 ```
 
 ```stdout
-<SymbolicTensor at 0x7f121e11adf0; 1 parents; 0 children>
-<SymbolicTensor at 0x7f121e11adf0; 1 parents; 1 children>
-<SymbolicTensor at 0x7f121e11adf0; 1 parents; 2 children>
+<SymbolicTensor at 0x7f55dc437100; 1 parents; 0 children>
+<SymbolicTensor at 0x7f55dc437100; 1 parents; 1 children>
+<SymbolicTensor at 0x7f55dc437100; 1 parents; 2 children>
 ```
 
 We created a bunch of children for `y`. Let's see them:
@@ -101,8 +101,8 @@ print(y.children)
 ```
 
 ```stdout
-(<SymbolicTensor at 0x7f121e107d00; 1 parents; 0 children>,
- <SymbolicTensor at 0x7f121e107760; 1 parents; 0 children>)
+(<SymbolicTensor at 0x7f55dc639280; 1 parents; 0 children>, 
+ <SymbolicTensor at 0x7f55dc64cbe0; 1 parents; 0 children>)
 ```
 
 But when working with large graphs, it might not be very fun to inspect
@@ -147,7 +147,7 @@ import matplotlib.pyplot as plt
 nodes = [a + i for i in range(10)]
 out = sum(nodes)
 
-plt.figure(figsize=(10, 10), constrained_layout=True)
+plt.figure(figsize=(10, 10))
 
 graph_algorithms.draw_graph(
     inputs=x,
@@ -192,12 +192,13 @@ graph_algorithms.draw_graph(model=model)
 
 ![images/draw_graph3.png](images/draw_graph3.png)
 
+As you can see, if batch size is not specified, Pytorch Symbolic uses batch size of 1.
+
 ## Multiple inputs and outputs
 
 If your `nn.Module` has multiple inputs or outputs, that's fine.
 
 ```python
-from torch import nn
 from pytorch_symbolic import Input, SymbolicModel, useful_layers, graph_algorithms
 
 add_n = useful_layers.AnyOpLayer(op=lambda *args: sum(args))
@@ -207,7 +208,7 @@ intermediate = add_n(*inputs)
 outputs = [intermediate / i for i in range(1, 5)]
 
 model = SymbolicModel(inputs, outputs)
-graph_algorithms.draw_graph(model=model)
+graph_algorithms.draw_graph(model=model, figsize=(9, 6))
 ```
 
 ![images/draw_graph4.png](images/draw_graph4.png)
@@ -233,6 +234,7 @@ graph_algorithms.draw_graph(inputs=inputs, outputs=sum(inputs))
 ```
 
 ![images/draw_graph6.png](images/draw_graph6.png)
+
 This is because `sum` is executing multiple `+ / __add__` operations under the hood.
 
 ## Reusing existing layers
@@ -320,7 +322,7 @@ diffs = (features1 - features2) ** 2
 outputs = add_to_graph(torch.sum, diffs, dim=(1, 2, 3))
 strange_model = SymbolicModel((inputs1, inputs2, noise), outputs)
 
-graph_algorithms.draw_graph(model=strange_model)
+graph_algorithms.draw_graph(model=strange_model, figsize=(10, 8))
 ```
 
 ![images/draw_graph7.png](images/draw_graph7.png)
@@ -504,7 +506,7 @@ class ConcatLayer(nn.Module):
         return torch.cat(tensors=tensors, dim=self.dim)
 ```
 
-This way  provides the fastest runtime. However, you might not want to write
+This way provides the fastest runtime. However, you might not want to write
 so much boilerplate code. Luckily, with Pytorch Symbolic there are ways to avoid it!
 
 ```py
@@ -560,7 +562,7 @@ model = SymbolicModel(inputs=(x, y, z), outputs=outputs)
 
 Your custom function must return one or a couple of `torch.Tensor`.
 Your function will be called by `add_to_graph` and it will be registered in the graph.
-This operation produces `SymbolicData` which you can use to define more operations 
+This operation produces `SymbolicData` which you can use to define more operations
 or to create a `SymbolicModel`.
 
 This model will be correctly executed during the runtime! Use it as always:
@@ -575,6 +577,6 @@ outs = model(x, y, z)
 
 Everything that is _not_ a ``SymbolicData`` in `add_to_graph` is considered
 constant and will stay the same
-each time you execute the model. Under the hood, Pytorch Symbolic is browsing through 
+each time you execute the model. Under the hood, Pytorch Symbolic is browsing through
 the arguments in search of `SymbolicData`.
 It is able to navigate through nested `list`, `tuple` and `dict`.

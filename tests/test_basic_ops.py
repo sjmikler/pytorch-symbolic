@@ -247,3 +247,25 @@ def test_mmul_on_list_numpy():
 
     R = model(X.tolist(), Y.tolist())
     assert np.allclose(R, X @ Y)
+
+
+def test_anypow_layer():
+    tensor = Input(shape=(10, 20))
+    power = Input(custom_data=1.5)
+    output = tensor**power
+
+    model = SymbolicModel(inputs=(tensor, power), outputs=output)
+
+    for x in range(10):
+        for y in [0.5, 1.0, 1.5, 2.0]:
+            assert model(x, y) == x**y
+
+    x = torch.rand(10, 20, 30)
+    for y in [0.5, 1.0, 1.5, 2.0]:
+        assert torch.allclose(model(x, y), x**y)
+        assert torch.allclose(model.detach_from_graph()(x, y), x**y)
+
+    x = torch.rand(10, 20, 30)
+    for y in [0.5, 1.0, 1.5, 2.0]:
+        assert torch.allclose(model(y, x), y**x)
+        assert torch.allclose(model.detach_from_graph()(y, x), y**x)

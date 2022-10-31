@@ -7,8 +7,8 @@ The main class and grandfather for all other classes is `SymbolicData`.
 ``SymbolicTensor`` has similar API to ``torch.Tensor`` object,
 but ``SymbolicTensor`` is used only to define the graph, not to perform actual computations. 
 You should use it to register new layers in your computation graph and later to create the model.
-It has some useful methods implemented, e.g. `tensor.t()` or `tensor.T` for transposition 
-or `tensor.reshape`.
+It has some commonly used methods implemented: `tensor.t()` and `tensor.T` for transposition,
+`tensor.reshape(...)` and many more.
 
 ``SymbolicData`` supports slicing too, so you can do:
 ```python

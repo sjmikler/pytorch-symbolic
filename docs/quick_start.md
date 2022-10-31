@@ -63,8 +63,8 @@ print(inputs)
 ```
 
 ```stdout
-<Input at 0x7f121e131dc0; 0 parents; 0 children>
-<Input at 0x7f121e131dc0; 0 parents; 1 children>
+<SymbolicTensor at 0x7f55dc437130; 0 parents; 0 children>
+<SymbolicTensor at 0x7f55dc437130; 0 parents; 1 children>
 ```
 
 At first, `inputs` was the only node in the graph. It had 0 parents and 0 children. 
@@ -81,7 +81,7 @@ print(inputs.features)
 ```
 
 ```stdout
-(1, 784)
+torch.Size([1, 784])
 784
 ```
 
@@ -232,7 +232,7 @@ They are available in `pytorch_symbolic.useful_layers`.
 
 If you really hate classes or you are in a hurry, we got you covered.
 
-You can add almost any function to your `SymbolicModel`:
+You can add almost any function to your `SymbolicModel` using `add_to_graph`:
 
 ```python
 import torch
@@ -245,13 +245,15 @@ x = add_to_graph(torch.concat, (x1, x2), dim=1)
 x.shape  # (1, 8, 3)
 ```
 
-Attempting to use a function without `add_to_graph`, e.g.  `x = torch.abs(x)`, will fail:
+Attempting to use a function without `add_to_graph`, e.g.  `x = torch.abs(x)` will most likely fail:
 
 ```
 TypeError: abs(): argument 'input' (position 1) must be Tensor, not Input
 ```
 
-You need to use `add_to_graph` like `add_to_graph(torch.abs, x)`.
+So use `add_to_graph` instead, like `add_to_graph(torch.abs, x)`.
+
+> Using `add_to_graph` you can also register `torch.nn.Module` that takes named arguments in `forward`.
 
 ### Modules with multiple inputs
 
