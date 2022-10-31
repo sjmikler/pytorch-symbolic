@@ -5,7 +5,6 @@ import logging
 
 from torch import nn
 
-from .functions_utility import add_to_graph
 from .symbolic_data import SymbolicData
 
 _objects_with_wrapped_call = []
