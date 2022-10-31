@@ -34,7 +34,7 @@ outputs = inputs(nn.Linear(in_features=inputs.features, out_features=10))
 model = SymbolicModel(inputs, outputs)
 ```
 
-To register a new layer, e.g. ``nn.Linear`` in your model, you have two options:
+To register a new layer, e.g. ``torch.nn.Linear``, in your model, you have two options:
 
 * `layer(symbolic_data)` (just like in [Keras Functional API](https://keras.io/guides/functional_api/))
 * `symbolic_data(layer)` (like nowhere else)
@@ -232,7 +232,7 @@ They are available in `pytorch_symbolic.useful_layers`.
 
 If you really hate classes or you are in a hurry, we got you covered.
 
-You can add almost any function to your `SymbolicModel` using `add_to_graph`:
+You can add almost any function to your Symbolic Model using `add_to_graph`:
 
 ```python
 import torch
@@ -253,7 +253,7 @@ TypeError: abs(): argument 'input' (position 1) must be Tensor, not Input
 
 So use `add_to_graph` instead, like `add_to_graph(torch.abs, x)`.
 
-> Using `add_to_graph` you can also register `torch.nn.Module` that takes named arguments in `forward`.
+> Using `add_to_graph` you can also register `torch.nn.Module` with named arguments in `forward`.
 
 ### Modules with multiple inputs
 

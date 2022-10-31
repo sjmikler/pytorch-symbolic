@@ -26,7 +26,7 @@ Features:
 
 ## Example
 
-To create a symbolic model, you need `Input` and `nn.Module`. 
+To create a symbolic model, you will need Symbolic Tensor and `nn.Module`. 
 Register layers in your model by calling ``layer(inputs)`` or
 equivalently ``inputs(layer)``.
 Layers will be automagically added to your model and executed correctly on real data.

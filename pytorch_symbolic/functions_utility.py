@@ -48,12 +48,12 @@ def _replace_symbolic_with_value(container, extracted, navigation):
 def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     """Register a custom func or module in the computation graph.
 
-    This should work will arbitrary functions and modules.
+    This works will arbitrary functions and modules if at least one SymbolicData is among *args, **kwds.
 
-    In case of functions it might add a small delay to the call, because it is figuring out
-    where the arguments should go. If this is unacceptable, please create a nn.Module from your func.
+    It is flexible, but might add a small delay to the call, because it adds a wrapper for parsing arguments.
+    If this is unacceptable, please create a nn.Module that takes only SymbolicData arguments.
 
-    All arguments, including Symbolic Tensors, should be passed after the ``func`` argument.
+    All arguments, including Symbolic Data, should be passed after the ``func`` argument.
     They can be mixed and matched, even nested in lists, tuples and dictionaries.
 
     Convolution func example::
@@ -91,7 +91,9 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
 
     if hasattr(func, "__name__"):
         name = func.__name__
-    else:
+    elif hasattr(func, "__class__"):
         name = func.__class__.__name__
+    else:
+        name = str(func)
     module = useful_layers.NamedAnyOpLayer(op=wrapper_function, name=f"Wrap({name})({len(navigation)})")
     return extracted_symbols[0](module, *extracted_symbols[1:])
