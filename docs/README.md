@@ -12,7 +12,8 @@
 Pytorch Symbolic is MIT licensed library that adds symbolic API for model creation to PyTorch.
 
 Pytorch Symbolic makes it easier and faster to define complex models. 
-It spares you writing boilerplate code. It is an equivalent of [Keras Functional API](https://www.tensorflow.org/guide/keras/symbolic).
+It spares you writing boilerplate code.
+It aims to be  PyTorch equivalent for [Keras Functional API](https://www.tensorflow.org/guide/keras/symbolic).
 
 Features:
 
@@ -26,10 +27,10 @@ Features:
 
 ## Example
 
-To create a symbolic model, you will need Symbolic Tensor and `nn.Module`. 
+To create a symbolic model, you will need Symbolic Tensors and `nn.Module`. 
 Register layers in your model by calling ``layer(inputs)`` or
 equivalently ``inputs(layer)``.
-Layers will be automagically added to your model and executed correctly on real data.
+Layers will be automagically added to your model and executed correctly on the real data.
 That's all!
 
 Using Pytorch Symbolic, we can define a working classifier in a few lines of code:

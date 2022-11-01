@@ -2,8 +2,8 @@
 
 ## Features
 
-* Counterpart of [Keras Functional API](https://keras.io/guides/functional_api/)
-* No overhead during execution
+* Equivalent of [Keras Functional API](https://keras.io/guides/functional_api/)
+* Easy to use with lots of flexibility
 * Supports advanced control flow:
 	* Reusing layers
 	* Shared layers
@@ -39,19 +39,19 @@ To register a new layer, e.g. ``torch.nn.Linear``, in your model, you have two o
 * `layer(symbolic_data)` (just like in [Keras Functional API](https://keras.io/guides/functional_api/))
 * `symbolic_data(layer)` (like nowhere else)
 
-There are no differences between these methods.
+There are no differences between these options.
 Models produced with them will be identical.
 
 ### What is a Symbolic Tensor?
 
 Under the hood of Pytorch Symbolic, there lives a computation graph.
 
-Every `SymbolicTensor` is a node in it. When interacting with it, you shall:
+Every Symbolic Tensor is a node in it. When interacting with Symbolic Tensor:
 
 * Think of it as placeholder for your data
 * Use it like `torch.Tensor` (e.g. slicing and iterating over it)
 
-Let us play with `SymbolicTensor` and see what we can do:
+Let us play with Symbolic Tensor and see what we can do:
 
 ```python
 from pytorch_symbolic import Input
@@ -103,11 +103,11 @@ Doing this, we:
 	* `outputs = layer(inputs)`
 	* `outputs = add_to_graph(layer, inputs)`
 3. Use standard operations on Symbolic Tensors: `+, -, *, **, /, //, %` and `abs`:
-	* For example, `x = 2 + inputs` or `x = inputs % y[0]` will work as expected
+	* For example, `x = 2 + inputs` or `x = inputs % y` will work as expected
 4. To concatenate (similarly for stacking) Symbolic Tensors:
-	* use `useful_layers.ConcatOpLayer(dim=1)`
+	* use `useful_layers.ConcatOpLayer(dim=1)(x, y)`
 	* add custom function to the model:  `add_to_graph(torch.concat, (x, y), dim=1)`
-5. When working with Symbolic Tensors, use `.shape` property or its handy shortcuts:
+5. When working with Symbolic Tensors, use `.shape` property or one of the shortcuts:
 	* `.C` and `.channels` equals `.shape[1]` for RGB data
 	* `.H` equals `.shape[2]` for RGB data
 	* `.W` equals `.shape[3]` for RGB data
@@ -282,7 +282,7 @@ They are available in `pytorch_symbolic.useful_layers`.
 
 #### Alternative for custom functions
 
-If you really hate classes or you are in a hurry, we got you covered.
+If you really hate classes or are in a hurry, we got you covered.
 
 You can add almost any function to your Symbolic Model using `add_to_graph`:
 
@@ -305,7 +305,7 @@ TypeError: abs(): argument 'input' (position 1) must be Tensor, not Input
 
 So use `add_to_graph` instead, like `add_to_graph(torch.abs, x)`.
 
-> Using `add_to_graph` you can also register `torch.nn.Module` with named arguments in `forward`.
+> If your `torch.nn.Module` requires named arguments, you can use `add_to_graph` to register it.
 
 ### Modules with multiple inputs
 
