@@ -109,8 +109,7 @@ print(y.children)
 ```
 
 But when working with large graphs, it might not be fun to inspect
-them by printing children and parents to stdout. Luckily, there is a nicer alternative.
-
+them by printing children and parents to stdout. Luckily, there is a nicer alternative:
 Pytorch Symbolic provides a basic graph drawing utility.
 It will work only if you have optional dependencies installed:
 
@@ -118,7 +117,7 @@ It will work only if you have optional dependencies installed:
 * matplotlib
 * scipy
 
-You can install them manually or using `pip install pytorch-symbolic[full]`.
+You can install dependencies manually or using `pip install pytorch-symbolic[full]`.
 
 > If you don't have optional dependencies, you can use the package without drawing utility.
 
@@ -163,7 +162,7 @@ graph_algorithms.draw_graph(
 
 ![images/draw_graph2.png](images/draw_graph2.png)
 
-Similarly to `node_text_func`, you can use `edge_text_func` to display custom labels on the edges.
+Similarly to `node_text_func` you can use `edge_text_func` to display custom labels on the edges.
 By default, we display the name of the layer, e.g. `Linear` or `Conv2d`.
 
 ## Creating models
@@ -184,6 +183,23 @@ for _ in range(3):
 
 x = nn.Linear(x.features, 10)(x)
 model = SymbolicModel(inputs, x)
+model.summary()
+```
+
+```stdout
+________________________________________________
+    Layer      Output shape   Params   Parent   
+================================================
+1   Input_1    (None, 784)    0                 
+2   Linear_1   (None, 100)    78500    1        
+3   Linear_2   (None, 100)    10100    2        
+4   Linear_3   (None, 100)    10100    3        
+5   Linear_4   (None, 10)     1010     4        
+================================================
+Total params: 99710
+Trainable params: 99710
+Non-trainable params: 0
+________________________________________________
 ```
 
 You can use the plotting utility directly on your model:
@@ -212,9 +228,30 @@ intermediate = add_n(*inputs)
 outputs = [intermediate / i for i in range(1, 5)]
 
 model = SymbolicModel(inputs, outputs)
+model.summary()
 graph_algorithms.draw_graph(model=model, figsize=(9, 6))
 ```
 
+```stdout
+________________________________________________________
+     Layer          Output shape   Params   Parent      
+========================================================
+1    Input_1        (None, 5)      0                    
+2    Input_2        (None, 5)      0                    
+3    Input_3        (None, 5)      0                    
+4    Input_4        (None, 5)      0                    
+5    Input_5        (None, 5)      0                    
+6    AnyOpLayer_1   (None, 5)      0        1,2,3,4,5   
+7    AnyOpLayer_2   (None, 5)      0        6           
+8    AnyOpLayer_3   (None, 5)      0        6           
+9    AnyOpLayer_4   (None, 5)      0        6           
+10   AnyOpLayer_5   (None, 5)      0        6           
+========================================================
+Total params: 0
+Trainable params: 0
+Non-trainable params: 0
+________________________________________________________
+```
 ![images/draw_graph4.png](images/draw_graph4.png)
 
 Notice that we used custom `add_n` module instead
@@ -266,22 +303,52 @@ x = nn.Flatten()(x)
 outputs = nn.Linear(x.features, 10)(x)
 
 classifier = SymbolicModel(inputs, outputs)
-print(classifier.output_shape)
+classifier.summary()
 ```
 
 ```stdout
-(1, 10)
+______________________________________________________
+    Layer       Output shape        Params   Parent   
+======================================================
+1   Input_1     (None, 1, 28, 28)   0                 
+2   Conv2d_1    (None, 8, 28, 28)   80       1        
+3   ReLU_1      (None, 8, 28, 28)   0        2        
+4   Conv2d_2    (None, 8, 28, 28)   584      3        
+5   ReLU_2      (None, 8, 28, 28)   0        4        
+6   Conv2d_3    (None, 8, 28, 28)   584      5        
+7   ReLU_3      (None, 8, 28, 28)   0        6        
+8   Flatten_1   (None, 6272)        0        7        
+9   Linear_1    (None, 10)          62730    8        
+======================================================
+Total params: 63978
+Trainable params: 63978
+Non-trainable params: 0
+______________________________________________________
 ```
 
 After training `classifier`, you might decide that you want to inspect the intermediate features.
 
 ```py
 feature_extractor = SymbolicModel(inputs, features)
-print(feature_extractor.output_shape)
+feature_extractor.summary()
 ```
 
 ```stdout
-(1, 8, 28, 28)
+_____________________________________________________
+    Layer      Output shape        Params   Parent   
+=====================================================
+1   Input_1    (None, 1, 28, 28)   0                 
+2   Conv2d_1   (None, 8, 28, 28)   80       1        
+3   ReLU_1     (None, 8, 28, 28)   0        2        
+4   Conv2d_2   (None, 8, 28, 28)   584      3        
+5   ReLU_2     (None, 8, 28, 28)   0        4        
+6   Conv2d_3   (None, 8, 28, 28)   584      5        
+7   ReLU_3     (None, 8, 28, 28)   0        6        
+=====================================================
+Total params: 1248
+Trainable params: 1248
+Non-trainable params: 0
+_____________________________________________________
 ```
 
 This model, `feature_extractor`, uses the same underlying weights
@@ -325,8 +392,30 @@ diffs = (features1 - features2) ** 2
 
 outputs = add_to_graph(torch.sum, diffs, dim=(1, 2, 3))
 strange_model = SymbolicModel((inputs1, inputs2, noise), outputs)
+strange_model.summary()
 
 graph_algorithms.draw_graph(model=strange_model, figsize=(10, 8))
+```
+
+```stdout
+_____________________________________________________________
+     Layer             Output shape        Params   Parent   
+=============================================================
+1    Input_1           (None, 1, 32, 32)   0                 
+2    Input_2           (None, 1, 64, 64)   0                 
+3    Input_3           (None, 1, 64, 64)   0                 
+4    SymbolicModel_1   (None, 8, 32, 32)   1248     1        
+5    AddOpLayer_1      (None, 1, 64, 64)   0        2,3      
+6    SymbolicModel_2   (None, 8, 64, 64)   1248     5        
+7    MaxPool2d_1       (None, 8, 32, 32)   0        6        
+8    SubOpLayer_1      (None, 8, 32, 32)   0        4,7      
+9    AnyOpLayer_1      (None, 8, 32, 32)   0        8        
+10   Wrap(sum)(1)_1    (None,)             0        9        
+=============================================================
+Total params: 1248
+Trainable params: 1248
+Non-trainable params: 0
+_____________________________________________________________
 ```
 
 ![images/draw_graph7.png](images/draw_graph7.png)
@@ -562,6 +651,23 @@ def execute_noisy(data_dict, *, add_noise: bool = False):
 
 outputs, noise = add_to_graph(execute_noisy, data_dict, add_noise=True)
 model = SymbolicModel(inputs=(x, y, z), outputs=outputs)
+model.summary()
+```
+
+```stdout
+________________________________________________________________
+    Layer                      Output shape   Params   Parent   
+================================================================
+1   Input_1                    (10, 20)       0                 
+2   Input_2                    (20, 30)       0                 
+3   Input_3                    (30, 10)       0                 
+4   Wrap(execute_noisy)(3)_1   tuple          0        1,2,3    
+5   UnpackLayer_1              (10, 10)       0        4        
+================================================================
+Total params: 0
+Trainable params: 0
+Non-trainable params: 0
+________________________________________________________________
 ```
 
 Your custom function must return one or a couple of `torch.Tensor`.

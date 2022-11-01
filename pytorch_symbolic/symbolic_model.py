@@ -13,7 +13,7 @@ from torch import nn
 from . import code_generator, config
 from .graph_algorithms import figure_out_nodes_between, topological_sort
 from .model_tools import get_parameter_count
-from .symbolic_data import SymbolicData
+from .symbolic_data import SymbolicData, SymbolicTensor
 
 
 class DetachedSymbolicModel(nn.Module):
@@ -92,6 +92,7 @@ class SymbolicModel(nn.Module):
         self.outputs: Tuple[SymbolicData, ...] = tuple(outputs)
 
         # Initialize helper variables
+        self._layer_type_counts: Dict[str, int] = {}
         self._node_to_layer_name: Dict[SymbolicData, str] = {}
         self._layer_name_to_node: Dict[str, SymbolicData] = {}
         self._execution_order_nodes: List[SymbolicData] = []
@@ -131,18 +132,14 @@ class SymbolicModel(nn.Module):
     @property
     def input_shape(self):
         """Return shape of the input or in case of multiple inputs - a tuple of them."""
-        if len(self.inputs) == 1:
-            return self.inputs[0].shape
-        else:
-            return tuple(node.shape for node in self.inputs)
+        shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.inputs]
+        return tuple(shapes) if len(shapes) > 1 else shapes[0]
 
     @property
     def output_shape(self):
-        """Return shape of the output or in case of multiple outputs - a atuple of them."""
-        if len(self.outputs) == 1:
-            return self.outputs[0].shape
-        else:
-            return tuple(node.shape for node in self.outputs)
+        """Return shape of the output or in case of multiple outputs - a tuple of them."""
+        shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.outputs]
+        return tuple(shapes) if len(shapes) > 1 else shapes[0]
 
     def add_output(self, node: SymbolicData):
         assert node not in self.inputs, "Node is an input of this SymbolicModel!"
@@ -167,11 +164,75 @@ class SymbolicModel(nn.Module):
         return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
 
     def summary(self):
-        print("Summary")
+        space_between_cols = 3
+
+        data = [["", "Layer", "Output shape", "Params", "Parent"]]
+        ncols = len(data[0])
+        separators = ["="]
+        node_to_idx = {}
+        for node in self.inputs:
+            node_to_idx[node] = len(data)
+            if isinstance(node, SymbolicTensor):
+                shape = list(node.shape)
+                if not node.batch_size_known:
+                    shape[0] = None
+                shape = tuple(shape)
+            else:
+                shape = type(node.v).__name__
+            data.append(
+                [
+                    f"{len(data)}",
+                    f"Input_{len(data)}",
+                    str(shape),
+                    "0",
+                    "",
+                ]
+            )
+            separators.append(None)
+
+        for node in self._execution_order_nodes:
+            node_to_idx[node] = len(data)
+            layer = node.layer
+            if isinstance(node, SymbolicTensor):
+                shape = list(node.shape)
+                if not node.batch_size_known:
+                    shape[0] = None
+                shape = tuple(shape)
+            else:
+                shape = type(node.v).__name__
+            data.append(
+                [
+                    f"{len(data)}",
+                    f"{self._node_to_layer_name[node]}",
+                    str(shape),
+                    str(get_parameter_count(layer)),
+                    ",".join(str(node_to_idx[parent]) for parent in node.parents),
+                ]
+            )
+            separators.append(None)
+        separators[-1] = "="
+
+        maxcolwidth = [0 for _ in range(ncols)]
+        for row in data:
+            for idx, col in enumerate(row):
+                if len(col) > maxcolwidth[idx]:
+                    maxcolwidth[idx] = len(col)
+
+        print("_" * (sum(maxcolwidth) + ncols * space_between_cols))
+        for sep, row in zip(separators, data):
+            for idx, col in enumerate(row):
+                s = col.ljust(maxcolwidth[idx] + space_between_cols, " ")
+                print(s, end="")
+            print()
+            if sep is not None:
+                print(sep * (sum(maxcolwidth) + ncols * space_between_cols))
+
         parameter_count = get_parameter_count(self)
         trainable_count = get_parameter_count(self, only_trainable=True)
-        print(f"Total parameters: {parameter_count}")
-        print(f"Trainable parameters: {trainable_count}")
+        print(f"Total params: {parameter_count}")
+        print(f"Trainable params: {trainable_count}")
+        print(f"Non-trainable params: {parameter_count - trainable_count}")
+        print("_" * (sum(maxcolwidth) + ncols * space_between_cols))
 
     def _replace_forward_with_codegen(self):
         self._generated_forward_source = code_generator.generate_forward_with_loops(
@@ -233,13 +294,13 @@ class SymbolicModel(nn.Module):
         self._execution_order_nodes = execution_order_nodes
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
-        num_layers = len(self._execution_order_nodes)
-        str_length = len(str(num_layers))
         for idx, node in enumerate(self._execution_order_nodes):
-            name = f"module{str(idx).zfill(str_length)}_depth{str(node.depth).zfill(str_length)}"
-            self._layer_name_to_node[name] = node
-            self._node_to_layer_name[node] = name
-            self.add_module(name=name, module=node.layer)
+            layer_name = node.layer._get_name()
+            self._layer_type_counts.setdefault(layer_name, 0)
+            self._layer_type_counts[layer_name] += 1
+            full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
+            self._node_to_layer_name[node] = full_layer_name
+            self.add_module(name=full_layer_name, module=node.layer)
 
     def __deepcopy__(self, memo):
         """This copies a working Module, but the underlying graph structure is not copied!"""

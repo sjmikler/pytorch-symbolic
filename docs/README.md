@@ -42,15 +42,22 @@ inputs = Input(shape=(1, 28, 28))
 x = nn.Flatten()(inputs)
 x = nn.Linear(x.shape[1], 10)(x)(nn.Softmax(1))
 model = SymbolicModel(inputs=inputs, outputs=x)
-model
+model.summary()
 ```
 
 ```stdout
-SymbolicModel(
-  (module0_depth1): Flatten(start_dim=1, end_dim=-1)
-  (module1_depth2): Linear(in_features=784, out_features=10, bias=True)
-  (module2_depth3): Softmax(dim=1)
-)
+______________________________________________________
+    Layer       Output shape        Params   Parent   
+======================================================
+1   Input_1     (None, 1, 28, 28)   0                 
+2   Flatten_1   (None, 784)         0        1        
+3   Linear_1    (None, 10)          7850     2        
+4   Softmax_1   (None, 10)          0        3        
+======================================================
+Total params: 7850
+Trainable params: 7850
+Non-trainable params: 0
+______________________________________________________
 ```
 
 **See more examples in [Documentation Quick Start](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start/).**

@@ -141,7 +141,33 @@ x = nn.MaxPool2d(kernel_size=2)(x)(nn.ReLU())(nn.Flatten())
 
 outputs = nn.Linear(in_features=x.features, out_features=10)(x)
 model = SymbolicModel(inputs=inputs, outputs=outputs)
-assert model.output_shape == (1, 10)
+model.summary()
+```
+
+```stdout
+____________________________________________________________
+     Layer         Output shape           Params   Parent   
+============================================================
+1    Input_1       (None, 3, 128, 128)    0                 
+2    Conv2d_1      (None, 16, 126, 126)   448      1        
+3    MaxPool2d_1   (None, 16, 63, 63)     0        2        
+4    ReLU_1        (None, 16, 63, 63)     0        3        
+5    Conv2d_2      (None, 32, 61, 61)     4640     4        
+6    MaxPool2d_2   (None, 32, 30, 30)     0        5        
+7    ReLU_2        (None, 32, 30, 30)     0        6        
+8    Conv2d_3      (None, 64, 28, 28)     18496    7        
+9    MaxPool2d_3   (None, 64, 14, 14)     0        8        
+10   ReLU_3        (None, 64, 14, 14)     0        9        
+11   Conv2d_4      (None, 64, 12, 12)     36928    10       
+12   MaxPool2d_4   (None, 64, 6, 6)       0        11       
+13   ReLU_4        (None, 64, 6, 6)       0        12       
+14   Flatten_1     (None, 2304)           0        13       
+15   Linear_1      (None, 10)             23050    14       
+============================================================
+Total params: 83562
+Trainable params: 83562
+Non-trainable params: 0
+____________________________________________________________
 ```
 
 ### Multiple inputs example
@@ -179,6 +205,35 @@ And create the model, passing tuples or lists as inputs and outputs:
 
 ```py
 model = SymbolicModel([task1_input, task2_input], [task1_out, task2_out])
+model.summary()
+```
+
+```stdout
+___________________________________________________________
+     Layer          Output shape         Params   Parent   
+===========================================================
+1    Input_1        (None, 3, 32, 32)    0                 
+2    Input_2        (None, 64)           0                 
+3    Linear_1       (None, 512)          33280    2        
+4    ReLU_1         (None, 512)          0        3        
+5    Linear_2       (None, 512)          262656   4        
+6    ReLU_2         (None, 512)          0        5        
+7    Linear_3       (None, 200)          102600   6        
+8    Conv2d_1       (None, 16, 30, 30)   448      1        
+9    MaxPool2d_1    (None, 16, 10, 10)   0        8        
+10   ReLU_3         (None, 16, 10, 10)   0        9        
+11   Flatten_1      (None, 1600)         0        10       
+12   Linear_4       (None, 200)          320200   11       
+13   AddOpLayer_1   (None, 200)          0        12,7     
+14   Linear_5       (None, 400)          80400    13       
+15   ReLU_4         (None, 400)          0        14       
+16   Linear_6       (None, 1)            401      15       
+17   Linear_7       (None, 10)           4010     15       
+===========================================================
+Total params: 803995
+Trainable params: 803995
+Non-trainable params: 0
+___________________________________________________________
 ```
 
 You can use this model in a following way:
@@ -217,9 +272,6 @@ An equivalent `torch.nn.Module` can use this function directly:
 
 ```py
 class CustomModule(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, *args):
         return custom_func(*args)
 ```

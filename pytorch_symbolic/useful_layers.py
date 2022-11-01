@@ -44,45 +44,30 @@ class CallbackLayer(nn.Module):
 
 
 class AddOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a + b
 
 
 class SubOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a - b
 
 
 class MulOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a * b
 
 
 class ModOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return torch.remainder(a, b)
 
 
 class MatmulOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a @ b
@@ -148,9 +133,6 @@ class AggregateLayer(nn.Module):
 
 
 class UnpackLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, *args):
         return args
 
@@ -162,3 +144,8 @@ class SliceLayer(nn.Module):
 
     def forward(self, arg):
         return arg[self.idx]
+
+
+class SliceLayerSymbolicIdx(nn.Module):
+    def forward(self, arg, idx):
+        return arg[idx]

@@ -137,14 +137,18 @@ class SymbolicData:
             self._output = self.layer(*(parent._output for parent in self._parents))
 
     def __getitem__(self, idx):
-        layer = useful_layers.SliceLayer(idx)
-        return layer(self)
+        if isinstance(idx, SymbolicData):
+            layer = useful_layers.SliceLayerSymbolicIdx()
+            return layer(self, idx)
+        else:
+            layer = useful_layers.SliceLayer(idx)
+            return layer(self)
 
     def __call__(self, *args):
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"SymbolicData({self.v.__class__.__name__.capitalize()}) at {hex(id(self))};"
+        addr = f"SymbolicData({self.v.__class__.__name__}) at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
