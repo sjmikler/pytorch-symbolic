@@ -9,7 +9,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="pytorch-symbolic",
-    version="0.7.6",
+    version="0.7.7",
     url="https://github.com/gahaalt/pytorch-symbolic.git",
     project_urls={
         "Documentation": "https://pytorch-symbolic.readthedocs.io/",
