@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from pytorch_symbolic import Input, SymbolicModel
+from pytorch_symbolic import CustomInput, Input, SymbolicModel, add_to_graph
 
 
 def test_iter_sum():
@@ -36,3 +36,24 @@ def test_iter_sum():
     our_result2 = model2(x, y)
     assert torch.equal(real_result, our_result1)
     assert torch.equal(real_result, our_result2)
+
+
+def test_indexing_basic1():
+    x = Input((10,))
+
+    def f(x):
+        return x, [1, 2]
+
+    outs1, outs2 = add_to_graph(f, x)
+    _ = outs2[0]
+    _ = outs2[1]
+
+
+def test_unpacking_non_tensor():
+    x = CustomInput(data=[5, 6, 7])
+
+    model = SymbolicModel(inputs=x, outputs=(*x,))
+
+    real_x = [9, 0, 1]
+    outs = model(real_x)
+    assert outs == (9, 0, 1)

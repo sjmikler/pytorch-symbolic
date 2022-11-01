@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Set, Tuple
 
-from .symbolic_data import SymbolicData, SymbolicTensor, SymbolicTuple
+from .symbolic_data import SymbolicData, SymbolicTensor
 
 if TYPE_CHECKING:
     from .symbolic_model import SymbolicModel
@@ -70,11 +70,11 @@ def figure_out_nodes_between(
 
 def default_node_text(sym: SymbolicData) -> str:
     if isinstance(sym, SymbolicTensor):
-        return str(sym.shape)
-    if isinstance(sym, SymbolicTuple):
-        return f"LEN({len(sym)})"
+        return str(tuple(sym.shape))
+    elif hasattr(sym, "__len__"):
+        return f"{type(sym.v).__name__}({len(sym)})"
     else:
-        return str(type(sym.v))
+        return type(sym.v).__name__
 
 
 def default_edge_text(layer: nn.Module) -> str:
@@ -183,6 +183,8 @@ def draw_graph(
     node_text_namespace: Dict[str, Any] | None = None,
     rotate_graph: bool = False,
     rotate_labels: bool = False,
+    show: bool = False,
+    figsize=None,
 ):
     """Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
 
@@ -207,11 +209,8 @@ def draw_graph(
         If True, text on edges will be rotated in the direction of the arrow.
     rotate_graph
         If True, the consecutive layers will be shown to the right, instead of downwards.
-
-    Returns
-    -------
-    plt.Figure
-        Matplotlib figure
+    show
+        Call matplotlib.pyplot.show
     """
     try:
         import matplotlib.patches
@@ -320,14 +319,21 @@ def draw_graph(
         rotate=rotate_labels,
         clip_on=False,
     )
-
     handles = [
         matplotlib.patches.Patch(color=INPUT_COLOR, label="Input node"),
         matplotlib.patches.Patch(color=OUTPUT_COLOR, label="Output node"),
         matplotlib.patches.Patch(color=OTHER_COLOR, label="Hidden node"),
     ]
     plt.legend(handles=handles)
-    return plt.gcf()
+
+    fig: plt.Figure = plt.gcf()
+    if figsize:
+        fig.set_size_inches(*figsize)
+
+    fig.tight_layout()
+    return fig
+    # if show:
+    #     fig.show()
 
 
 def topological_sort(nodes: Set[SymbolicData]) -> List[SymbolicData]:

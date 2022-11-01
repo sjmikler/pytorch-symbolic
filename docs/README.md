@@ -11,47 +11,28 @@
 
 Pytorch Symbolic is MIT licensed library that adds symbolic API for model creation to PyTorch.
 
-Defining complex models in PyTorch requires creating classes and writing boilerplate code.
-
-[Defining models in Keras is easier](https://www.tensorflow.org/guide/keras/symbolic).
-Pytorch Symbolic makes it just as easy.
+Pytorch Symbolic makes it easier and faster to define complex models. 
+It spares you writing boilerplate code. It is an equivalent of [Keras Functional API](https://www.tensorflow.org/guide/keras/symbolic).
 
 Features:
 
 * Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
-* Overhead free, tested in [benchmarks](benchmarks.md)
-* Reduces the amount of code you write
+* Overhead free, as tested in [benchmarks](benchmarks.md)
+* Reduces the amount of boilerplate code
 * Works well with complex architectures
 * Code and documentation is automatically tested
 
 ## Example
 
-To create a symbolic model, get Symbolic Tensors and nn.Modules. 
-Add layers by calling ``layer(symbolic_data)`` or
-equivalently ``symbolic_data(layer)``. That's all!
+To create a symbolic model, you will need Symbolic Tensor and `nn.Module`. 
+Register layers in your model by calling ``layer(inputs)`` or
+equivalently ``inputs(layer)``.
+Layers will be automagically added to your model and executed correctly on real data.
+That's all!
 
-Layers will be automagically registered in your model.
-
-```python
-from torch import nn
-from pytorch_symbolic import Input
-
-inputs = Input(shape=(1, 28, 28))  # Input is a SymbolicTensor
-print(inputs)
-
-x = nn.Flatten()(inputs)  # Every layer operation returns another SymbolicTensor
-x = inputs(nn.Flatten())  # This is equivalent to previous line
-print(x)
-```
-
-```stdout
-<Input at 0x7f12715771f0; 0 parents; 0 children>
-<SymbolicTensor at 0x7f1271577d60; 1 parents; 0 children>
-```
-
-Using symbolic tensors, we can define a working classifier in a few lines of code:
+Using Pytorch Symbolic, we can define a working classifier in a few lines of code:
 
 ```python
 from torch import nn
@@ -68,7 +49,7 @@ model
 SymbolicModel(
   (module0_depth1): Flatten(start_dim=1, end_dim=-1)
   (module1_depth2): Linear(in_features=784, out_features=10, bias=True)
-  (module2_depth3): ReLU()
+  (module2_depth3): Softmax(dim=1)
 )
 ```
 
@@ -76,7 +57,7 @@ SymbolicModel(
 
 ## Gentle introduction
 
-There's a jupyter notebook showing the basic usage of Pytorch Symbolic. You will:
+There's a jupyter notebook showing the basic usage of Pytorch Symbolic. With it you will:
 
 * Learn Pytorch Symbolic in an interactive way
 * Try the package before installing it on your computer
@@ -95,7 +76,7 @@ pip install pytorch-symbolic
 
 ## Links
 
-* [See Documentation](https://pytorch-symbolic.readthedocs.io/)
+* [See Documentation](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start)
 * [See on GitHub](https://github.com/gahaalt/pytorch-symbolic/)
 * [See on PyPI](https://pypi.org/project/pytorch-symbolic/)
 

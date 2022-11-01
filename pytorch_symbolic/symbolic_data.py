@@ -49,17 +49,13 @@ class SymbolicData:
         self, layer: nn.Module, *others: SymbolicData
     ) -> SymbolicData | Tuple[SymbolicData, ...]:
         """Register a new layer in the graph. Layer must be nn.Module."""
-        # assert all([isinstance(other, SymbolicTensor) for other in others])
+        assert all([isinstance(other, SymbolicData) for other in others]), "Works with SymbolicData only!"
 
         parents = (self, *others)
         new_depth = max(parent.depth for parent in parents) + 1
         new_output = layer.__call__(self.v, *(o.v for o in others))
 
-        cls = SymbolicData
-        if isinstance(new_output, torch.Tensor):
-            cls = SymbolicTensor
-        elif isinstance(new_output, tuple):
-            cls = SymbolicTuple
+        cls = SymbolicTensor if isinstance(new_output, torch.Tensor) else SymbolicData
 
         new_layer_node = cls(
             value=new_output,
@@ -87,8 +83,6 @@ class SymbolicData:
             cls = SymbolicData
             if isinstance(new_output, torch.Tensor):
                 cls = SymbolicTensor
-            elif isinstance(new_output, tuple):
-                cls = SymbolicTuple
 
             new_layer_nodes.append(
                 cls(
@@ -150,20 +144,12 @@ class SymbolicData:
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"{self.__class__.__name__} at {hex(id(self))};"
-        # info = f"child of {len(self._parents)}; parent of {len(self._children)}"
+        addr = f"SymbolicData({self.v.__class__.__name__.capitalize()}) at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
     def __hash__(self):
         return id(self)
-
-
-class SymbolicTuple(SymbolicData):
-    def __init__(self, *args, **kwds):
-        """Symbolic datatype whose whole purpose is to handle unpacking outputs."""
-        super().__init__(*args, **kwds)
-        assert isinstance(self.v, Tuple)
 
 
 class SymbolicTensor(SymbolicData):
@@ -275,7 +261,6 @@ class SymbolicTensor(SymbolicData):
 
     def __add__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.AddOpLayer(), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x + other))
@@ -285,7 +270,6 @@ class SymbolicTensor(SymbolicData):
 
     def __mul__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.MulOpLayer(), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x * other))
@@ -295,58 +279,42 @@ class SymbolicTensor(SymbolicData):
 
     def __mod__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.ModOpLayer(), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x % other))
 
     def __rmod__(self, other):
-        if isinstance(other, SymbolicTensor):
-            return other.__mod__(self)
-        else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: other % x))
+        return self(useful_layers.AnyOpLayer(op=lambda x: other % x))
 
     def __neg__(self):
         return self(useful_layers.AnyOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.AnyOpLayer(op=lambda x, y: x**y), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
-        if isinstance(other, SymbolicTensor):
-            return other.__pow__(self)
-        else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: other**x))
+        return self(useful_layers.AnyOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.SubOpLayer(), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x - other))
 
     def __rsub__(self, other):
-        if isinstance(other, SymbolicTensor):
-            return other.__sub__(self)
-        else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: other - x))
+        return self(useful_layers.AnyOpLayer(op=lambda x: other - x))
 
     def __truediv__(self, other):
         if isinstance(other, SymbolicTensor):
-            assert self.shape == other.shape, "Shapes do not match for the operation!"
             return self(useful_layers.AnyOpLayer(op=lambda x, y: x / y), other)
         else:
             return self(useful_layers.AnyOpLayer(op=lambda x: x / other))
 
     def __rtruediv__(self, other):
-        if isinstance(other, SymbolicTensor):
-            return other.__truediv__(self)
-        else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: other / x))
+        return self(useful_layers.AnyOpLayer(op=lambda x: other / x))
 
     def __matmul__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -355,70 +323,75 @@ class SymbolicTensor(SymbolicData):
             return self(useful_layers.AnyOpLayer(op=lambda x: x @ other))
 
     def __rmatmul__(self, other):
-        if isinstance(other, SymbolicTensor):
-            return other.__matmul__(self)
-        else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
+        return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
+
+    def __repr__(self):
+        addr = f"SymbolicTensor at {hex(id(self))};"
+        info = f"{len(self._parents)} parents; {len(self._children)} children"
+        return "<" + addr + " " + info + ">"
 
 
-class Input(SymbolicTensor):
-    def __init__(
-        self,
-        shape: Tuple | List = tuple(),
-        batched: bool = True,
-        batch_shape: Tuple | List | None = None,
-        dtype=torch.float32,
-        min_value: float = 0.0,
-        max_value: float = 1.0,
-        custom_tensor: torch.Tensor | None = None,
-    ):
-        """Input to the SymbolicModel.
+def Input(
+    shape: Tuple | List = tuple(),
+    batch_size: int = 1,
+    batch_shape: Tuple | List | None = None,
+    dtype=torch.float32,
+    min_value: float = 0.0,
+    max_value: float = 1.0,
+):
+    """Input to Symbolic Model. Creates Symbolic Tensor as a root node in the graph.
 
-        It should be treated as a placeholder value that will be replaced with
-        real data after the model is created.
-        For calculation purposes, it can be treated as normal ``torch.Tensor``,
-        which means it can be added, subtracted, multiplied, taken absolute value of,
-        etc.
+    It should be treated as a placeholder that will be replaced with real data after the model is created.
+    For calculation purposes, it can be treated as normal ``torch.Tensor``,
+    which means it can be added, subtracted, multiplied, taken absolute value of, etc.
 
-        Parameters
-        ----------
-        shape
-            Shape of the real data NOT including the batch dimension.
-        batched
-            If True and ``batch_shape`` was not given, batch size will set to 1.
-        batch_shape
-            Shape of the real data including the batch dimension.
-            Should be provided instead ``shape`` if cuda graphs will be used.
-            If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
-        dtype
-            Dtype of the real data that will be the input of the network.
-        min_value
-            In rare cases, if real world data is very specific and some values
-            cannot work with the model, this should be used to set a
-            reasonable minimal value that the model can take as an input.
-        max_value
-            As above, but the maximal value.
-        custom_tensor
-            If needed, a specific tensor can be provided to serve as the SymbolicTensor's value.
-            If this is the case, no shape or dtype is needed as they will be inferred from the tensor.
-        """
-        if custom_tensor is not None:
-            super().__init__(value=custom_tensor)
-            return
+    Parameters
+    ----------
+    shape
+        Shape of the real data NOT including the batch dimension
+    batch_size
+        Optional batch size of the Tensor
+    batch_shape
+        Shape of the real data including the batch dimension.
+        Should be provided instead ``shape`` if cuda graphs will be used.
+        If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
+    dtype
+        Dtype of the real data that will be the input of the network
+    min_value
+        In rare cases, if real world data is very specific and some values
+        cannot work with the model, this should be used to set a
+        reasonable minimal value that the model can take as an input.
+    max_value
+        As above, but the maximal value
+    """
+    batch_size_known = True
 
-        batch_size_known = True
+    if batch_shape is not None:
+        batch_size = batch_shape[0]
+        shape = batch_shape[1:]
+    else:
+        # By default, we use batch_size of 1 under the hood
+        batch_size_known = False
 
-        if batch_shape is None and not batched:
-            batch_shape = shape
+    value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+    value = value.to(dtype)
+    return SymbolicTensor(value=value, batch_size_known=batch_size_known)
 
-        if batch_shape is not None:
-            batch_size = batch_shape[0]
-            shape = batch_shape[1:]
-        else:
-            # We use batch_size of 1 under the hood but we don't tell it to the user
-            batch_size = 1
-            batch_size_known = False
 
-        value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
-        value = value.to(dtype)
-        super().__init__(value=value, batch_size_known=batch_size_known)
+def CustomInput(
+    data: Any,
+):
+    """Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
+
+    This should be used when Input won't work.
+
+    Parameters
+    ----------
+    data
+        Speficic data that will be used during the graph tracing.
+        It can, but doesn't need to be a torch.Tensor.
+    """
+    if isinstance(data, torch.Tensor):
+        return SymbolicTensor(value=data, batch_size_known=True)
+    else:
+        return SymbolicData(value=data)

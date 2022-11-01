@@ -1,8 +1,9 @@
 #  Copyright (c) 2022 Szymon Mikler
 
 import torch
+from torch import nn
 
-from pytorch_symbolic import Input, SymbolicModel, optimize_module_calls
+from pytorch_symbolic import CustomInput, Input, SymbolicModel, add_to_graph, optimize_module_calls
 
 
 def test_all():
@@ -173,3 +174,103 @@ def test_all_optimized():
         out3 = model3(x1, x2)
         res3 = const + x2 + const - x2 / 2 + const * x2 + const / x2 + const % x2 + const @ x2 + const**x2
         assert torch.allclose(out3, res3)
+
+
+def test_mmul_on_list_torch():
+    A, B, C = 5, 5, 5
+    x = CustomInput(data=[[torch.rand(1) for _ in range(B)] for _ in range(A)])
+    y = CustomInput(data=[[torch.rand(1) for _ in range(C)] for _ in range(B)])
+
+    r = None
+    for i in range(len(x[0])):
+        for j in range(len(y)):
+
+            class Mmul(nn.Module):
+                def __init__(self, i, j):
+                    super().__init__()
+                    self.i = i
+                    self.j = j
+
+                def forward(self, x, y):
+                    r = torch.zeros(len(x), len(y[0]))
+                    assert len(x[0]) == len(y), "Wrong shapes!"
+                    r[self.i][self.j] = sum([x[self.i][p] * y[p][self.j] for p in range(len(y))])
+                    return r
+
+            mmul = Mmul(i, j)
+
+            if r is None:
+                r = mmul(x, y)
+            else:
+                r = r + mmul(x, y)
+    model = SymbolicModel(inputs=(x, y), outputs=(r,))
+
+    X = torch.rand(A, B)
+    Y = torch.rand(B, C)
+
+    R = model(X.tolist(), Y.tolist())
+    assert torch.allclose(R, X @ Y)
+
+
+def test_mmul_on_list_numpy():
+    import numpy as np
+
+    A, B, C = 5, 5, 5
+    x = CustomInput(data=[[np.random.rand() for _ in range(B)] for _ in range(A)])
+    y = CustomInput(data=[[np.random.rand() for _ in range(C)] for _ in range(B)])
+
+    rs = []
+    for i in range(len(x[0])):
+        for j in range(len(y)):
+
+            class Mmul(nn.Module):
+                def __init__(self, i, j):
+                    super().__init__()
+                    self.i = i
+                    self.j = j
+
+                def forward(self, x, y):
+                    r = np.zeros([len(x), len(y[0])])
+                    assert len(x[0]) == len(y), "Wrong shapes!"
+                    r[self.i][self.j] = sum([x[self.i][p] * y[p][self.j] for p in range(len(y))])
+                    return r
+
+            mmul = Mmul(i, j)
+            r = mmul(x, y)
+            rs.append(r)
+
+    output = add_to_graph(lambda *args: sum(args), *rs)
+    model = SymbolicModel(inputs=(x, y), outputs=output)
+
+    X = np.random.rand(A, B)
+    Y = np.random.rand(B, C)
+
+    R = model(X.tolist(), Y.tolist())
+    assert np.allclose(R, X @ Y)
+
+
+def test_anypow_layer():
+    tensor = Input(shape=(10, 20))
+    power = CustomInput(data=1.5)
+
+    class AnyPow(nn.Module):
+        def forward(self, tensor, power):
+            return tensor**power
+
+    output = AnyPow()(tensor, power)
+
+    model = SymbolicModel(inputs=(tensor, power), outputs=output)
+
+    for x in range(10):
+        for y in [0.5, 1.0, 1.5, 2.0]:
+            assert model(x, y) == x**y
+
+    x = torch.rand(10, 20, 30)
+    for y in [0.5, 1.0, 1.5, 2.0]:
+        assert torch.allclose(model(x, y), x**y)
+        assert torch.allclose(model.detach_from_graph()(x, y), x**y)
+
+    x = torch.rand(10, 20, 30)
+    for y in [0.5, 1.0, 1.5, 2.0]:
+        assert torch.allclose(model(y, x), y**x)
+        assert torch.allclose(model.detach_from_graph()(y, x), y**x)

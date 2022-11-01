@@ -5,7 +5,7 @@ import logging
 
 from torch import nn
 
-from .symbolic_data import SymbolicTensor
+from .symbolic_data import SymbolicData
 
 _objects_with_wrapped_call = []
 
@@ -26,11 +26,17 @@ def enable_symbolic_API_for_module(module):
     module.__pytorch_symbolic_old_call__ = __old_call__
 
     def experimental_monkey_patch_call(self, *args, **kwds):
-        if len(args) > 0 and len(kwds) == 0 and all((isinstance(x, SymbolicTensor) for x in args)):
+        if not any(isinstance(x, SymbolicData) for x in args):
+            return __old_call__(self, *args, **kwds)
+        elif len(kwds) == 0 and all(isinstance(x, SymbolicData) for x in args):
             node = args[0]
             return node(self, *args[1:])
         else:
-            return __old_call__(self, *args, **kwds)
+            msg = (
+                "Only unnamed SymbolicData are allowed as arguments! "
+                "If you need more flexibility, use `functions_utility.add_to_graph`!"
+            )
+            raise UserWarning(msg)
 
     _objects_with_wrapped_call.append(module)
     module.__call__ = experimental_monkey_patch_call
