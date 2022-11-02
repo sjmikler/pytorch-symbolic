@@ -41,15 +41,16 @@ def _replace_symbolic_with_value(container, extracted, navigation):
 
 
 def add_to_graph(func: Callable | nn.Module, *args, **kwds):
-    """Register a custom func or module in the computation graph.
+    """Register a custom func or a module in the computation graph.
 
-    This works will arbitrary functions and modules if at least one SymbolicData is among *args, **kwds.
+    This works will arbitrary functions and modules iff at least one Symbolic Data is among ``*args, **kwds``.
 
-    It is flexible, but might add a small delay to the call, because it adds a wrapper for parsing arguments.
-    If this is unacceptable, please create a nn.Module that takes only SymbolicData arguments.
+    This way of registering is flexible, but might add a small slowdown to the call,
+    because it adds a wrapper for parsing arguments.
+    If this is unacceptable, please create an torch.nn.Module that takes only Symbolic Data arguments.
 
-    All arguments, including Symbolic Data, should be passed after the ``func`` argument.
-    They can be mixed and matched, even nested in lists, tuples and dictionaries.
+    Here all arguments, including Symbolic Data, should be passed after the ``func`` argument.
+    The arguments can be mixed and matched, even nested in lists, tuples and dictionaries.
 
     Convolution func example::
 

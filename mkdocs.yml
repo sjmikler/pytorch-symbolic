@@ -7,10 +7,9 @@ nav:
     - advanced_stuff.md
     - benchmarks.md
     - Reference:
-        - Reference/symbolic_data.md
         - Reference/symbolic_model.md
+        - Reference/symbolic_data.md
         - Reference/add_to_graph.md
-        - Reference/functions_utility.md
         - Reference/graph_algorithms.md
         - Reference/model_tools.md
         - Reference/optimize_module_calls.md
