@@ -90,5 +90,5 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
         name = func.__class__.__name__
     else:
         name = str(func)
-    module = useful_layers.NamedAnyOpLayer(op=wrapper_function, name=f"Wrap({name})({len(navigation)})")
+    module = useful_layers.NamedLambdaOpLayer(op=wrapper_function, name=f"Wrap({name})({len(navigation)})")
     return extracted_symbols[0](module, *extracted_symbols[1:])

@@ -73,14 +73,14 @@ it can be faster to launch the model on the CPU.
 ![images/many_linear_layers.png](images/many_linear_layers.png)
 > Percentile intervals [25, 75] are visible. Sequential model is visibly 
 > slower than the others. This can be explained by operations
-> introduced by the iterator added in `nn.Sequential`.
+> introduced by the iterator added in `torch.nn.Sequential`.
 > Also, Sequential model seems to be slowing down more, as the number of layers is increasing.
 > The other two seem to be equal!
 
 ## Toy ResNet
 
 This model is presented in [Advanced Stuff](advanced_stuff.md),
-it was also used as an example in Keras documentation.
+it was also used as an example in [Keras documentation](https://keras.io/guides/functional_api/).
 It is a shallower and thinner version of often used ResNet network.
 
 #### Data

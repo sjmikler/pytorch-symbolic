@@ -6,13 +6,13 @@ import torch
 from torch import nn
 
 
-class AnyOpLayer(nn.Module):
+class LambdaOpLayer(nn.Module):
     def __init__(self, op):
         super().__init__()
         self.forward = op
 
 
-class NamedAnyOpLayer(nn.Module):
+class NamedLambdaOpLayer(nn.Module):
     def __init__(self, op, name):
         super().__init__()
         self.forward = op
