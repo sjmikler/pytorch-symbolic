@@ -48,10 +48,10 @@ class SymbolicModel(nn.Module):
         enable_cuda_graphs=False,
         enable_forward_codegen=None,
     ):
-        """A PyTorch model that applies operations defined by the graph.
+        """A PyTorch model that replays operations defined in the graph.
 
-        All operations that changed ``inputs`` into ``outputs`` will be applied
-        in the same order on the real data that will be fed into this model.
+        All operations that were required to changed ``inputs`` into ``outputs`` will be replayed
+        in the same order, but on the real data provided as input to this model.
 
         Example::
 
@@ -77,6 +77,13 @@ class SymbolicModel(nn.Module):
             CUDA Graphs are greatly speeding up the execution of some of the models.
             Not all models are compatible with CUDA Graphs. For example, if your model
             includes some non-deterministic behaviour, it likely won't work.
+
+        Attributes
+        ----------
+        inputs : tuple
+            Non-modifiable tuple of input nodes
+        outputs : tuple
+            Non-modifiable tuple of output nodes
         """
         super().__init__()
         logging.info("Creating a SymbolicModel...")

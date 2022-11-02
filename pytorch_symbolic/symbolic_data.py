@@ -20,7 +20,39 @@ class SymbolicData:
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
-        """Grandfather of all Symbolic datatypes."""
+        """Grandfather of all Symbolic datatypes.
+
+        Underlying data is a normal Python object, for example a ``dict``.
+        However, outside of ``nn.Module`` you cannot use it as normal ``dict``.
+        This means you cannot use ``.values()`` or ``.items()`` as you would usually.
+        You can do this only inside an ``nn.Module``.
+        Outside of ``nn.Module`` you can unpack or index it, if only the underlying data allows it.
+
+        If the underlying data is ``torch.Tensor``, it should be created as ``SymbolicTensor`` instead.
+
+        Parameters
+        ----------
+        value
+        parents
+        depth
+        layer
+        batch_size_known
+
+        Attributes
+        ----------
+        v : Any
+            Underlying data that is used during model tracing
+        layer : nn.Module
+            A torch.nn.Module that transforms parents' values into this value. Also it's the incoming edge.
+        depth : int
+            Maximum of parents' depths plus one
+        batch_size_known : bool
+            In case of Input, whether batch size was provided by the user.
+            For non-Input nodes, batch size is known iff all parents' batch sizes are known.
+        """
+        assert not isinstance(
+            value, torch.Tensor
+        ), "SymbolicData with underlying torch.Tensor should be created as SymbolicTensor instead!"
         self.v = value
         self.layer = layer
         self.depth = depth
@@ -158,7 +190,12 @@ class SymbolicData:
 
 class SymbolicTensor(SymbolicData):
     def __init__(self, *args, **kwds):
-        """Most common Symbolic datatype. It mimics ``torch.Tensor``."""
+        """Recommended to use Symbolic datatype. It mimics ``torch.Tensor`` API.
+
+        Treat it as a placeholder that will be replaced with real data after the model is created.
+        For calculation purposes, treat it as normal ``torch.Tensor``: add, subtract, multiply,
+        take absolute value of, index, slice, etc.
+        """
         super().__init__(*args, **kwds)
         assert isinstance(self.v, torch.Tensor)
 
@@ -295,12 +332,12 @@ class SymbolicTensor(SymbolicData):
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
-            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x ** y), other)
+            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self(useful_layers.LambdaOpLayer(op=lambda x: x ** other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
-        return self(useful_layers.LambdaOpLayer(op=lambda x: other ** x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -330,9 +367,8 @@ class SymbolicTensor(SymbolicData):
         return self(useful_layers.LambdaOpLayer(op=lambda x: other @ x))
 
     def __repr__(self):
-        addr = f"SymbolicTensor at {hex(id(self))};"
-        info = f"{len(self._parents)} parents; {len(self._children)} children"
-        return "<" + addr + " " + info + ">"
+        super_repr = super().__repr__()
+        return super_repr.replace("Data(Tensor)", "Tensor")
 
 
 def Input(
@@ -342,12 +378,10 @@ def Input(
     dtype=torch.float32,
     min_value: float = 0.0,
     max_value: float = 1.0,
-):
-    """Input to Symbolic Model. Creates Symbolic Tensor as a root node in the graph.
+) -> SymbolicTensor:
+    """Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.
 
-    It should be treated as a placeholder that will be replaced with real data after the model is created.
-    For calculation purposes, it can be treated as normal ``torch.Tensor``,
-    which means it can be added, subtracted, multiplied, taken absolute value of, etc.
+    Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.
 
     Parameters
     ----------
@@ -367,6 +401,11 @@ def Input(
         reasonable minimal value that the model can take as an input.
     max_value
         As above, but the maximal value
+
+    Returns
+    -------
+    SymbolicTensor
+        Root node in the graph
     """
     batch_size_known = True
 
@@ -384,7 +423,7 @@ def Input(
 
 def CustomInput(
     data: Any,
-):
+) -> SymbolicData:
     """Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
 
     This should be used when Input won't work.
@@ -394,6 +433,11 @@ def CustomInput(
     data
         Speficic data that will be used during the graph tracing.
         It can, but doesn't need to be a torch.Tensor.
+
+    Returns
+    -------
+    SymbolicData
+        Root node in the graph
     """
     if isinstance(data, torch.Tensor):
         return SymbolicTensor(value=data, batch_size_known=True)
