@@ -21,7 +21,20 @@ class DetachedSymbolicModel(nn.Module):
         """A tiny model detached from the SymbolicModel graph structure.
 
         It can live, even if the graph structure is removed!
+
+        Parameters
+        ----------
+        names
+            Names for all the layers. Must be equal in length to ``layers``
+        layers
+            Ordered list of layers to be executed
+        forward_src
+            String containing definition of a ``forward`` function.
+            Must define ``def forward(self, ...)``.
+            Layers are available under ``self._execution_order_layers`` in the function's body.
         """
+        assert len(names) == len(layers)
+
         super().__init__()
         self._execution_order_layers = []
         for name, layer in zip(names, layers):

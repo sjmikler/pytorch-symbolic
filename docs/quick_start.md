@@ -2,15 +2,25 @@
 
 ## Features
 
-* Equivalent of [Keras Functional API](https://keras.io/guides/functional_api/)
-* Easy to use with lots of flexibility
-* Supports advanced control flow:
-	* Reusing layers
-	* Shared layers
-	* Multiple inputs and outputs
-	* Custom, user-defined modules and functions
+* Easy to use:
+    * Familiar for users of [Keras Functional API](https://keras.io/guides/functional_api/)
+    * Symbolic Tensors with API similar to `torch.Tensor`
+* Lots of flexibility and advanced control flow:
+    * Reusing layers
+    * Shared layers
+    * Multiple inputs and outputs
+    * Custom, user-defined modules and functions
+    * No restrictions on module's signature
 
-## Introduction
+## Introduction to Symbolic Data
+
+To register a new layer, e.g. ``torch.nn.Linear``, in your model, you have two options:
+
+* `layer(symbolic_data)` (just like in [Keras Functional API](https://keras.io/guides/functional_api/))
+* `symbolic_data(layer)` (like nowhere else)
+
+There are no differences between these options.
+Models produced with them will be identical.
 
 To create a linear classifier without hidden layers, you can write the following:
 
@@ -34,15 +44,7 @@ outputs = inputs(nn.Linear(in_features=inputs.features, out_features=10))
 model = SymbolicModel(inputs, outputs)
 ```
 
-To register a new layer, e.g. ``torch.nn.Linear``, in your model, you have two options:
-
-* `layer(symbolic_data)` (just like in [Keras Functional API](https://keras.io/guides/functional_api/))
-* `symbolic_data(layer)` (like nowhere else)
-
-There are no differences between these options.
-Models produced with them will be identical.
-
-### What is a Symbolic Tensor?
+### Computation graph
 
 Under the hood of Pytorch Symbolic, there lives a computation graph.
 
@@ -54,11 +56,11 @@ Every Symbolic Tensor is a node in it. When interacting with Symbolic Tensor:
 Let us play with Symbolic Tensor and see what we can do:
 
 ```python
-from pytorch_symbolic import Input
+from pytorch_symbolic import Input, SymbolicModel
 
 inputs = Input((28 * 28,))
 print(inputs)
-_ = inputs + 1
+outputs = inputs + 1
 print(inputs)
 ```
 
@@ -85,16 +87,26 @@ torch.Size([1, 784])
 784
 ```
 
-Doing this, we:
+In some cases, calculating output shapes in your code adds unnecessary complexity,
+for example when padding and convolutions are involved.
+By calculating shapes automatically we write less code and write easier code.
 
-* Write less code
-* Write easier code
+After creating the graph,
+you can replay all the defined operations by using a Symbolic Model.
+
+```py
+model = SymbolicModel(inputs=inputs, outputs=outputs)
+```
+
+It is a model that adds 1 to the input tensor. 
+We defined it using Symbolic Tensors, but it will work on arbitrary tensors now!
+Using Pytorch Symbolic, you can create more complicated models.
 
 ## Examples step by step
 
 ### Model for RGB images
 
-1. Get your symbolic inputs. You can specify the batch size. There are a few ways to do it:
+1. Get your symbolic inputs. Specifying batch size is optional. There are a few ways to do it:
 	* `inputs = Input(shape=(C, H, W))`
 	* `inputs = Input(shape=(C, H, W), batch_size=B)`
 	* `inputs = Input(batch_shape=(B, C, H, W))`
@@ -113,7 +125,9 @@ Doing this, we:
 	* `.W` equals `.shape[3]` for RGB data
 	* `.HW` is (height, width) tuple for RGB data
 6. Finally, create the model: `model = SymbolicModel(inputs, outputs)`
-7. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible
+7. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible. 
+    When using the model, 
+    all the operations performed on Symbolic Data will be replayed on the real data.
 
 ### Sequential topology example
 

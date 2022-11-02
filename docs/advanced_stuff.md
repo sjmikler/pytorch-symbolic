@@ -702,4 +702,5 @@ constant and will stay the same each time you execute the model.
 In our example `add_noise` stayed `True` even after creating the model.
 Under the hood, Pytorch Symbolic is browsing through 
 the arguments in search of Symbolic Data.
+They will be replaced by real data during the execution.
 It is able to navigate through nested `list`, `tuple` and `dict`.

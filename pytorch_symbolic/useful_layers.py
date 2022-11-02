@@ -27,7 +27,9 @@ class NamedLambdaOpLayer(nn.Module):
 
 class CallbackLayer(nn.Module):
     def __init__(self, op):
-        """This can be used for debugging or logging purposes. Accepts only one argument.
+        """Layer that returns its inputs, but executes a callable ``op`` on them before returning.
+
+        This can be used for debugging or logging purposes. Accepts only one argument.
 
         Example::
 

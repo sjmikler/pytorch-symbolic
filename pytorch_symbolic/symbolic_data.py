@@ -50,9 +50,6 @@ class SymbolicData:
             In case of Input, whether batch size was provided by the user.
             For non-Input nodes, batch size is known iff all parents' batch sizes are known.
         """
-        assert not isinstance(
-            value, torch.Tensor
-        ), "SymbolicData with underlying torch.Tensor should be created as SymbolicTensor instead!"
         self.v = value
         self.layer = layer
         self.depth = depth

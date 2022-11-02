@@ -27,10 +27,10 @@ Features:
 
 ## Example
 
-To create a symbolic model, you will need Symbolic Tensors and `torch.nn.Module`. 
+To create a symbolic model, you need Symbolic Tensors and `torch.nn.Module`. 
 Register layers in your model by calling ``layer(inputs)`` or
 equivalently ``inputs(layer)``.
-Layers will be automagically added to your model and executed correctly on the real data.
+Layers will be automagically added to your model and replayed correctly on the real data.
 That's all!
 
 Using Pytorch Symbolic, we can define a working classifier in a few lines of code:

@@ -26,7 +26,7 @@ output
 ```
 
 ```
-<SymbolicTensor at 0x7f31dafd2460; child of 2; parent of 0>
+<SymbolicTensor at 0x7ffb77ba87f0; 2 parents; 0 children>
 ```
 
 This will work for most of the use cases, even if Symbolic Tensors
