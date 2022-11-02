@@ -20,7 +20,36 @@ class SymbolicData:
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
     ):
-        """Grandfather of all Symbolic datatypes."""
+        """Grandfather of all Symbolic datatypes.
+
+        Underlying data is a normal Python object, for example a ``dict``.
+        However, outside of ``nn.Module`` you cannot use it as normal ``dict``.
+        This means you cannot use ``.values()`` or ``.items()`` as you would usually.
+        You can do this only inside an ``nn.Module``.
+        Outside of ``nn.Module`` you can unpack or index it, if only the underlying data allows it.
+
+        If the underlying data is ``torch.Tensor``, it should be created as ``SymbolicTensor`` instead.
+
+        Parameters
+        ----------
+        value
+        parents
+        depth
+        layer
+        batch_size_known
+
+        Attributes
+        ----------
+        v : Any
+            Underlying data that is used during model tracing
+        layer : nn.Module
+            A torch.nn.Module that transforms parents' values into this value. Also it's the incoming edge.
+        depth : int
+            Maximum of parents' depths plus one
+        batch_size_known : bool
+            In case of Input, whether batch size was provided by the user.
+            For non-Input nodes, batch size is known iff all parents' batch sizes are known.
+        """
         self.v = value
         self.layer = layer
         self.depth = depth
@@ -137,14 +166,18 @@ class SymbolicData:
             self._output = self.layer(*(parent._output for parent in self._parents))
 
     def __getitem__(self, idx):
-        layer = useful_layers.SliceLayer(idx)
-        return layer(self)
+        if isinstance(idx, SymbolicData):
+            layer = useful_layers.SliceLayerSymbolicIdx()
+            return layer(self, idx)
+        else:
+            layer = useful_layers.SliceLayer(idx)
+            return layer(self)
 
     def __call__(self, *args):
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"SymbolicData({self.v.__class__.__name__.capitalize()}) at {hex(id(self))};"
+        addr = f"SymbolicData({self.v.__class__.__name__}) at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
@@ -154,7 +187,12 @@ class SymbolicData:
 
 class SymbolicTensor(SymbolicData):
     def __init__(self, *args, **kwds):
-        """Most common Symbolic datatype. It mimics ``torch.Tensor``."""
+        """Recommended to use Symbolic datatype. It mimics ``torch.Tensor`` API.
+
+        Treat it as a placeholder that will be replaced with real data after the model is created.
+        For calculation purposes, treat it as normal ``torch.Tensor``: add, subtract, multiply,
+        take absolute value of, index, slice, etc.
+        """
         super().__init__(*args, **kwds)
         assert isinstance(self.v, torch.Tensor)
 
@@ -226,7 +264,7 @@ class SymbolicTensor(SymbolicData):
         return view_copy_layer(self)
 
     def t(self) -> SymbolicTensor:
-        transpose_layer = useful_layers.AnyOpLayer(op=lambda x: x.t())
+        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.t())
         return transpose_layer(self)
 
     @property
@@ -257,13 +295,13 @@ class SymbolicTensor(SymbolicData):
         return nn.Flatten()(self)
 
     def __abs__(self):
-        return self(useful_layers.AnyOpLayer(lambda x: abs(x)))
+        return self(useful_layers.LambdaOpLayer(lambda x: abs(x)))
 
     def __add__(self, other):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.AddOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x + other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x + other))
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -272,7 +310,7 @@ class SymbolicTensor(SymbolicData):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.MulOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x * other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x * other))
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -281,54 +319,53 @@ class SymbolicTensor(SymbolicData):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.ModOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x % other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x % other))
 
     def __rmod__(self, other):
-        return self(useful_layers.AnyOpLayer(op=lambda x: other % x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other % x))
 
     def __neg__(self):
-        return self(useful_layers.AnyOpLayer(op=lambda x: -x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
-            return self(useful_layers.AnyOpLayer(op=lambda x, y: x**y), other)
+            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x**y), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x**other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x**other))
 
     def __rpow__(self, other):
-        return self(useful_layers.AnyOpLayer(op=lambda x: other**x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other**x))
 
     def __sub__(self, other):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.SubOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x - other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x - other))
 
     def __rsub__(self, other):
-        return self(useful_layers.AnyOpLayer(op=lambda x: other - x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other - x))
 
     def __truediv__(self, other):
         if isinstance(other, SymbolicTensor):
-            return self(useful_layers.AnyOpLayer(op=lambda x, y: x / y), other)
+            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x / y), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x / other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x / other))
 
     def __rtruediv__(self, other):
-        return self(useful_layers.AnyOpLayer(op=lambda x: other / x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other / x))
 
     def __matmul__(self, other):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.MatmulOpLayer(), other)
         else:
-            return self(useful_layers.AnyOpLayer(op=lambda x: x @ other))
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x @ other))
 
     def __rmatmul__(self, other):
-        return self(useful_layers.AnyOpLayer(op=lambda x: other @ x))
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other @ x))
 
     def __repr__(self):
-        addr = f"SymbolicTensor at {hex(id(self))};"
-        info = f"{len(self._parents)} parents; {len(self._children)} children"
-        return "<" + addr + " " + info + ">"
+        super_repr = super().__repr__()
+        return super_repr.replace("Data(Tensor)", "Tensor")
 
 
 def Input(
@@ -338,12 +375,10 @@ def Input(
     dtype=torch.float32,
     min_value: float = 0.0,
     max_value: float = 1.0,
-):
-    """Input to Symbolic Model. Creates Symbolic Tensor as a root node in the graph.
+) -> SymbolicTensor:
+    """Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.
 
-    It should be treated as a placeholder that will be replaced with real data after the model is created.
-    For calculation purposes, it can be treated as normal ``torch.Tensor``,
-    which means it can be added, subtracted, multiplied, taken absolute value of, etc.
+    Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.
 
     Parameters
     ----------
@@ -363,6 +398,11 @@ def Input(
         reasonable minimal value that the model can take as an input.
     max_value
         As above, but the maximal value
+
+    Returns
+    -------
+    SymbolicTensor
+        Root node in the graph
     """
     batch_size_known = True
 
@@ -380,7 +420,7 @@ def Input(
 
 def CustomInput(
     data: Any,
-):
+) -> SymbolicData:
     """Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
 
     This should be used when Input won't work.
@@ -390,6 +430,11 @@ def CustomInput(
     data
         Speficic data that will be used during the graph tracing.
         It can, but doesn't need to be a torch.Tensor.
+
+    Returns
+    -------
+    SymbolicData
+        Root node in the graph
     """
     if isinstance(data, torch.Tensor):
         return SymbolicTensor(value=data, batch_size_known=True)

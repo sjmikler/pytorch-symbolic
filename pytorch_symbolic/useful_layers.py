@@ -6,13 +6,13 @@ import torch
 from torch import nn
 
 
-class AnyOpLayer(nn.Module):
+class LambdaOpLayer(nn.Module):
     def __init__(self, op):
         super().__init__()
         self.forward = op
 
 
-class NamedAnyOpLayer(nn.Module):
+class NamedLambdaOpLayer(nn.Module):
     def __init__(self, op, name):
         super().__init__()
         self.forward = op
@@ -27,7 +27,9 @@ class NamedAnyOpLayer(nn.Module):
 
 class CallbackLayer(nn.Module):
     def __init__(self, op):
-        """This can be used for debugging or logging purposes. Accepts only one argument.
+        """Layer that returns its inputs, but executes a callable ``op`` on them before returning.
+
+        This can be used for debugging or logging purposes. Accepts only one argument.
 
         Example::
 
@@ -44,45 +46,30 @@ class CallbackLayer(nn.Module):
 
 
 class AddOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a + b
 
 
 class SubOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a - b
 
 
 class MulOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a * b
 
 
 class ModOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return torch.remainder(a, b)
 
 
 class MatmulOpLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def forward(a, b):
         return a @ b
@@ -148,9 +135,6 @@ class AggregateLayer(nn.Module):
 
 
 class UnpackLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, *args):
         return args
 
@@ -162,3 +146,8 @@ class SliceLayer(nn.Module):
 
     def forward(self, arg):
         return arg[self.idx]
+
+
+class SliceLayerSymbolicIdx(nn.Module):
+    def forward(self, arg, idx):
+        return arg[idx]

@@ -7,12 +7,12 @@ nav:
     - advanced_stuff.md
     - benchmarks.md
     - Reference:
-        - Reference/input.md
         - Reference/symbolic_model.md
-        - Reference/functions_utility.md
+        - Reference/symbolic_data.md
+        - Reference/add_to_graph.md
         - Reference/graph_algorithms.md
         - Reference/model_tools.md
-        - Reference/symbolic_data.md
+        - Reference/optimize_module_calls.md
         - Reference/useful_layers.md
 
 copyright:

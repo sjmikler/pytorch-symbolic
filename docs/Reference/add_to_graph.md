@@ -1,4 +1,4 @@
-# functions_utility
+# add_to_graph
 
 This module provides a way to add custom functions to the graph.
 
@@ -26,7 +26,7 @@ output
 ```
 
 ```
-<SymbolicTensor at 0x7f31dafd2460; child of 2; parent of 0>
+<SymbolicTensor at 0x7ffb77ba87f0; 2 parents; 0 children>
 ```
 
 This will work for most of the use cases, even if Symbolic Tensors
@@ -39,16 +39,16 @@ Recommended, overhead-free way to use custom functions is to write yourself an `
 the same as your function of choice.
 Then you can use the model without sacrificing performance.
 
-::: pytorch_symbolic.functions_utility
-	options:
-		show_source: false
-		heading_level: 2
-		show_root_heading: true
-		members_order: source
-		show_object_full_path: false
-		docstring_section_style: table
-		show_signature_annotations: true
-		separate_signature: true
-		annotations_path: brief
-		merge_init_into_class: true
-		show_root_full_path: true
+::: pytorch_symbolic.add_to_graph
+    options:
+        show_source: false
+        heading_level: 2
+        show_root_heading: true
+        members_order: source
+        show_object_full_path: false
+        docstring_section_style: table
+        show_signature_annotations: true
+        separate_signature: true
+        annotations_path: brief
+        merge_init_into_class: true
+        show_root_full_path: true

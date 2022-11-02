@@ -274,3 +274,27 @@ def test_anypow_layer():
     for y in [0.5, 1.0, 1.5, 2.0]:
         assert torch.allclose(model(y, x), y**x)
         assert torch.allclose(model.detach_from_graph()(y, x), y**x)
+
+
+def test_indexing_symbolic_data():
+    inputs = CustomInput(
+        {
+            "x": torch.rand(10, 20),
+            "y": torch.rand(10, 20),
+        }
+    )
+    key = CustomInput(data="x")
+    value = inputs[key]
+    outputs = nn.Identity()(value)
+
+    model = SymbolicModel(inputs=(inputs, key), outputs=outputs)
+
+    real_inputs = {
+        "x": torch.rand(1, 2, 3),
+        "y": torch.rand(1, 2, 3),
+        "z": torch.rand(1, 2, 3),
+    }
+
+    for key in real_inputs:
+        outs = model(real_inputs, key)
+        assert torch.equal(outs, real_inputs[key])

@@ -6,13 +6,13 @@ But does it sacrifice performance of the model itself?
 One of the most important principles in building this library was to
 avoid this.
 It was made with performance in mind.
-Standard model definition: a class inheriting form `nn.Module`,
+Standard model definition: a class inheriting form `torch.nn.Module`,
 is a baseline for us.
 Symbolic API aims to create models just as fast in all scenarios.
 
 ## Tweaks
 
-When using SymbolicModel for performance critical use case, you can use `optimize_module_calls` after all
+When using Symbolic Model for performance critical use case, you can use `optimize_module_calls` after all
 models are created.
 
 ```python
@@ -38,7 +38,7 @@ To see if it does, we will maximize the number of kernel calls.
 
 We will look at a very thin and deep model with linear layers only.
 Each layer will have only 4 features.
-If there's _any_ overhead induced by SymbolicModel, it should be visible here.
+If there's _any_ overhead induced by Symbolic Model, it should be visible here.
 In larger models, the overhead could be hidden by the kernel computation.
 
 #### Data
@@ -65,7 +65,7 @@ for _ in range(n_layers):
 model = SymbolicModel(inputs, x)
 ```
 
-### Inference (cpu)
+### Inference (CPU)
 
 For such small subsequent matrix multiplications,
 it can be faster to launch the model on the CPU.
@@ -73,14 +73,14 @@ it can be faster to launch the model on the CPU.
 ![images/many_linear_layers.png](images/many_linear_layers.png)
 > Percentile intervals [25, 75] are visible. Sequential model is visibly 
 > slower than the others. This can be explained by operations
-> introduced by the iterator added in `nn.Sequential`.
+> introduced by the iterator added in `torch.nn.Sequential`.
 > Also, Sequential model seems to be slowing down more, as the number of layers is increasing.
 > The other two seem to be equal!
 
 ## Toy ResNet
 
 This model is presented in [Advanced Stuff](advanced_stuff.md),
-it was also used as an example in Keras documentation.
+it was also used as an example in [Keras documentation](https://keras.io/guides/functional_api/).
 It is a shallower and thinner version of often used ResNet network.
 
 #### Data
@@ -95,24 +95,24 @@ data = torch.rand(size=(4, 3, 16, 16))  # Resolution from 16x16 to 64x64
 
 #### Model definition
 
-Definition can be found in [Advanced stuff](advanced_stuff.md).
+Definition can be found in [Advanced Stuff](advanced_stuff.md).
 
-### Inference (gpu)
+### Inference (GPU)
 
 ![images/toy_resnet.png](images/toy_resnet.png)
 > CUDA Graphs have a huge advantage here due to the small batch size and image size.
 > For non CUDA Graphed models GPU is executing kernels much faster than CPU
 > is scheduling the work.
 > This is why we don't see any slowdown when the image resolution increases.
-> Nevertheless, `SymbolicModel` is slightly faster than the Vanilla model.
+> Nevertheless, Symbolic Model is slightly faster than the Vanilla model.
 > This is due to some implementation details.
 > For example, it is quite slow to access a layer by `__getattr__`  in forward function.
-> In `SymbolicModel` there is no need to do this.
+> In Symbolic Model there is no need to do this.
 
-## How is `SymbolicModel` optimized?
+## How is Symbolic Model optimized?
 
 Symbolic models reside on underlying graph structures.
-Each `SymbolicTensor` is a node and each layer is an edge that connects two nodes.
+Each Symbolic Tensor is a node and each layer is an edge that connects two nodes.
 Initially, the forward pass was implemented lazily:
 by executing `forward` in a layer only when
 its output was needed by a child node.
@@ -123,7 +123,7 @@ using topological ordering of the underlying graph structure.
 Even when we know the order of the layers, there's one more trick.
 Accessing structures has significant overhead in Python, so we want to avoid this.
 When the model is created we dynamically generate code for `forward` function.
-Thanks to this, `SymbolicModel` executes exactly the same code it would if you
+Thanks to this, Symbolic Model executes exactly the same code it would if you
 were to write it as a class.
 
 You can even see the generated code yourself:
