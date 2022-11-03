@@ -79,7 +79,7 @@ it can be faster to launch the model on the CPU.
 
 ## Toy ResNet
 
-This model is presented in [Advanced Stuff](advanced_stuff.md),
+This model is presented in [Advanced Stuff](advanced_topics.md),
 it was also used as an example in [Keras documentation](https://keras.io/guides/functional_api/).
 It is a shallower and thinner version of often used ResNet network.
 
@@ -95,7 +95,7 @@ data = torch.rand(size=(4, 3, 16, 16))  # Resolution from 16x16 to 64x64
 
 #### Model definition
 
-Definition can be found in [Advanced Stuff](advanced_stuff.md).
+Definition can be found in [Advanced Stuff](advanced_topics.md).
 
 ### Inference (GPU)
 

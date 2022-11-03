@@ -341,10 +341,14 @@ def draw_graph(
     #     fig.show()
 
 
-def topological_sort(nodes: Set[SymbolicData]) -> List[SymbolicData]:
-    """In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
+def sort_graph_and_check_DAG(nodes: Set[SymbolicData]) -> List[SymbolicData]:
+    """Sort graph topologically.
+
+    Wikipedia:
+    In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
     linear ordering of its nodes in which each node comes before all nodes to which it has outbound edges.
-    Every DAG has one or more topological sorts."""
+    Every DAG has one or more topological sorts.
+    """
 
     children = {node: set((c for c in node.children if c in nodes)) for node in nodes}
     parents = {node: set((p for p in node.parents if p in nodes)) for node in nodes}

@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 from . import code_generator, config
-from .graph_algorithms import figure_out_nodes_between, topological_sort
+from .graph_algorithms import figure_out_nodes_between, sort_graph_and_check_DAG
 from .model_tools import get_parameter_count
 from .symbolic_data import SymbolicData, SymbolicTensor
 
@@ -99,16 +99,16 @@ class SymbolicModel(nn.Module):
             Non-modifiable tuple of output nodes
         """
         super().__init__()
-        logging.info("Creating a SymbolicModel...")
+        logging.debug("Creating a SymbolicModel...")
 
         if isinstance(inputs, SymbolicData):
             inputs = (inputs,)
-        assert all(isinstance(x, SymbolicData) for x in inputs)
+        assert all(isinstance(x, SymbolicData) for x in inputs), "Only SymbolicData allowed in inputs!"
         self.inputs: Tuple[SymbolicData, ...] = tuple(inputs)
 
         if isinstance(outputs, SymbolicData):
             outputs = (outputs,)
-        assert all(isinstance(x, SymbolicData) for x in outputs)
+        assert all(isinstance(x, SymbolicData) for x in outputs), "Only SymbolicData allowed in outputs!"
         self.outputs: Tuple[SymbolicData, ...] = tuple(outputs)
 
         # Initialize helper variables
@@ -201,7 +201,7 @@ class SymbolicModel(nn.Module):
                 shape = type(node.v).__name__
             data.append(
                 [
-                    f"{len(data)}",
+                    f"{len(data)}" + ("*" if node in self.outputs else ""),
                     f"Input_{len(data)}",
                     str(shape),
                     "0",
@@ -222,7 +222,7 @@ class SymbolicModel(nn.Module):
                 shape = type(node.v).__name__
             data.append(
                 [
-                    f"{len(data)}",
+                    f"{len(data)}" + ("*" if node in self.outputs else ""),
                     f"{self._node_to_layer_name[node]}",
                     str(shape),
                     str(get_parameter_count(layer)),
@@ -301,7 +301,8 @@ class SymbolicModel(nn.Module):
 
     def _figure_out_execution_order(self):
         used_nodes = self._used_nodes()
-        execution_order_nodes = topological_sort(used_nodes)
+        sort_graph_and_check_DAG(used_nodes)
+        execution_order_nodes = sorted(self._used_nodes(), key=lambda node: node._execution_order_idx)
         assert len(execution_order_nodes) == len(used_nodes)
 
         for input_node in used_nodes.intersection(self.inputs):  # Not all inputs are in `used_nodes`
