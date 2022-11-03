@@ -61,3 +61,7 @@ def test_resnet():
 
     model = SymbolicModel(inputs, outputs)
     assert model_tools.get_parameter_count(model) == 223242
+
+
+def test_lstm():
+    examples.lstm.run()
