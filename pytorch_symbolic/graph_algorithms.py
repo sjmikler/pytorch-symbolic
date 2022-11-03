@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Set, Tuple
 
-from .symbolic_data import SymbolicData, SymbolicTensor
+from .symbolic_data import SymbolicData, SymbolicTensor, useful_layers
 
 if TYPE_CHECKING:
     from .symbolic_model import SymbolicModel
@@ -70,15 +70,20 @@ def figure_out_nodes_between(
 
 def default_node_text(sym: SymbolicData) -> str:
     if isinstance(sym, SymbolicTensor):
-        return str(tuple(sym.shape))
-    elif hasattr(sym, "__len__"):
-        return f"{type(sym.v).__name__}({len(sym)})"
-    else:
-        return type(sym.v).__name__
+        return str(tuple(sym.v.shape))
+    # mypy hates the next line for some reason
+    if isinstance(sym.v, Callable):  # type: ignore
+        return "callable"
+    if hasattr(sym.v, "__len__"):
+        return f"{type(sym.v).__name__}({len(sym.v)})"
+    return type(sym.v).__name__
 
 
 def default_edge_text(layer: nn.Module) -> str:
-    return layer._get_name()
+    if isinstance(layer, useful_layers.GetAttr):
+        return "." + layer.name
+    else:
+        return layer._get_name()
 
 
 def _calc_sum_sq_distances(graph, positions_dict):

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Set, Tuple
+from typing import Any, Callable, List, Set, Tuple
 
 import torch
 from torch import nn
@@ -70,10 +70,6 @@ class SymbolicData:
         """Acces the tuple of children of this node."""
         return tuple(self._children)
 
-    def __len__(self) -> int:
-        """Length of the symbolic data."""
-        return len(self.v)
-
     def apply_module(
         self, layer: nn.Module, *others: SymbolicData
     ) -> SymbolicData | Tuple[SymbolicData, ...]:
@@ -84,7 +80,7 @@ class SymbolicData:
         new_depth = max(parent.depth for parent in parents) + 1
         new_output = layer.__call__(self.v, *(o.v for o in others))
 
-        cls = SymbolicTensor if isinstance(new_output, torch.Tensor) else SymbolicData
+        cls = _figure_out_symbolic_type(new_output)
 
         new_layer_node = cls(
             value=new_output,
@@ -165,6 +161,10 @@ class SymbolicData:
         else:
             self._output = self.layer(*(parent._output for parent in self._parents))
 
+    def __len__(self) -> int:
+        """Length of the symbolic data."""
+        return len(self.v)
+
     def __getitem__(self, idx):
         if isinstance(idx, SymbolicData):
             layer = useful_layers.SliceLayerSymbolicIdx()
@@ -177,12 +177,41 @@ class SymbolicData:
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"SymbolicData({self.v.__class__.__name__}) at {hex(id(self))};"
+        if self.__class__.__name__ == "SymbolicData":
+            addr = f"SymbolicData({self.v.__class__.__name__}) at {hex(id(self))};"
+        else:
+            addr = f"{self.__class__.__name__} at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
     def __hash__(self):
         return id(self)
+
+    def __getattr__(self, item):
+        if (
+            hasattr(self.v, item)
+            and item != "__torch_function__"  # because pytorch is wrapping + and other operators
+        ):
+            return self(useful_layers.GetAttr(item))
+        else:
+            raise AttributeError
+
+
+class SymbolicCallable(SymbolicData):
+    def __call__(self, *args, **kwds):
+        assert isinstance(self.v, Callable)
+        from . import add_to_graph
+
+        def __func__(obj, *args, **kwds):
+            return obj(*args, **kwds)
+
+        __func__.__name__ = self.v.__name__
+
+        returns = add_to_graph(__func__, self, *args, **kwds)
+        if returns.v is NotImplemented:
+            dtypes = [type(p.v).__name__ for p in returns.parents[1:]]
+            raise NotImplementedError(f"Operation on {dtypes} returned NonImplemented object!")
+        return returns
 
 
 class SymbolicTensor(SymbolicData):
@@ -297,6 +326,9 @@ class SymbolicTensor(SymbolicData):
     def __abs__(self):
         return self(useful_layers.LambdaOpLayer(lambda x: abs(x)))
 
+    def __neg__(self):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
+
     def __add__(self, other):
         if isinstance(other, SymbolicTensor):
             return self(useful_layers.AddOpLayer(), other)
@@ -323,9 +355,6 @@ class SymbolicTensor(SymbolicData):
 
     def __rmod__(self, other):
         return self(useful_layers.LambdaOpLayer(op=lambda x: other % x))
-
-    def __neg__(self):
-        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -362,10 +391,6 @@ class SymbolicTensor(SymbolicData):
 
     def __rmatmul__(self, other):
         return self(useful_layers.LambdaOpLayer(op=lambda x: other @ x))
-
-    def __repr__(self):
-        super_repr = super().__repr__()
-        return super_repr.replace("Data(Tensor)", "Tensor")
 
 
 def Input(
@@ -436,7 +461,15 @@ def CustomInput(
     SymbolicData
         Root node in the graph
     """
-    if isinstance(data, torch.Tensor):
-        return SymbolicTensor(value=data, batch_size_known=True)
+    cls = _figure_out_symbolic_type(data)
+    return cls(value=data, batch_size_known=True)
+
+
+def _figure_out_symbolic_type(v):
+    if isinstance(v, torch.Tensor):
+        cls = SymbolicTensor
+    elif isinstance(v, Callable):
+        cls = SymbolicCallable
     else:
-        return SymbolicData(value=data)
+        cls = SymbolicData
+    return cls

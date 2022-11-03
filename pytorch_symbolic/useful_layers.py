@@ -7,15 +7,15 @@ from torch import nn
 
 
 class LambdaOpLayer(nn.Module):
-    def __init__(self, op):
+    def __init__(self, op: Callable):
         super().__init__()
-        self.forward = op
+        setattr(self, "forward", op)
 
 
 class NamedLambdaOpLayer(nn.Module):
-    def __init__(self, op, name):
+    def __init__(self, op: Callable, name: str):
         super().__init__()
-        self.forward = op
+        setattr(self, "forward", op)
         self.name = name
 
     def __repr__(self):
@@ -26,7 +26,7 @@ class NamedLambdaOpLayer(nn.Module):
 
 
 class CallbackLayer(nn.Module):
-    def __init__(self, op):
+    def __init__(self, op: Callable):
         """Layer that returns its inputs, but executes a callable ``op`` on them before returning.
 
         This can be used for debugging or logging purposes. Accepts only one argument.
@@ -38,7 +38,7 @@ class CallbackLayer(nn.Module):
         It does not change anything in x, but prints its value.
         """
         super().__init__()
-        self.callback = op
+        setattr(self, "callback", op)
 
     def forward(self, arg):
         self.callback(arg)
@@ -151,3 +151,23 @@ class SliceLayer(nn.Module):
 class SliceLayerSymbolicIdx(nn.Module):
     def forward(self, arg, idx):
         return arg[idx]
+
+
+class MethodCall(nn.Module):
+    def __init__(self, method_name, *args, **kwds):
+        super().__init__()
+        self.method_name = method_name
+        self.args = args
+        self.kwds = kwds
+
+    def forward(self, tensor):
+        return getattr(tensor, self.method_name)(*self.args, **self.kwds)
+
+
+class GetAttr(nn.Module):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def forward(self, data):
+        return getattr(data, self.name)
