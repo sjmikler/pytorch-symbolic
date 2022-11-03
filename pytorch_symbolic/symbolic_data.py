@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from types import MethodWrapperType
 from typing import Any, Callable, List, Set, Tuple
 
 import torch
@@ -17,7 +18,7 @@ class SymbolicData:
     def __init__(
         self,
         value: Any,
-        parents: Tuple[SymbolicData, ...] = tuple(),
+        parents: Tuple[SymbolicData, ...] = (),
         depth: int = 0,
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
@@ -98,7 +99,10 @@ class SymbolicData:
         ]
 
         for operator in operators:
-            if hasattr(self.v, operator) and not hasattr(self.__class__, operator):
+            if hasattr(self.v, operator) and (
+                not hasattr(self.__class__, operator)
+                or isinstance(getattr(self.__class__, operator), MethodWrapperType)
+            ):
                 logging.debug(f"Adding new operator to {self.__class__.__name__}: {operator}")
 
                 def factory(op):
@@ -454,7 +458,7 @@ def SymbolicFactory(dtype):
 
 
 def Input(
-    shape: Tuple | List = tuple(),
+    shape: Tuple | List = (),
     batch_size: int = 1,
     batch_shape: Tuple | List | None = None,
     dtype=torch.float32,
