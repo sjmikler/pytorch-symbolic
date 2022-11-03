@@ -284,44 +284,44 @@ class SymbolicTensor(SymbolicData):
         """Number of the values in placeholder. If batch size is known, it is used too."""
         return self.v.shape.numel()
 
-    def reshape(self, *shape) -> SymbolicTensor:
-        reshape_layer = useful_layers.ReshapeLayer(batch_size_included=True, shape=shape)
-        return reshape_layer(self)
-
-    def view(self, *shape) -> SymbolicTensor:
-        view_copy_layer = useful_layers.ViewCopyLayer(batch_size_included=True, shape=shape)
-        return view_copy_layer(self)
-
-    def t(self) -> SymbolicTensor:
-        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.t())
-        return transpose_layer(self)
-
-    @property
-    def T(self) -> SymbolicTensor:
-        return self.t()
-
-    def mean(self, dim=None, keepdim=False) -> SymbolicTensor:
-        layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)
-        return layer(self)
-
-    def sum(self, dim=None, keepdim=False) -> SymbolicTensor:
-        layer = useful_layers.AggregateLayer(torch.sum, dim=dim, keepdim=keepdim)
-        return layer(self)
-
-    def median(self, dim=None, keepdim=False) -> SymbolicTensor:
-        layer = useful_layers.AggregateLayer(torch.median, dim=dim, keepdim=keepdim)
-        return layer(self)
-
-    def argmax(self, dim=None, keepdim=False) -> SymbolicTensor:
-        layer = useful_layers.AggregateLayer(torch.argmax, dim=dim, keepdim=keepdim)
-        return layer(self)
-
-    def argmin(self, dim=None, keepdim=False) -> SymbolicTensor:
-        layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
-        return layer(self)
-
-    def flatten(self) -> SymbolicTensor:
-        return nn.Flatten()(self)
+    # def reshape(self, *shape) -> SymbolicTensor:
+    #     reshape_layer = useful_layers.ReshapeLayer(shape, batch_size_included=True)
+    #     return reshape_layer(self)
+    #
+    # def view(self, *shape) -> SymbolicTensor:
+    #     view_copy_layer = useful_layers.ViewCopyLayer(shape, batch_size_included=True)
+    #     return view_copy_layer(self)
+    #
+    # def t(self) -> SymbolicTensor:
+    #     transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.t())
+    #     return transpose_layer(self)
+    #
+    # @property
+    # def T(self) -> SymbolicTensor:
+    #     return self.t()
+    #
+    # def mean(self, dim=None, keepdim=False) -> SymbolicTensor:
+    #     layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)
+    #     return layer(self)
+    #
+    # def sum(self, dim=None, keepdim=False) -> SymbolicTensor:
+    #     layer = useful_layers.AggregateLayer(torch.sum, dim=dim, keepdim=keepdim)
+    #     return layer(self)
+    #
+    # def median(self, dim=None, keepdim=False) -> SymbolicTensor:
+    #     layer = useful_layers.AggregateLayer(torch.median, dim=dim, keepdim=keepdim)
+    #     return layer(self)
+    #
+    # def argmax(self, dim=None, keepdim=False) -> SymbolicTensor:
+    #     layer = useful_layers.AggregateLayer(torch.argmax, dim=dim, keepdim=keepdim)
+    #     return layer(self)
+    #
+    # def argmin(self, dim=None, keepdim=False) -> SymbolicTensor:
+    #     layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
+    #     return layer(self)
+    #
+    # def flatten(self) -> SymbolicTensor:
+    #     return nn.Flatten()(self)
 
     def __abs__(self):
         return self(useful_layers.LambdaOpLayer(lambda x: abs(x)))
