@@ -26,10 +26,8 @@ class SymbolicData:
         """Grandfather of all Symbolic datatypes.
 
         Underlying data is a normal Python object, for example a ``dict``.
-        However, outside of ``nn.Module`` you cannot use it as normal ``dict``.
-        This means you cannot use ``.values()`` or ``.items()`` as you would usually.
-        You can do this only inside an ``nn.Module``.
-        Outside of ``nn.Module`` you can unpack or index it, if only the underlying data allows it.
+        You can use methods and operators of the underlying object.
+        You can also unpack or index it, if only the underlying data allows it.
 
         If the underlying data is ``torch.Tensor``, it should be created as ``SymbolicTensor`` instead.
 
