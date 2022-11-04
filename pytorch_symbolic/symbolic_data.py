@@ -269,9 +269,8 @@ class SymbolicTensor(SymbolicData):
 
     @property
     def features(self) -> int:
-        """Size of 1D data."""
-        assert len(self.v.shape) == 2, "The data is not of [C,F] form!"
-        return self.v.shape[1]
+        """Size of the last dimension."""
+        return self.v.shape[-1]
 
     @property
     def C(self) -> int:
@@ -343,7 +342,8 @@ class SymbolicTensor(SymbolicData):
 
     @property
     def T(self) -> SymbolicTensor:
-        return self.t()
+        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.T)
+        return transpose_layer(self)
 
     def mean(self, dim=None, keepdim=False) -> SymbolicTensor:
         layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)

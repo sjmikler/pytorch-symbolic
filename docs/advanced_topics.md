@@ -709,7 +709,7 @@ It is able to navigate through nested `list`, `tuple` and `dict`.
 
 So we've been saying Symbolic Data over and over,
 but we always used Symbolic Tensor, which is a special case of Symbolic Data.
-The fact is, Symbolic Data can have arbitrary Python objects underneath.
+But the fact is, Symbolic Data can have arbitrary Python objects underneath.
 
 ```python
 from pytorch_symbolic import CustomInput, SymbolicModel
@@ -755,14 +755,17 @@ example_outs.shape
 
 The model above defines graph of operations on underlying `numpy` objects.
 
-You can create repayable graphs of your favorite Python operations.
+You can create replayable graphs of your favorite Python operations.
 Pytorch Symbolic is a generic framework for enclosing arbitrary Python operations
 in a `torch.nn.Module` and replaying them.
 
 But note a few things:
 * You can use most of the methods defined for your data type,
-    e.g. `symbolic_numpy.reshape(...)` will return another Symbolic Data.
+    e.g. `symbolic_numpy.reshape(...)` will return another Symbolic Data with
+     underlying `ndarray` which you can use to define a graph of numpy operations.
 * Pytorch Symbolic won't play nicely with in-place operations.
-    For example, working with Symbolic Data with underlying lists you have to use `symbolic_list.__add__([5])` instead of `symbolic_list.append(5)`.
-    If you use in-place operation, it will _not_ be replayed during graph re-execution.
+    For example, when working with Symbolic Data with underlying lists it is better
+    to use `new = symbolic_list + [5]` instead of `symbolic_list.append(5)`.
+    If you use in-place operation, it will _not_ be replayed during graph re-execution,
+    unless its output (usually `None`) is included in Symbolic Model's outputs.
     It is your responsibility to avoid in-place operations.
