@@ -75,7 +75,9 @@ def generate_forward_with_loops(
         last_node = node
         while (
             len(children[last_node]) == 1
+            # stop iterating when need to unpack something!
             and len(last_node._layer_full_siblings) == 1
+            and len(children[last_node][0]._layer_full_siblings) == 1  # needed, else tests fail
             # this should never be false, but just in case we make sure the child is next in execution order
             and children[last_node][0] is execution_order[exec_id + len(sequence)]
             and len(parents[last_node]) == 1

@@ -3,19 +3,22 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Set, Tuple
+from types import MethodWrapperType
+from typing import Any, Callable, List, Set, Tuple
 
 import torch
 from torch import nn
 
 from . import useful_layers
 
+_SYMBOLIC_DATA_COUNTER = 0
+
 
 class SymbolicData:
     def __init__(
         self,
         value: Any,
-        parents: Tuple[SymbolicData, ...] = tuple(),
+        parents: Tuple[SymbolicData, ...] = (),
         depth: int = 0,
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
@@ -50,6 +53,13 @@ class SymbolicData:
             In case of Input, whether batch size was provided by the user.
             For non-Input nodes, batch size is known iff all parents' batch sizes are known.
         """
+        global _SYMBOLIC_DATA_COUNTER
+        self._execution_order_idx = _SYMBOLIC_DATA_COUNTER
+        _SYMBOLIC_DATA_COUNTER += 1
+
+        # We use Symbolic Data for inheriting only
+        assert self.__class__ is not SymbolicData, "Symbolic Data should not be created directly!"
+
         self.v = value
         self.layer = layer
         self.depth = depth
@@ -59,6 +69,46 @@ class SymbolicData:
         self._children: List[SymbolicData] = []
         self._parents: Tuple[SymbolicData, ...] = parents
         self._layer_full_siblings: Tuple[SymbolicData, ...] = (self,)
+
+        self._define_class_operators()
+
+    def _define_class_operators(self):
+        operators = [
+            "__abs__",
+            "__neg__",
+            "__add__",
+            "__radd__",
+            "__sub__",
+            "__rsub__",
+            "__mul__",
+            "__rmul__",
+            "__pow__",
+            "__rpow__",
+            "__mod__",
+            "__rmod__",
+            "__truediv__",
+            "__rtruediv__",
+            "__and__",
+            "__rand__",
+            "__or__",
+            "__ror__",
+            "__xor__",
+            "__rxor__",
+            "__matmul__",
+            "__rmatmul__",
+        ]
+
+        for operator in operators:
+            if hasattr(self.v, operator) and (
+                not hasattr(self.__class__, operator)
+                or isinstance(getattr(self.__class__, operator), MethodWrapperType)
+            ):
+                logging.debug(f"Adding new operator to {self.__class__.__name__}: {operator}")
+
+                def factory(op):
+                    return lambda self, *args, **kwds: self.__getattr__(op)(*args, **kwds)
+
+                setattr(self.__class__, operator, factory(operator))
 
     @property
     def parents(self) -> Tuple[SymbolicData, ...]:
@@ -70,10 +120,6 @@ class SymbolicData:
         """Acces the tuple of children of this node."""
         return tuple(self._children)
 
-    def __len__(self) -> int:
-        """Length of the symbolic data."""
-        return len(self.v)
-
     def apply_module(
         self, layer: nn.Module, *others: SymbolicData
     ) -> SymbolicData | Tuple[SymbolicData, ...]:
@@ -84,7 +130,7 @@ class SymbolicData:
         new_depth = max(parent.depth for parent in parents) + 1
         new_output = layer.__call__(self.v, *(o.v for o in others))
 
-        cls = SymbolicTensor if isinstance(new_output, torch.Tensor) else SymbolicData
+        cls = _figure_out_symbolic_type(new_output)
 
         new_layer_node = cls(
             value=new_output,
@@ -95,7 +141,7 @@ class SymbolicData:
         )
         for parent in parents:
             parent._children.append(new_layer_node)
-            logging.info(f"Added {new_layer_node} as child of {parent}")
+            logging.debug(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
     def __iter__(self):
@@ -108,10 +154,7 @@ class SymbolicData:
 
         new_layer_nodes = []
         for new_output in new_outputs:
-
-            cls = SymbolicData
-            if isinstance(new_output, torch.Tensor):
-                cls = SymbolicTensor
+            cls = _figure_out_symbolic_type(new_output)
 
             new_layer_nodes.append(
                 cls(
@@ -127,7 +170,7 @@ class SymbolicData:
 
         self._children.extend(new_layer_nodes)
         for new_layer_node in new_layer_nodes:
-            logging.info(f"Added {new_layer_node} as child of {self}")
+            logging.debug(f"Added {new_layer_node} as child of {self}")
         for node in new_layer_nodes:
             yield node
 
@@ -165,6 +208,10 @@ class SymbolicData:
         else:
             self._output = self.layer(*(parent._output for parent in self._parents))
 
+    def __len__(self) -> int:
+        """Length of the symbolic data."""
+        return len(self.v)
+
     def __getitem__(self, idx):
         if isinstance(idx, SymbolicData):
             layer = useful_layers.SliceLayerSymbolicIdx()
@@ -177,12 +224,38 @@ class SymbolicData:
         return self.apply_module(*args)
 
     def __repr__(self):
-        addr = f"SymbolicData({self.v.__class__.__name__}) at {hex(id(self))};"
+        addr = f"{self.__class__.__name__} at {hex(id(self))};"
         info = f"{len(self._parents)} parents; {len(self._children)} children"
         return "<" + addr + " " + info + ">"
 
     def __hash__(self):
         return id(self)
+
+    def __getattr__(self, item):
+        if (
+            hasattr(self.v, item)
+            and item != "__torch_function__"  # because pytorch is wrapping `+` and other operators
+        ):
+            return self(useful_layers.GetAttr(item))
+        else:
+            raise AttributeError
+
+
+class SymbolicCallable(SymbolicData):
+    def __call__(self, *args, **kwds):
+        assert isinstance(self.v, Callable)
+        from . import add_to_graph
+
+        def __func__(obj, *args, **kwds):
+            return obj(*args, **kwds)
+
+        __func__.__name__ = self.v.__name__
+
+        returns = add_to_graph(__func__, self, *args, **kwds)
+        if returns.v is NotImplemented:
+            dtypes = [type(p.v).__name__ for p in returns.parents[1:]]
+            raise NotImplementedError(f"Operation on {dtypes} returned NonImplemented object!")
+        return returns
 
 
 class SymbolicTensor(SymbolicData):
@@ -247,20 +320,23 @@ class SymbolicTensor(SymbolicData):
 
     @property
     def shape(self) -> Tuple[int | None, ...]:
-        """Shape of the placeholder, including batch size."""
+        """Shape of the underlying Symbolic Tensor, including batch size."""
         return self.v.shape
 
     @property
     def numel(self) -> int:
-        """Number of the values in placeholder. If batch size is known, it is used too."""
+        """Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too."""
         return self.v.shape.numel()
 
+    # These methods do not need to be defined!
+    # However, we define basic methods to ensure they will be used without overhead of __getattr__.
+
     def reshape(self, *shape) -> SymbolicTensor:
-        reshape_layer = useful_layers.ReshapeLayer(batch_size_included=True, shape=shape)
+        reshape_layer = useful_layers.ReshapeLayer(shape, batch_size_included=True)
         return reshape_layer(self)
 
     def view(self, *shape) -> SymbolicTensor:
-        view_copy_layer = useful_layers.ViewCopyLayer(batch_size_included=True, shape=shape)
+        view_copy_layer = useful_layers.ViewCopyLayer(shape, batch_size_included=True)
         return view_copy_layer(self)
 
     def t(self) -> SymbolicTensor:
@@ -291,11 +367,17 @@ class SymbolicTensor(SymbolicData):
         layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
         return layer(self)
 
-    def flatten(self) -> SymbolicTensor:
-        return nn.Flatten()(self)
+    def flatten(self, start_dim=0, end_dim=-1) -> SymbolicTensor:
+        return nn.Flatten(start_dim, end_dim)(self)
+
+    # These operators do not need to be defined!
+    # However, we define basic operators to ensure they will be used without overhead of __getattr__.
 
     def __abs__(self):
         return self(useful_layers.LambdaOpLayer(lambda x: abs(x)))
+
+    def __neg__(self):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
 
     def __add__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -323,9 +405,6 @@ class SymbolicTensor(SymbolicData):
 
     def __rmod__(self, other):
         return self(useful_layers.LambdaOpLayer(op=lambda x: other % x))
-
-    def __neg__(self):
-        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
 
     def __pow__(self, other):
         if isinstance(other, SymbolicTensor):
@@ -363,13 +442,23 @@ class SymbolicTensor(SymbolicData):
     def __rmatmul__(self, other):
         return self(useful_layers.LambdaOpLayer(op=lambda x: other @ x))
 
-    def __repr__(self):
-        super_repr = super().__repr__()
-        return super_repr.replace("Data(Tensor)", "Tensor")
+
+_SYMBOLIC_FACTORY_CACHE = {}
+
+
+def SymbolicFactory(dtype):
+    global _SYMBOLIC_FACTORY_CACHE
+    dtype_name = dtype.__name__
+
+    if dtype_name not in _SYMBOLIC_FACTORY_CACHE:
+        logging.debug(f"New underlying data detected: {dtype_name}!")
+        cls = type(f"SymbolicData({dtype_name})", (SymbolicData,), {})
+        _SYMBOLIC_FACTORY_CACHE[dtype_name] = cls
+    return _SYMBOLIC_FACTORY_CACHE[dtype_name]
 
 
 def Input(
-    shape: Tuple | List = tuple(),
+    shape: Tuple | List = (),
     batch_size: int = 1,
     batch_shape: Tuple | List | None = None,
     dtype=torch.float32,
@@ -436,7 +525,15 @@ def CustomInput(
     SymbolicData
         Root node in the graph
     """
-    if isinstance(data, torch.Tensor):
-        return SymbolicTensor(value=data, batch_size_known=True)
+    cls = _figure_out_symbolic_type(data)
+    return cls(value=data, batch_size_known=True)
+
+
+def _figure_out_symbolic_type(v):
+    if isinstance(v, torch.Tensor):
+        cls = SymbolicTensor
+    elif isinstance(v, Callable):
+        cls = SymbolicCallable
     else:
-        return SymbolicData(value=data)
+        cls = SymbolicFactory(type(v))
+    return cls

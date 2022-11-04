@@ -47,18 +47,18 @@ model.summary()
 ```
 
 ```stdout
-______________________________________________________
-    Layer       Output shape        Params   Parent   
-======================================================
-1   Input_1     (None, 1, 28, 28)   0                 
-2   Flatten_1   (None, 784)         0        1        
-3   Linear_1    (None, 10)          7850     2        
-4   Softmax_1   (None, 10)          0        3        
-======================================================
+_______________________________________________________
+     Layer       Output shape        Params   Parent   
+=======================================================
+1    Input_1     (None, 1, 28, 28)   0                 
+2    Flatten_1   (None, 784)         0        1        
+3    Linear_1    (None, 10)          7850     2        
+4*   Softmax_1   (None, 10)          0        3        
+=======================================================
 Total params: 7850
 Trainable params: 7850
 Non-trainable params: 0
-______________________________________________________
+_______________________________________________________
 ```
 
 **See more examples in [Documentation Quick Start](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start/).**

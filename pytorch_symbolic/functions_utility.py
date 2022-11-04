@@ -69,7 +69,7 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
     real_call_kwds = _replace_symbolic_with_value(kwds, extracted_symbols, navigation)
     navigation.pop()
 
-    assert len(extracted_symbols) > 0, "No Symbolic Tensors detected in the input!"
+    assert len(extracted_symbols) > 0, "No Symbolic Data detected in the input!"
     assert all((isinstance(symbol, SymbolicData) for symbol in extracted_symbols))
     assert len(extracted_symbols) == len(navigation)
 
@@ -91,5 +91,6 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
         name = func.__class__.__name__
     else:
         name = str(func)
-    module = useful_layers.NamedLambdaOpLayer(op=wrapper_function, name=f"Wrap({name})({len(navigation)})")
-    return extracted_symbols[0](module, *extracted_symbols[1:])
+    module = useful_layers.NamedLambdaOpLayer(op=wrapper_function, name=f"wrap({name})")
+    # This might be a Symbolic Callable, so we use `apply_module` instead of `__call__`
+    return extracted_symbols[0].apply_module(module, *extracted_symbols[1:])

@@ -1,4 +1,4 @@
-# Advanced Stuff
+# Advanced Topics
 
 ## Underlying graphs
 
@@ -191,19 +191,19 @@ model.summary()  # Keras-like summary
 ```
 
 ```stdout
-________________________________________________
-    Layer      Output shape   Params   Parent   
-================================================
-1   Input_1    (None, 784)    0                 
-2   Linear_1   (None, 100)    78500    1        
-3   Linear_2   (None, 100)    10100    2        
-4   Linear_3   (None, 100)    10100    3        
-5   Linear_4   (None, 10)     1010     4        
-================================================
+_________________________________________________
+     Layer      Output shape   Params   Parent   
+=================================================
+1    Input_1    (None, 784)    0                 
+2    Linear_1   (None, 100)    78500    1        
+3    Linear_2   (None, 100)    10100    2        
+4    Linear_3   (None, 100)    10100    3        
+5*   Linear_4   (None, 10)     1010     4        
+=================================================
 Total params: 99710
 Trainable params: 99710
 Non-trainable params: 0
-________________________________________________
+_________________________________________________
 ```
 
 You can use the plotting utility directly on your model:
@@ -237,24 +237,24 @@ graph_algorithms.draw_graph(model=model, figsize=(9, 6))
 ```
 
 ```stdout
-___________________________________________________________
-     Layer             Output shape   Params   Parent      
-===========================================================
-1    Input_1           (None, 5)      0                    
-2    Input_2           (None, 5)      0                    
-3    Input_3           (None, 5)      0                    
-4    Input_4           (None, 5)      0                    
-5    Input_5           (None, 5)      0                    
-6    LambdaOpLayer_1   (None, 5)      0        1,2,3,4,5   
-7    LambdaOpLayer_2   (None, 5)      0        6           
-8    LambdaOpLayer_3   (None, 5)      0        6           
-9    LambdaOpLayer_4   (None, 5)      0        6           
-10   LambdaOpLayer_5   (None, 5)      0        6           
-===========================================================
+____________________________________________________________
+      Layer             Output shape   Params   Parent      
+============================================================
+1     Input_1           (None, 5)      0                    
+2     Input_2           (None, 5)      0                    
+3     Input_3           (None, 5)      0                    
+4     Input_4           (None, 5)      0                    
+5     Input_5           (None, 5)      0                    
+6     LambdaOpLayer_1   (None, 5)      0        1,2,3,4,5   
+7*    LambdaOpLayer_2   (None, 5)      0        6           
+8*    LambdaOpLayer_3   (None, 5)      0        6           
+9*    LambdaOpLayer_4   (None, 5)      0        6           
+10*   LambdaOpLayer_5   (None, 5)      0        6           
+============================================================
 Total params: 0
 Trainable params: 0
 Non-trainable params: 0
-___________________________________________________________
+____________________________________________________________
 ```
 ![images/draw_graph4.png](images/draw_graph4.png)
 
@@ -311,23 +311,23 @@ classifier.summary()
 ```
 
 ```stdout
-______________________________________________________
-    Layer       Output shape        Params   Parent   
-======================================================
-1   Input_1     (None, 1, 28, 28)   0                 
-2   Conv2d_1    (None, 8, 28, 28)   80       1        
-3   ReLU_1      (None, 8, 28, 28)   0        2        
-4   Conv2d_2    (None, 8, 28, 28)   584      3        
-5   ReLU_2      (None, 8, 28, 28)   0        4        
-6   Conv2d_3    (None, 8, 28, 28)   584      5        
-7   ReLU_3      (None, 8, 28, 28)   0        6        
-8   Flatten_1   (None, 6272)        0        7        
-9   Linear_1    (None, 10)          62730    8        
-======================================================
+_______________________________________________________
+     Layer       Output shape        Params   Parent   
+=======================================================
+1    Input_1     (None, 1, 28, 28)   0                 
+2    Conv2d_1    (None, 8, 28, 28)   80       1        
+3    ReLU_1      (None, 8, 28, 28)   0        2        
+4    Conv2d_2    (None, 8, 28, 28)   584      3        
+5    ReLU_2      (None, 8, 28, 28)   0        4        
+6    Conv2d_3    (None, 8, 28, 28)   584      5        
+7    ReLU_3      (None, 8, 28, 28)   0        6        
+8    Flatten_1   (None, 6272)        0        7        
+9*   Linear_1    (None, 10)          62730    8        
+=======================================================
 Total params: 63978
 Trainable params: 63978
 Non-trainable params: 0
-______________________________________________________
+_______________________________________________________
 ```
 
 After training `classifier`, you might decide that you want to inspect the intermediate features.
@@ -338,21 +338,21 @@ feature_extractor.summary()
 ```
 
 ```stdout
-_____________________________________________________
-    Layer      Output shape        Params   Parent   
-=====================================================
-1   Input_1    (None, 1, 28, 28)   0                 
-2   Conv2d_1   (None, 8, 28, 28)   80       1        
-3   ReLU_1     (None, 8, 28, 28)   0        2        
-4   Conv2d_2   (None, 8, 28, 28)   584      3        
-5   ReLU_2     (None, 8, 28, 28)   0        4        
-6   Conv2d_3   (None, 8, 28, 28)   584      5        
-7   ReLU_3     (None, 8, 28, 28)   0        6        
-=====================================================
+______________________________________________________
+     Layer      Output shape        Params   Parent   
+======================================================
+1    Input_1    (None, 1, 28, 28)   0                 
+2    Conv2d_1   (None, 8, 28, 28)   80       1        
+3    ReLU_1     (None, 8, 28, 28)   0        2        
+4    Conv2d_2   (None, 8, 28, 28)   584      3        
+5    ReLU_2     (None, 8, 28, 28)   0        4        
+6    Conv2d_3   (None, 8, 28, 28)   584      5        
+7*   ReLU_3     (None, 8, 28, 28)   0        6        
+======================================================
 Total params: 1248
 Trainable params: 1248
 Non-trainable params: 0
-_____________________________________________________
+______________________________________________________
 ```
 
 This model, `feature_extractor`, uses the same underlying weights
@@ -400,24 +400,24 @@ strange_model.summary()
 ```
 
 ```stdout
-_____________________________________________________________
-     Layer             Output shape        Params   Parent   
-=============================================================
-1    Input_1           (None, 1, 32, 32)   0                 
-2    Input_2           (None, 1, 64, 64)   0                 
-3    Input_3           (None, 1, 64, 64)   0                 
-4    SymbolicModel_1   (None, 8, 32, 32)   1248     1        
-5    AddOpLayer_1      (None, 1, 64, 64)   0        2,3      
-6    SymbolicModel_2   (None, 8, 64, 64)   1248     5        
-7    MaxPool2d_1       (None, 8, 32, 32)   0        6        
-8    SubOpLayer_1      (None, 8, 32, 32)   0        4,7      
-9    AnyOpLayer_1      (None, 8, 32, 32)   0        8        
-10   Wrap(sum)(1)_1    (None,)             0        9        
-=============================================================
+______________________________________________________________
+      Layer             Output shape        Params   Parent   
+==============================================================
+1     Input_1           (None, 1, 32, 32)   0                 
+2     Input_2           (None, 1, 64, 64)   0                 
+3     Input_3           (None, 1, 64, 64)   0                 
+4     SymbolicModel_1   (None, 8, 32, 32)   1248     1        
+5     AddOpLayer_1      (None, 1, 64, 64)   0        2,3      
+6     SymbolicModel_2   (None, 8, 64, 64)   1248     5        
+7     MaxPool2d_1       (None, 8, 32, 32)   0        6        
+8     SubOpLayer_1      (None, 8, 32, 32)   0        4,7      
+9     LambdaOpLayer_1   (None, 8, 32, 32)   0        8        
+10*   wrap(sum)_1       (None,)             0        9        
+==============================================================
 Total params: 1248
 Trainable params: 1248
 Non-trainable params: 0
-_____________________________________________________________
+______________________________________________________________
 ```
 
 ```py
@@ -663,19 +663,19 @@ model.summary()
 
 ```stdout
 Adding noise!
-________________________________________________________________
-    Layer                      Output shape   Params   Parent   
-================================================================
-1   Input_1                    (10, 20)       0                 
-2   Input_2                    (20, 30)       0                 
-3   Input_3                    (30, 10)       0                 
-4   Wrap(execute_noisy)(3)_1   tuple          0        1,2,3    
-5   UnpackLayer_1              (10, 10)       0        4        
-================================================================
+______________________________________________________________
+     Layer                   Output shape   Params   Parent   
+==============================================================
+1    Input_1                 (10, 20)       0                 
+2    Input_2                 (20, 30)       0                 
+3    Input_3                 (30, 10)       0                 
+4    wrap(execute_noisy)_1   tuple          0        1,2,3    
+5*   UnpackLayer_1           (10, 10)       0        4        
+==============================================================
 Total params: 0
 Trainable params: 0
 Non-trainable params: 0
-________________________________________________________________
+______________________________________________________________
 ```
 
 Your function will be called by `add_to_graph` during tracing
@@ -704,3 +704,65 @@ Under the hood, Pytorch Symbolic is browsing through
 the arguments in search of Symbolic Data.
 They will be replaced by real data during the execution.
 It is able to navigate through nested `list`, `tuple` and `dict`.
+
+## Arbitrary Symbolic Data
+
+So we've been saying Symbolic Data over and over,
+but we always used Symbolic Tensor, which is a special case of Symbolic Data.
+The fact is, Symbolic Data can have arbitrary Python objects underneath.
+
+```python
+from pytorch_symbolic import CustomInput, SymbolicModel
+import numpy as np
+
+input1 = x = CustomInput(np.random.rand(100, 200))
+input2 = y = CustomInput(np.array([1, 2, 3]))
+
+z = x[:, :, None] + y.reshape(1, 1, -1)
+model = SymbolicModel((input1, input2), outputs=z)
+model.summary()
+
+```
+
+```stdout
+______________________________________________________________________
+     Layer             Output shape                 Params   Parent   
+======================================================================
+1    Input_1           ndarray                      0                 
+2    Input_2           ndarray                      0                 
+3    SliceLayer_1      ndarray                      0        1        
+4    GetAttr_1         method-wrapper               0        3        
+5    GetAttr_2         builtin_function_or_method   0        2        
+6    wrap(reshape)_1   ndarray                      0        5        
+7*   wrap(__add__)_1   ndarray                      0        4,6      
+======================================================================
+Total params: 0
+Trainable params: 0
+Non-trainable params: 0
+______________________________________________________________________
+```
+
+Use it as always, but take care to have inputs compatible with your defined operations.
+
+```py
+example_outs = model(np.random.rand(100, 200), np.random.rand(3))
+example_outs.shape
+```
+
+```stdout
+(100, 200, 3)
+```
+
+The model above defines graph of operations on underlying `numpy` objects.
+
+You can create repayable graphs of your favorite Python operations.
+Pytorch Symbolic is a generic framework for enclosing arbitrary Python operations
+in a `torch.nn.Module` and replaying them.
+
+But note a few things:
+* You can use most of the methods defined for your data type,
+    e.g. `symbolic_numpy.reshape(...)` will return another Symbolic Data.
+* Pytorch Symbolic won't play nicely with in-place operations.
+    For example, working with Symbolic Data with underlying lists you have to use `symbolic_list.__add__([5])` instead of `symbolic_list.append(5)`.
+    If you use in-place operation, it will _not_ be replayed during graph re-execution.
+    It is your responsibility to avoid in-place operations.
