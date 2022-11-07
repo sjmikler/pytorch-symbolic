@@ -14,8 +14,8 @@ def enable_symbolic_API_for_module(module):
     """Enable symbolic API.
 
     This means:
-        * create __pytorch_symbolic_old_call__ that holds old call
-        * wrap __call__
+        * create __pytorch_symbolic_old_call__ that holds old call in case we want to restore it
+        * wrap __call__ to check whether the inputs are Symbolic Data
     """
     assert inspect.isclass(module), "Argument must be a class!"
     logging.debug(f"ENABLING SYMBOLIC API FOR {module}")

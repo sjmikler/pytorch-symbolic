@@ -22,6 +22,7 @@ CODEGEN_MIN_LOOP_LENGTH = read_from_env("PYTORCH_SYMBOLIC_CODEGEN_MIN_LOOP_LENGT
 
 
 def optimize_module_calls():
+    """Remove the call wrapper from all existing `torch.nn.Module`."""
     msg = "Optimizing module calls for existing layers! Reusing them might throw errors!"
     logging.warning(msg)
     remove_call_wrapper_from_all_modules()

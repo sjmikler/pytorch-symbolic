@@ -16,6 +16,8 @@ def generate_forward_with_loops(
 ) -> str:
     """Generate code for forward function of SymbolicModel.
 
+    It assumes there is `self._execution_order_layers` available in the class.
+
     Parameters
     ----------
     inputs
@@ -24,12 +26,12 @@ def generate_forward_with_loops(
         Outputs of the model
     execution_order
         Contains the exact order in which the nodes should be executed.
-        If there are multiple output layers, this won't be equivalent to `nodes_in_subgraph`.
-        In such case, only one of the outputs of each layer will be in the execution_order.
+        If there are layers with multiple outputs, this will be a subset of `nodes_in_subgraph`.
+        In such case, only one output of each layer needs to be in the execution_order.
     nodes_in_subgraph
         All nodes covered by the subgraph, including all nodes created by multiple-output layers.
     min_loop_length
-        Minimal sequence length to replace sequential layer execution with a loop.
+        Minimal sequence length to replace sequential layers execution with a loop.
 
     Returns
     -------

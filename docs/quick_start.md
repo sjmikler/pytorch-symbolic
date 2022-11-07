@@ -3,14 +3,14 @@
 ## Features
 
 * Easy to use:
-    * Familiar for users of [Keras Functional API](https://keras.io/guides/functional_api/)
-    * Symbolic Tensors with API similar to `torch.Tensor`
+	* Familiar for users of [Keras Functional API](https://keras.io/guides/functional_api/)
+	* Symbolic Tensors have API similar to `torch.Tensor`
 * Lots of flexibility and advanced control flow:
-    * Reusing layers
-    * Shared layers
-    * Multiple inputs and outputs
-    * Custom, user-defined modules and functions
-    * No restrictions on module's signature
+	* Reusing layers
+	* Shared layers
+	* Multiple inputs and outputs
+	* Custom, user-defined modules and functions
+	* No restrictions on module's signature
 
 ## Introduction to Symbolic Data
 
@@ -50,7 +50,7 @@ Under the hood of Pytorch Symbolic, there lives a computation graph.
 
 Every Symbolic Tensor is a node in it. When interacting with Symbolic Tensor:
 
-* Think of it as placeholder for your data
+* Think of it as a placeholder for your data
 * Use it like `torch.Tensor` (e.g. slicing and iterating over it)
 
 Let us play with Symbolic Tensor and see what we can do:
@@ -58,9 +58,9 @@ Let us play with Symbolic Tensor and see what we can do:
 ```python
 from pytorch_symbolic import Input, SymbolicModel
 
-inputs = Input((28 * 28,))
+inputs = Input((28 * 28,))  # create a symbolic batch of vectors
 print(inputs)
-outputs = inputs + 1
+outputs = inputs[0]  # access first vector from the batch
 print(inputs)
 ```
 
@@ -69,9 +69,9 @@ print(inputs)
 <SymbolicTensor at 0x7f55dc437130; 0 parents; 1 children>
 ```
 
-At first, `inputs` was the only node in the graph. It had 0 parents and 0 children. 
+At first, `inputs` was the only node in the graph. It had 0 parents and 0 children.
 
-But when we executed `inputs + 1`, a new node was registered as a child of `inputs`.
+But when we created `outputs`, a new node was registered as a child of `inputs`.
 
 Symbolic Tensors have useful attributes.
 Using them we can, for example, instantly obtain shapes of intermediate outputs,
@@ -95,12 +95,12 @@ After creating the graph,
 you can replay all the defined operations by using a Symbolic Model.
 
 ```py
-model = SymbolicModel(inputs=inputs, outputs=outputs)
+model = SymbolicModel(inputs=inputs, outputs=inputs + 1)
 ```
 
-It is a model that adds 1 to the input tensor. 
+This is a model that adds 1 to the input tensor.
 We defined it using Symbolic Tensors, but it will work on arbitrary tensors now!
-Using Pytorch Symbolic, you can create more complicated models.
+Using Pytorch Symbolic, you can perform much more complicated operations.
 
 ## Examples step by step
 
@@ -116,24 +116,25 @@ Using Pytorch Symbolic, you can create more complicated models.
 	* `outputs = add_to_graph(layer, inputs)`
 3. Use standard operations on Symbolic Tensors: `+, -, *, **, /, //, %` and `abs`:
 	* For example, `x = 2 + inputs` or `x = inputs % y` will work as expected
-4. To concatenate (similarly for stacking) Symbolic Tensors:
+4. Similarly, use all the **non in-place** methods of `torch.Tensor`, e.g. `inputs.reshape`
+5. To concatenate (similarly for stacking) Symbolic Tensors:
 	* use `useful_layers.ConcatOpLayer(dim=1)(x, y)`
 	* add custom function to the model:  `add_to_graph(torch.concat, (x, y), dim=1)`
-5. When working with Symbolic Tensors, use `.shape` property or one of the shortcuts:
+6. When working with Symbolic Tensors, use `.shape` property or one of the shortcuts:
 	* `.C` and `.channels` equals `.shape[1]` for RGB data
 	* `.H` equals `.shape[2]` for RGB data
 	* `.W` equals `.shape[3]` for RGB data
 	* `.HW` is (height, width) tuple for RGB data
-6. Finally, create the model: `model = SymbolicModel(inputs, outputs)`
-7. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible. 
-    When using the model, 
-    all the operations performed on Symbolic Data will be replayed on the real data.
+7. Finally, create the model: `model = SymbolicModel(inputs, outputs)`
+8. Use `model` as a normal PyTorch `nn.Module`. It's 100% compatible.
+   When using the model,
+   all the operations performed on Symbolic Data will be replayed on the real data.
 
 ### Sequential topology example
 
 In PyTorch, there's `torch.nn.Sequential` that allows creating simple sequential models.
 
-In Pytorch Symbolic, you can create them easily too, but it is *much* more flexible.
+In Pytorch Symbolic, you can create them too:
 
 ```python
 from torch import nn
@@ -267,7 +268,7 @@ outs1, outs2 = model(data1, data2)
 
 If you want to use a function from `torch.nn.functional` or basically
 any custom function in your model, you have a few options.
-The recommended way is to wrap it in a `torch.nn.Module`.
+The recommended way is to use it in a `torch.nn.Module`.
 
 As an example, let us say this is the function you want to use:
 

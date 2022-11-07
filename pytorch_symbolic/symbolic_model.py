@@ -63,7 +63,7 @@ class SymbolicModel(nn.Module):
     ):
         """A PyTorch model that replays operations defined in the graph.
 
-        All operations that were required to changed ``inputs`` into ``outputs`` will be replayed
+        All operations that were required to change ``inputs`` into ``outputs`` will be replayed
         in the same order, but on the real data provided as input to this model.
 
         Example::
@@ -77,9 +77,9 @@ class SymbolicModel(nn.Module):
         Parameters
         ----------
         inputs
-            A collection of SymbolicTensors that will begin the computations.
-            For these nodes, you'll provide the input. So if you have mulitple inputs,
-            be prepared to pass multiple inputs during training/inference.
+            A collection of SymbolicData that represent the input data used by the model.
+            It is you who provide the specific data when the model is created.
+            If you have mulitple inputs here, be prepared to pass multiple inputs during training/inference.
         outputs
             A collection of SymbolicTensors that will end the computations.
             These nodes return your final computation result.
@@ -89,7 +89,7 @@ class SymbolicModel(nn.Module):
             This requires CUDA capable device.
             CUDA Graphs are greatly speeding up the execution of some of the models.
             Not all models are compatible with CUDA Graphs. For example, if your model
-            includes some non-deterministic behaviour, it likely won't work.
+            includes non-deterministic behaviour, it likely won't work.
 
         Attributes
         ----------
@@ -134,7 +134,7 @@ class SymbolicModel(nn.Module):
 
         Warning!
 
-        This function will be overwritten by `_generate_optimized_forward` if `enable_forward_codegen`
+        This function will be overwritten by `_replace_forward_with_codegen` if `enable_forward_codegen`
         is True. If this happened and you want to see your source, print `self._generated_forward_source`.
         """
         assert len(inputs) == len(self.inputs), "Number of inputs doesn't match!"
@@ -171,7 +171,7 @@ class SymbolicModel(nn.Module):
 
     def detach_from_graph(self) -> DetachedSymbolicModel:
         if self._enable_cuda_graphs:
-            logging.warning("This might fail after converting to CUDA Graphs!")
+            logging.warning("detach_from_graph might fail when used together with CUDA Graphs conversion!")
 
         names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
         forward_src = code_generator.generate_forward_with_loops(
@@ -184,6 +184,7 @@ class SymbolicModel(nn.Module):
         return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
 
     def summary(self):
+        """Print Keras-like model summary."""
         space_between_cols = 3
 
         data = [["", "Layer", "Output shape", "Params", "Parent"]]

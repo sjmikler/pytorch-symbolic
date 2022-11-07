@@ -26,10 +26,8 @@ class SymbolicData:
         """Grandfather of all Symbolic datatypes.
 
         Underlying data is a normal Python object, for example a ``dict``.
-        However, outside of ``nn.Module`` you cannot use it as normal ``dict``.
-        This means you cannot use ``.values()`` or ``.items()`` as you would usually.
-        You can do this only inside an ``nn.Module``.
-        Outside of ``nn.Module`` you can unpack or index it, if only the underlying data allows it.
+        You can use methods and operators of the underlying object.
+        You can also unpack or index it, if only the underlying data allows it.
 
         If the underlying data is ``torch.Tensor``, it should be created as ``SymbolicTensor`` instead.
 
@@ -260,10 +258,10 @@ class SymbolicCallable(SymbolicData):
 
 class SymbolicTensor(SymbolicData):
     def __init__(self, *args, **kwds):
-        """Recommended to use Symbolic datatype. It mimics ``torch.Tensor`` API.
+        """Recommended to use Symbolic datatype. It mimics and extends ``torch.Tensor`` API.
 
         Treat it as a placeholder that will be replaced with real data after the model is created.
-        For calculation purposes, treat it as normal ``torch.Tensor``: add, subtract, multiply,
+        For calculation purposes treat it as a normal ``torch.Tensor``: add, subtract, multiply,
         take absolute value of, index, slice, etc.
         """
         super().__init__(*args, **kwds)
@@ -271,9 +269,8 @@ class SymbolicTensor(SymbolicData):
 
     @property
     def features(self) -> int:
-        """Size of 1D data."""
-        assert len(self.v.shape) == 2, "The data is not of [C,F] form!"
-        return self.v.shape[1]
+        """Size of the last dimension."""
+        return self.v.shape[-1]
 
     @property
     def C(self) -> int:
@@ -345,7 +342,8 @@ class SymbolicTensor(SymbolicData):
 
     @property
     def T(self) -> SymbolicTensor:
-        return self.t()
+        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.T)
+        return transpose_layer(self)
 
     def mean(self, dim=None, keepdim=False) -> SymbolicTensor:
         layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)

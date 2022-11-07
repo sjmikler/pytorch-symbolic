@@ -10,7 +10,8 @@ do this:
 
 - ``x = add_to_graph(function, *args, **kwds)``.
 
-For this to work, there must be at least one SymbolicTensor among ``*args, **kwds``.
+For this to work, there must be at least one Symbolic Data among ``*args, **kwds``,
+but other data types are allowed to be there as well.
 
 Example for using ``torch.concat``:
 
@@ -29,14 +30,13 @@ output
 <SymbolicTensor at 0x7ffb77ba87f0; 2 parents; 0 children>
 ```
 
-This will work for most of the use cases, even if Symbolic Tensors
-are hidden in nested tuples, lists or dicts. You should also know that there's
+This will work for most of the user custom functions, even if Symbolic Tensors
+are hidden in nested tuples, lists or dicts. You should also know that there is
 a small time overhead for `__call__` during runtime for every function registered this way.
 This overhead _should not_ be present when dealing with large models on GPU,
-because then CPU does its work before GPU finishes kernel computation. 
+because then CPU does its work before GPU finishes previous kernel computation. 
 
-Recommended, overhead-free way to use custom functions is to write yourself an ``nn.Module`` that does
-the same as your function of choice.
+Recommended, overhead-free way to use custom functions is to write yourself an ``nn.Module`` that does the same as the function of choice.
 Then you can use the model without sacrificing performance.
 
 ::: pytorch_symbolic.add_to_graph
