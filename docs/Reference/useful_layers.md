@@ -1,6 +1,6 @@
 # useful_layers
 
-Collection of simple ``nn.Modules``.
+Collection of simple ``torch.nn.Modules``.
 
 Some of them might be useful when building models using Pytorch Symbolic.
 

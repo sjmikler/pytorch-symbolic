@@ -24,12 +24,13 @@ print(x)
 <SymbolicTensor at 0x7f55dc437bb0; 0 parents; 0 children>
 ```
 
-`Input` is a function for creating Symbolic Data. 
+`Input` is a function for creating Symbolic Data.
 Symbolic Tensor is a special case of Symbolic Data.
 The difference between them is the underlying object.
 Basically, Symbolic Data can have any Python object underneath
 and Symbolic Tensor always has `torch.Tensor` underneath.
-You should prefer to use Symbolic Tensor whenever possible.
+You should use Symbolic Tensor whenever possible as the library is tested with it in mind.
+But if needed, you can define whole graphs of operations with other underlying datatypes.
 
 Three rules that should hold true:
 
@@ -59,7 +60,7 @@ print(y)
 ```
 
 This _transformation_ is always just an `torch.nn.Module`.
-Even when you use `+` or `-` operators, there's an `torch.nn.Module` created underneath. 
+Even when you use `+` or `-` operators, there's an `torch.nn.Module` created underneath.
 In case of `+` and `-` it's a module that adds or subtracts two inputs.
 These operators are defined using `useful_layers.LambdaOpLayer`.
 
@@ -73,12 +74,12 @@ LambdaOpLayer()
 
 When you add new nodes to the graph as a result of some operation,
 they will be registered as children of other nodes,
-You can check children or parents of every node by accessing:
+You can check children or parents of a node by accessing:
 
 * `node.parents: Tuple[SymbolicData, ...]`
 * `node.children: Tuple[SymbolicData, ...]`
 
-It's impossible to modify parents after Symbolic Data is created,
+It's forbidden to modify parents after Symbolic Data is created,
 but new children can always be added by applying new operations.
 Every operation on Symbolic Data creates at least one new child.
 If your `torch.nn.Module` has more than one output, more children will be created.
@@ -140,8 +141,12 @@ This is useful for understanding what is going on in the graph.
 It can be more difficult to use when graph was defined in a local namespace.
 Alternatively, you can use argument `node_text_func` to define your
 own custom labels on nodes.
-This argument is a `Callable` that takes Symbolic Data as input and returns `str` as output. 
+This argument is a `Callable` that takes Symbolic Data as input and returns `str` as output.
 By default, it displays underlying tensor shape.
+
+> **Tip:** consider using `try: ... except: ...` in your `node_text_func`.
+> There are many data types a node can have underneath, so the chances are you
+> get an `AttributeError` otherwise.
 
 Be careful! Drawing utility is designed to display simple graphs
 so it might not work well for large neural networks.
@@ -166,6 +171,8 @@ graph_algorithms.draw_graph(
 
 ![images/draw_graph2.png](images/draw_graph2.png)
 
+Question mark displayed instead the name of a variable indicates that the variable
+was not found in the given namespace.
 Similarly to `node_text_func` you can use `edge_text_func` to display custom labels on the edges.
 By default, we display the name of the layer, e.g. `Linear` or `Conv2d`.
 
@@ -216,19 +223,24 @@ graph_algorithms.draw_graph(model=model)
 
 ![images/draw_graph3.png](images/draw_graph3.png)
 
-As you can see, if batch size is not specified, Pytorch Symbolic uses batch size of 1.
+As you can see, if the batch size is not specified, Pytorch Symbolic uses batch size of 1.
 
 ## Multiple inputs and outputs
 
-If your `torch.nn.Module` has multiple inputs or outputs, that's fine.
+If your `torch.nn.Module` has multiple inputs or outputs, that's fine:
 
 ```python
+from torch import nn
 from pytorch_symbolic import Input, SymbolicModel, useful_layers, graph_algorithms
 
-add_n = useful_layers.LambdaOpLayer(op=lambda *args: sum(args))
+
+class AddN(nn.Module):
+    def forward(self, *tensors):
+        return sum(tensors)
+
 
 inputs = [Input((5,)) for _ in range(5)]
-intermediate = add_n(*inputs)
+intermediate = AddN()(*inputs)
 outputs = [intermediate / i for i in range(1, 5)]
 
 model = SymbolicModel(inputs, outputs)
@@ -256,10 +268,10 @@ Trainable params: 0
 Non-trainable params: 0
 ____________________________________________________________
 ```
+
 ![images/draw_graph4.png](images/draw_graph4.png)
 
-Notice that we used custom `add_n` module instead
-of just `intermediate = sum(inputs)`.
+Notice that we used custom `AddN` module instead of just `intermediate = sum(inputs)`.
 Both versions would be correct.
 In fact, they produce equivalent models, but their underlying graphs are different.
 
@@ -267,7 +279,7 @@ Let us compare two smaller examples:
 
 ```py
 inputs = [Input((5,)) for _ in range(3)]
-graph_algorithms.draw_graph(inputs=inputs, outputs=add_n(*inputs))
+graph_algorithms.draw_graph(inputs=inputs, outputs=AddN()(*inputs))
 ```
 
 ![images/draw_graph5.png](images/draw_graph5.png)
@@ -280,15 +292,15 @@ graph_algorithms.draw_graph(inputs=inputs, outputs=sum(inputs))
 
 ![images/draw_graph6.png](images/draw_graph6.png)
 
-This difference exists because `sum` is executing multiple `+ / __add__` operations under the hood.
+This difference exists because `sum` is executing multiple `__add__` operations under the hood.
 
 ## Reusing existing layers
 
 Each node, except those created by `Input`, is associated with some `torch.nn.Module`.
 When you are reusing a part of the graph, you are reusing all underlying
 `torch.nn.Module` too.
-Doing this, you can have multiple models sharing the same weights.
-Or one model reusing the same weights multiple times.
+Thanks to this, you can have multiple models sharing the same weights.
+Or one model using the same weights multiple times.
 
 For example, imagine you created a model that classifies RGB images:
 
@@ -364,16 +376,35 @@ There's also another way of achieving the end result, this one modifies the orig
 
 ```py
 classifier.add_output(features)
-print(classifier.output_shape)
+classifier.summary()
 ```
 
 ```stdout
-((1, 10), (1, 8, 28, 28))
+_______________________________________________________
+     Layer       Output shape        Params   Parent   
+=======================================================
+1    Input_1     (None, 1, 28, 28)   0                 
+2    Conv2d_1    (None, 8, 28, 28)   80       1        
+3    ReLU_1      (None, 8, 28, 28)   0        2        
+4    Conv2d_2    (None, 8, 28, 28)   584      3        
+5    ReLU_2      (None, 8, 28, 28)   0        4        
+6    Conv2d_3    (None, 8, 28, 28)   584      5        
+7*   ReLU_3      (None, 8, 28, 28)   0        6        
+8    Flatten_1   (None, 6272)        0        7        
+9*   Linear_1    (None, 10)          62730    8        
+=======================================================
+Total params: 63978
+Trainable params: 63978
+Non-trainable params: 0
+_______________________________________________________
 ```
+
+Now there's a dot next to the 7th and 9th layers indicating both 7th and 9th layers' outputs
+are returned from the model. Previously only 9th layer's output was returned.
 
 ## Nested models
 
-Instance of Symbolic Model is just an `torch.nn.Module` and you can use it as such.
+Instance of Symbolic Model is just a `torch.nn.Module` and you can use it as such.
 This means you can use it anywhere, including another Symbolic Model or vanilla model.
 Create new models, using the existing ones.
 Here we create a model that calculates how similar are two feature maps generated
@@ -428,10 +459,10 @@ graph_algorithms.draw_graph(model=strange_model, figsize=(10, 8))
 
 ## Recreate Toy ResNet
 
-We took an example of a toy ResNet from
+We took an example of toy ResNet from
 [tensorflow guide](https://www.tensorflow.org/guide/keras/symbolic) and
-recreated it in a few different ways. Note that their example is **16 lines of code long**,
-excluding imports and utilities.
+recreated it in a few different ways. Note that their code for model definition
+is **16 lines of code long**, excluding imports and utilities.
 
 > In [benchmarks](benchmarks.md) you can see toy ResNet benchmarked!
 
@@ -482,17 +513,17 @@ Let's analyze what happens in the above lines:
 * `torch.nn.Conv2d` is PyTorch equivalent of Keras `keras.layers.Conv2d` layer
 * Input channels:
 	* In Keras we don't pass them openly - they'll be calculated automatically from the inputs
-	* In Pytorch Symbolic we also calculate them automatically using `x.C`, but we pass them openly as an
-	  argument
+	* In Pytorch Symbolic we also calculate them automatically using `x.C`, but we pass them explicitly as an argument
 * In both frameworks `64, 3` are the number of output channels and the size of the kernel
 * Padding:
 	* We use `padding="same"` in Keras
 	* We use `padding=1` in PyTorch (for kernel size 3)
 * Activation:
 	* In Keras we simply add an argument `activation='relu'`
-	* in Pytorch Symbolic we add `torch.nn.ReLU()` as a transformation that happens after `torch.nn.Conv2d(...)`
+	* in Pytorch Symbolic we add `torch.nn.ReLU()` as a transformation that happens
+	  after `torch.nn.Conv2d(...)`
 
-The example below is equivalent, but uses another way of registering layers in the network:
+The example below is equivalent, but uses the other way of registering layers in the network:
 
 ```python
 from torch import nn
@@ -522,13 +553,13 @@ model = SymbolicModel(inputs, outputs)
 
 This took 16 lines of code as well.
 
-You can register new layers in whichever way you want or you can mix them.
+You can register new layers in whichever way you prefer, you can mix them too.
 
 ### Vanilla PyTorch
 
 A usual way to define a model in PyTorch is to create a class that inherits from `torch.nn.Module`.
 
-PyTorch non-symbolic example of toy ResNet from previous section:
+PyTorch non-symbolic example of toy ResNet from the previous section:
 
 ```python
 from torch import nn
@@ -585,10 +616,10 @@ This took over 30 lines of code.
 
 ## Advanced custom functions
 
-If you read [Quick Start](quick_start.md), you should know that the best way to include a custom
-function in your model is to not use a _function_, but an `torch.nn.Module`.
-Just put the function body in its `forward`. If your function needs additional arguments,
-for example for the dimension, you can deal with it by specifying them in `__init__`, like this:
+If you read [Quick Start](quick_start.md), you know that the best way to include a custom
+function in your model is to use it inside a `torch.nn.Module`.
+Just put the function call in `forward` method. If your function needs additional arguments,
+for example for the dimension, you can specify them in `__init__`, like this:
 
 ```python
 import torch
@@ -604,7 +635,7 @@ class ConcatLayer(nn.Module):
         return torch.cat(tensors=tensors, dim=self.dim)
 ```
 
-This way provides the fastest runtime. However, you might not want to write
+This way provides a robust and fast runtime. However, you might not want to write
 so much boilerplate code. Luckily, with Pytorch Symbolic there is a way to avoid it:
 
 ```py
@@ -620,7 +651,8 @@ It adds some CPU overhead, because it is parsing arguments in search of Symbolic
 This won't matter in GPU heavy workloads,
 but might contribute to a slowdown in CPU limited scenarios.
 
-Here is an over complicated example, just to give you an idea:
+Here is an overcomplicated example 
+to give you an idea of what `add_to_graph` allows you to do:
 
 ```python
 import torch
@@ -679,11 +711,11 @@ ______________________________________________________________
 ```
 
 Your function will be called by `add_to_graph` during tracing
-and it will be registered in the graph.
-This operation produces Symbolic Data which you can use to define more operations
+and will be registered in the graph as a `torch.nn.Module` that wraps it.
+This operation produces a Symbolic Data which you can use to define more operations
 or to create a Symbolic Model.
 
-This model will be correctly executed during the runtime! Use it as always:
+This model will execute your custom function during the runtime! Use it as always:
 
 ```py
 x = torch.rand((10, 20))
@@ -700,16 +732,17 @@ Adding noise!
 Everything that is _not_ a Symbolic Data in `add_to_graph` is considered
 constant and will stay the same each time you execute the model.
 In our example `add_noise` stayed `True` even after creating the model.
-Under the hood, Pytorch Symbolic is browsing through 
+Under the hood, Pytorch Symbolic is browsing through
 the arguments in search of Symbolic Data.
-They will be replaced by real data during the execution.
-It is able to navigate through nested `list`, `tuple` and `dict`.
+Only they will be replaced by new, real data during the execution.
+Argument parser is able to navigate through nested `list`, `tuple` and `dict`.
 
 ## Arbitrary Symbolic Data
 
 So we've been saying Symbolic Data over and over,
-but we always used Symbolic Tensor, which is a special case of Symbolic Data.
-But the fact is, Symbolic Data can have arbitrary Python objects underneath.
+but we always used Symbolic Tensor underneath, which makes it
+a special case of Symbolic Data.
+But the fact is, Symbolic Data can have an arbitrary Python object underneath.
 
 ```python
 from pytorch_symbolic import CustomInput, SymbolicModel
@@ -742,7 +775,7 @@ Non-trainable params: 0
 ______________________________________________________________________
 ```
 
-Use it as always, but take care to have inputs compatible with your defined operations.
+Use it as always, but take care to have inputs compatible with the operations you defined.
 
 ```py
 example_outs = model(np.random.rand(100, 200), np.random.rand(3))
@@ -753,19 +786,20 @@ example_outs.shape
 (100, 200, 3)
 ```
 
-The model above defines graph of operations on underlying `numpy` objects.
+The model above defines a graph of operations on underlying `numpy` arrays.
 
 You can create replayable graphs of your favorite Python operations.
 Pytorch Symbolic is a generic framework for enclosing arbitrary Python operations
 in a `torch.nn.Module` and replaying them.
 
 But note a few things:
+
 * You can use most of the methods defined for your data type,
-    e.g. `symbolic_numpy.reshape(...)` will return another Symbolic Data with
-     underlying `ndarray` which you can use to define a graph of numpy operations.
+  e.g. `symbolic_numpy.reshape(...)` will return another Symbolic Data with
+  underlying `ndarray` which you can use to define more operations or create a Symbolic Model.
 * Pytorch Symbolic won't play nicely with in-place operations.
-    For example, when working with Symbolic Data with underlying lists it is better
-    to use `new = symbolic_list + [5]` instead of `symbolic_list.append(5)`.
-    If you use in-place operation, it will _not_ be replayed during graph re-execution,
-    unless its output (usually `None`) is included in Symbolic Model's outputs.
-    It is your responsibility to avoid in-place operations.
+  For example, when working with Symbolic Data with underlying lists it is better
+  to use `new = symbolic_list + [5]` instead of `symbolic_list.append(5)`.
+  If you use in-place operation, it will _not_ be replayed during graph re-execution,
+  unless its output (usually `None`) is included in Symbolic Model's outputs.
+  It is your responsibility to avoid in-place operations.

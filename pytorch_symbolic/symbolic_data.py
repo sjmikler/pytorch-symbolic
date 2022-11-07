@@ -258,10 +258,10 @@ class SymbolicCallable(SymbolicData):
 
 class SymbolicTensor(SymbolicData):
     def __init__(self, *args, **kwds):
-        """Recommended to use Symbolic datatype. It mimics ``torch.Tensor`` API.
+        """Recommended to use Symbolic datatype. It mimics and extends ``torch.Tensor`` API.
 
         Treat it as a placeholder that will be replaced with real data after the model is created.
-        For calculation purposes, treat it as normal ``torch.Tensor``: add, subtract, multiply,
+        For calculation purposes treat it as a normal ``torch.Tensor``: add, subtract, multiply,
         take absolute value of, index, slice, etc.
         """
         super().__init__(*args, **kwds)

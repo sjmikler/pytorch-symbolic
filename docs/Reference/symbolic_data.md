@@ -2,15 +2,17 @@
 
 This is a collection of symbolic data types. 
 
-The main class and grandfather for all other classes is Symbolic Data. 
+The main class and a grandfather for all other classes is Symbolic Data. 
 
 Symbolic Tensor has similar API to ``torch.Tensor`` object,
 but Symbolic Tensor is used only to define the graph, not to perform actual computations. 
-You should use it to register new layers in your computation graph and later to create the model.
-It has some commonly used methods implemented: `tensor.t()` and `tensor.T` for transposition,
-`tensor.reshape(...)` and many more.
+You should use it to register new layers in your computation graph and later to 
+create the model.
+You can use methods of `torch.Tensor` when working with Symbolic Tensor.
+For example `tensor.t()` or `tensor.T` will return another Symbolic Tensor
+with transposition applied to the underlying data.
 
-SymbolicData supports slicing too, so you can do:
+Symbolic Data supports slicing too, so you can do:
 ```python
 from pytorch_symbolic import Input, SymbolicModel
 
@@ -26,7 +28,7 @@ model = SymbolicModel(x, y)
 But be careful! Each slice operation creates a new layer,
 so if you do a lot of slicing, 
 it is better enclose it in a custom module.
-However, being able to do it directly on Symbolic Data is great for prototyping.
+However, being able to do it directly on Symbolic Data is convenient for prototyping.
 
 
 ::: pytorch_symbolic.Input
