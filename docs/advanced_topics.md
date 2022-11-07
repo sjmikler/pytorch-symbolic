@@ -145,7 +145,7 @@ This argument is a `Callable` that takes Symbolic Data as input and returns `str
 By default, it displays underlying tensor shape.
 
 > **Tip:** consider using `try: ... except: ...` in your `node_text_func`.
-> There are many data types a node can have underneath, so the chances are you
+> There are many data types a node can have underneath, so the chances are that you will
 > get an `AttributeError` otherwise.
 
 Be careful! Drawing utility is designed to display simple graphs
