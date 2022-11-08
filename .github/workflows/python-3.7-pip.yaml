@@ -29,8 +29,8 @@ jobs:
                     pip install flake8 pytest mypy
                     pip install networkx matplotlib scipy
                     
-                    ls
-                    pip install pytorch-functional
+                    rm -r pytorch_symbolic
+                    pip install pytorch-symbolic
             -   name: Lint with mypy
                 run: |
                     mypy .
