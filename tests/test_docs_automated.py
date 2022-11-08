@@ -17,7 +17,7 @@ def get_header(msg):
 
 
 def scan_for_code_blobs(text):
-    # Capture code blocks starting at py or python
+    # Capture code blocks starting with py or python
     blobs = re.findall(r"```(py|python)\n([\s\S]+?)\n```", text)
 
     new_blobs = []
@@ -28,7 +28,8 @@ def scan_for_code_blobs(text):
         blob = header + blob
 
         # For `py` code blocks, we append them to previous existing block
-        # But `python` block starts a new scope, so it needs to include imports
+        # But `python` block starts a new scope and finishes the previous block
+        # It usually needs to include imports
         if mode == "py" and new_blobs:
             new_blobs[-1] = new_blobs[-1] + "\n" + blob
         else:
