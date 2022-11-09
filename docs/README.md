@@ -20,7 +20,7 @@ Features:
 * Small extension of PyTorch
 * No dependencies besides PyTorch
 * Produces models entirely compatible with PyTorch
-* Overhead free as tested in [benchmarks](benchmarks.md)
+* Overhead free as tested in [benchmarks](https://pytorch-symbolic.readthedocs.io/en/latest/benchmarks/)
 * Reduces the amount of boilerplate code
 * Works well with complex architectures
 * Code and documentation is automatically tested
