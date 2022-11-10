@@ -58,19 +58,30 @@ class SymbolicData:
         # We use Symbolic Data for inheriting only
         assert self.__class__ is not SymbolicData, "Symbolic Data should not be created directly!"
 
-        self.v = value
+        self._value = value
+        self._underlying_type_name = type(value).__name__
         self.layer = layer
         self.depth = depth
         self.batch_size_known = batch_size_known
 
-        self._output = None
         self._children: List[SymbolicData] = []
         self._parents: Tuple[SymbolicData, ...] = parents
         self._layer_full_siblings: Tuple[SymbolicData, ...] = (self,)
 
         self._define_class_operators()
 
+    @property
+    def v(self):
+        """Get the underlying value."""
+        if self._value is None:
+            self._recalculate_value()
+        return self._value
+
     def _define_class_operators(self):
+        """Define basic operators, e.g. +, -, *, ...
+
+        This allows using operators for Symbolic Data if and only if the underlying data is compatible.
+        """
         operators = [
             "__abs__",
             "__neg__",
@@ -126,12 +137,13 @@ class SymbolicData:
 
         parents = (self, *others)
         new_depth = max(parent.depth for parent in parents) + 1
-        new_output = layer.__call__(self.v, *(o.v for o in others))
+        with torch.no_grad():
+            new_value = layer.__call__(self.v, *(o.v for o in others))
 
-        cls = _figure_out_symbolic_type(new_output)
+        cls = _figure_out_symbolic_type(new_value)
 
         new_layer_node = cls(
-            value=new_output,
+            value=new_value,
             parents=parents,
             layer=layer,
             depth=new_depth,
@@ -142,8 +154,28 @@ class SymbolicData:
             logging.debug(f"Added {new_layer_node} as child of {parent}")
         return new_layer_node
 
+    def _recalculate_value(self):
+        """Recalulate ._value if it is None.
+
+        Sometimes we remove ._value to reduce memory footprint. This function recalculates it.
+        """
+        for parent in self._parents:
+            if parent._value is None:
+                parent._recalculate_value()  # recursive call to parents
+        with torch.no_grad():
+            outputs = self.layer(*(parent._value for parent in self._parents))
+            if len(self._layer_full_siblings) == 1:
+                outputs = (outputs,)
+            for full_sibling, output in zip(self._layer_full_siblings, outputs):
+                full_sibling._value = output
+
+    def _clear_value(self):
+        """Clear the underlying value to save memory."""
+        assert len(self._parents) > 0, "Cannot clear the underlying value of input nodes!"
+        self._value = None
+
     def __iter__(self):
-        """Creates the only layer that has multiple children from one operation.
+        """Creates the only layer that has multiple children: UnpackLayer.
 
         Suitable for unpacking results, even nested ones.
         """
@@ -151,12 +183,12 @@ class SymbolicData:
         new_outputs = layer.__call__(*self.v)
 
         new_layer_nodes = []
-        for new_output in new_outputs:
-            cls = _figure_out_symbolic_type(new_output)
+        for new_value in new_outputs:
+            cls = _figure_out_symbolic_type(new_value)
 
             new_layer_nodes.append(
                 cls(
-                    value=new_output,
+                    value=new_value,
                     parents=(self,),
                     layer=layer,
                     depth=self.depth + 1,
@@ -195,16 +227,16 @@ class SymbolicData:
         return nodes_seen
 
     def _launch_input(self, x):
-        self._output = x
+        self._value = x
 
     def _launch(self):
         if len(self._layer_full_siblings) > 1:
             assert len(self._parents) == 1
-            outputs = self.layer(*self._parents[0]._output)
-            for node, out in zip(self._layer_full_siblings, outputs):
-                node._output = out
+            outputs = self.layer(*self._parents[0]._value)
+            for node, output in zip(self._layer_full_siblings, outputs):
+                node._value = output
         else:
-            self._output = self.layer(*(parent._output for parent in self._parents))
+            self._value = self.layer(*(parent._value for parent in self._parents))
 
     def __len__(self) -> int:
         """Length of the symbolic data."""
@@ -266,17 +298,18 @@ class SymbolicTensor(SymbolicData):
         """
         super().__init__(*args, **kwds)
         assert isinstance(self.v, torch.Tensor)
+        self._shape = self.v.shape
 
     @property
     def features(self) -> int:
         """Size of the last dimension."""
-        return self.v.shape[-1]
+        return self._shape[-1]
 
     @property
     def C(self) -> int:
         """Number of channels in Image data."""
-        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self.v.shape[1]
+        assert len(self._shape) == 4, "The data is not of [C,H,W] form!"
+        return self._shape[1]
 
     @property
     def channels(self) -> int:
@@ -286,14 +319,14 @@ class SymbolicTensor(SymbolicData):
     @property
     def H(self) -> int:
         """Height in Image data."""
-        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self.v.shape[2]
+        assert len(self._shape) == 4, "The data is not of [C,H,W] form!"
+        return self._shape[2]
 
     @property
     def W(self) -> int:
         """Width in Image data."""
-        assert len(self.v.shape) == 4, "The data is not of [C,H,W] form!"
-        return self.v.shape[3]
+        assert len(self._shape) == 4, "The data is not of [C,H,W] form!"
+        return self._shape[3]
 
     @property
     def HW(self) -> Tuple[int, int]:
@@ -313,17 +346,17 @@ class SymbolicTensor(SymbolicData):
     @property
     def batch_size(self) -> int | None:
         """Batch size of the data. Will be default if was not provided."""
-        return self.v.shape[0]
+        return self._shape[0]
 
     @property
     def shape(self) -> Tuple[int | None, ...]:
         """Shape of the underlying Symbolic Tensor, including batch size."""
-        return self.v.shape
+        return self._shape
 
     @property
     def numel(self) -> int:
         """Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too."""
-        return self.v.shape.numel()
+        return self._shape.numel()
 
     # These methods do not need to be defined!
     # However, we define basic methods to ensure they will be used without overhead of __getattr__.
