@@ -358,7 +358,7 @@ class SymbolicTensor(SymbolicData):
         """Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too."""
         return self._shape.numel()
 
-    # These methods do not need to be defined!
+    # These methods do not need to be defined, because SymbolicData is redirecting __getattr__.
     # However, we define basic methods to ensure they will be used without overhead of __getattr__.
 
     def reshape(self, *shape) -> SymbolicTensor:
