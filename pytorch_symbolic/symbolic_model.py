@@ -129,7 +129,7 @@ class SymbolicModel(nn.Module):
         if self._enable_cuda_graphs:
             self._convert_to_cuda_graphs(self.inputs)
 
-        self._clear_underlying_values()
+        self._clear_underlying_values()  # clear up after tracing to save memory
 
     def forward(self, *inputs: torch.Tensor) -> Any:
         """This function is executed by __call__. Do not use this directly, use __call__ instead.
@@ -258,7 +258,10 @@ class SymbolicModel(nn.Module):
         print("_" * (sum(maxcolwidth) + ncols * space_between_cols))
 
     def _clear_underlying_values(self):
-        """Clear values of the underlying nodes to save memory."""
+        """Clear values of the underlying nodes to save memory.
+
+        Does not clear the values of input nodes, as they might be needed.
+        """
         for node in self._used_nodes().difference(self.inputs):
             node._clear_value()
 

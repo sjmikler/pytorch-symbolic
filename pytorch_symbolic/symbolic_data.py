@@ -157,7 +157,7 @@ class SymbolicData:
     def _recalculate_value(self):
         """Recalulate ._value if it is None.
 
-        Sometimes we remove ._value to reduce memory footprint. This function recalculates it.
+        Sometimes we remove ._value to reduce the memory footprint. This function restores it.
         """
         for parent in self._parents:
             if parent._value is None:

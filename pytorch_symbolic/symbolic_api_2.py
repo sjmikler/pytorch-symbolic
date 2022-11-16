@@ -15,7 +15,7 @@ __nn_module_old_new__ = nn.Module.__new__
 __nn_module_old_call__ = nn.Module.__call__
 
 
-def monkey_patch_call_for_API_2(self, *args, **kwds):
+def call_wrapper_for_api_2(self, *args, **kwds):
     if not any(isinstance(x, SymbolicData) for x in args):
         return __nn_module_old_call__(self, *args, **kwds)
     elif len(kwds) == 0 and all(isinstance(x, SymbolicData) for x in args):
@@ -32,7 +32,7 @@ def monkey_patch_call_for_API_2(self, *args, **kwds):
 class SymbolicAPI2ContextManager:
     def __enter__(self):
         logging.debug("Symbolic API has been enabled!")
-        nn.Module.__call__ = monkey_patch_call_for_API_2
+        nn.Module.__call__ = call_wrapper_for_api_2
 
     def __exit__(self, exit_type, value, traceback):
         logging.debug("Symbolic API has been disabled!")
@@ -46,12 +46,12 @@ def optimize_module_calls():
     SymbolicAPI2ContextManager().__exit__(None, None, None)
 
 
-def is_symbolic_API_2_enabled():
+def is_symbolic_api_2_enabled():
     """Whether symbolic API 2 is enabled."""
-    return nn.Module.__call__ is monkey_patch_call_for_API_2
+    return nn.Module.__call__ is call_wrapper_for_api_2
 
 
-def enable_symbolic_API_2_for_new_modules():
+def enable_symbolic_api_2_for_new_modules():
     """Add a __new__ wrapper for `torch.nn.Module`."""
 
     def wrapped_new(self, *args, **kwds):
@@ -62,7 +62,7 @@ def enable_symbolic_API_2_for_new_modules():
     nn.Module.__new__ = wrapped_new
 
 
-def disable_symbolic_API_2_for_new_modules():
+def disable_symbolic_api_2_for_new_modules():
     """Remove the __new__ wrapper for `torch.nn.Module`."""
 
     nn.Module.__new__ = __nn_module_old_new__

@@ -2,7 +2,7 @@
 
 import os
 
-from .symbolic_api_2 import enable_symbolic_API_2_for_new_modules
+from .symbolic_api_2 import enable_symbolic_api_2_for_new_modules
 
 
 def read_from_env(name, default):
@@ -19,4 +19,4 @@ CODEGEN_MIN_LOOP_LENGTH = read_from_env("PYTORCH_SYMBOLIC_CODEGEN_MIN_LOOP_LENGT
 API_2_ENABLED_BY_DEFAULT = read_from_env("PYTORCH_SYMBOLIC_API_2_ENABLED_BY_DEFAULT", True)
 
 if API_2_ENABLED_BY_DEFAULT:
-    enable_symbolic_API_2_for_new_modules()
+    enable_symbolic_api_2_for_new_modules()
