@@ -129,6 +129,8 @@ class SymbolicModel(nn.Module):
         if self._enable_cuda_graphs:
             self._convert_to_cuda_graphs(self.inputs)
 
+        self._clear_underlying_values()  # clear up after tracing to save memory
+
     def forward(self, *inputs: torch.Tensor) -> Any:
         """This function is executed by __call__. Do not use this directly, use __call__ instead.
 
@@ -145,9 +147,9 @@ class SymbolicModel(nn.Module):
             node._launch()
 
         if len(self.outputs) == 1:
-            return self.outputs[0]._output
+            return self.outputs[0]._value
         else:
-            return tuple(output_leaf._output for output_leaf in self.outputs)
+            return tuple(output_leaf._value for output_leaf in self.outputs)
 
     @property
     def input_shape(self):
@@ -199,7 +201,7 @@ class SymbolicModel(nn.Module):
                     shape[0] = None
                 shape = tuple(shape)
             else:
-                shape = type(node.v).__name__
+                shape = node._underlying_type_name
             data.append(
                 [
                     f"{len(data)}" + ("*" if node in self.outputs else ""),
@@ -220,7 +222,7 @@ class SymbolicModel(nn.Module):
                     shape[0] = None
                 shape = tuple(shape)
             else:
-                shape = type(node.v).__name__
+                shape = node._underlying_type_name
             data.append(
                 [
                     f"{len(data)}" + ("*" if node in self.outputs else ""),
@@ -254,6 +256,14 @@ class SymbolicModel(nn.Module):
         print(f"Trainable params: {trainable_count}")
         print(f"Non-trainable params: {parameter_count - trainable_count}")
         print("_" * (sum(maxcolwidth) + ncols * space_between_cols))
+
+    def _clear_underlying_values(self):
+        """Clear values of the underlying nodes to save memory.
+
+        Does not clear the values of input nodes, as they might be needed.
+        """
+        for node in self._used_nodes().difference(self.inputs):
+            node._clear_value()
 
     def _replace_forward_with_codegen(self):
         self._generated_forward_source = code_generator.generate_forward_with_loops(
@@ -306,7 +316,7 @@ class SymbolicModel(nn.Module):
         execution_order_nodes = sorted(self._used_nodes(), key=lambda node: node._execution_order_idx)
         assert len(execution_order_nodes) == len(used_nodes)
 
-        for input_node in used_nodes.intersection(self.inputs):  # Not all inputs are in `used_nodes`
+        for input_node in used_nodes.intersection(self.inputs):  # Not all inputs must be in `used_nodes`
             execution_order_nodes.remove(input_node)  # Exclude inputs, as we don't execute any layers there
 
         # To avoid calling layers twice when they have multiple outputs
