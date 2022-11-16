@@ -10,10 +10,10 @@ Standard model definition: a class inheriting form `torch.nn.Module`
 is a baseline for us.
 Symbolic API aims to create models just as fast in most scenarios.
 
-> **Note:** some features are designed for the convenience and might slow down 
+> **Note:** some features are designed for the convenience and might slow down
 > the models. A good example is `add_to_graph` function.
-> To get the very best performance, 
-> it is crucial to use custom functions and operators 
+> To get the very best performance,
+> it is crucial to use custom functions and operators
 > inside `forward` method of a `torch.nn.Module`.
 > Although even if we don't, the slowdowns should not exceed a few milliseconds.
 
@@ -31,6 +31,11 @@ x = nn.Identity()(x)
 model = SymbolicModel(inputs, x)
 
 optimize_module_calls()
+
+# Here goes:
+# * Model training
+# * Model inference
+# * Model benchmarking
 ```
 
 Not using it might give you a small slowdown in CPU limited workflows,
