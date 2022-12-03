@@ -202,7 +202,9 @@ def draw_graph(
     model
         A SymbolicModel to be plotted. This or ``inputs`` must be provided.
     inputs
-        Input in the graph of Symbolic computations. This or ``model`` must be provided.
+        Input in the graph of Symbolic computations. This or ``model`` or/and ``inputs`` must be provided.
+    outputs
+        Output in the graph of Symbolic computations. This or ``model`` or/and ``outputs`` must be provided.
     node_text_func
         A function that returns text that will be written on Nodes.
     edge_text_func
