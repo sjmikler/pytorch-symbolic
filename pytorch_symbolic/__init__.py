@@ -1,7 +1,7 @@
 #  Copyright (c) 2022 Szymon Mikler
 
 
-from . import config, graph_algorithms, model_tools, symbolic_data
+from . import config, graph_algorithms, model_tools, symbolic_data, useful_layers
 from .functions_utility import add_to_graph
 from .symbolic_api_2 import SymbolicAPI2ContextManager, optimize_module_calls
 from .symbolic_data import CustomInput, Input
@@ -17,5 +17,6 @@ __all__ = [
     "model_tools",
     "optimize_module_calls",
     "symbolic_data",
+    "useful_layers",
     "SymbolicAPI2ContextManager",
 ]
