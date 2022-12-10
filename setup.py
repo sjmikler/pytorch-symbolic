@@ -5,11 +5,11 @@ from pathlib import Path
 from setuptools import setup
 
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+long_description = (this_directory / "README.md").read_text(encoding="UTF-8")
 
 setup(
     name="pytorch-symbolic",
-    version="1.0.3",
+    version="1.0.4",
     url="https://github.com/gahaalt/pytorch-symbolic.git",
     project_urls={
         "Documentation": "https://pytorch-symbolic.readthedocs.io/",
