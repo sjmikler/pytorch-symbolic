@@ -192,25 +192,25 @@ inputs = x = Input((784,))
 for _ in range(3):
     x = nn.Linear(x.features, 100)(x)
 
-x = nn.Linear(x.features, 10)(x)
+x = nn.Linear(x.features, 10)(x, custom_name="Classifier")
 model = SymbolicModel(inputs, x)
 model.summary()  # Keras-like summary
 ```
 
 ```stdout
-_________________________________________________
-     Layer      Output shape   Params   Parent   
-=================================================
-1    Input_1    (None, 784)    0                 
-2    Linear_1   (None, 100)    78500    1        
-3    Linear_2   (None, 100)    10100    2        
-4    Linear_3   (None, 100)    10100    3        
-5*   Linear_4   (None, 10)     1010     4        
-=================================================
+_____________________________________________________
+     Layer          Output shape   Params   Parent   
+=====================================================
+1    Input_1        (None, 784)    0                 
+2    Linear_1       (None, 100)    78500    1        
+3    Linear_2       (None, 100)    10100    2        
+4    Linear_3       (None, 100)    10100    3        
+5*   Classifier_1   (None, 10)     1010     4        
+=====================================================
 Total params: 99710
 Trainable params: 99710
 Non-trainable params: 0
-_________________________________________________
+_____________________________________________________
 ```
 
 You can use the plotting utility directly on your model:

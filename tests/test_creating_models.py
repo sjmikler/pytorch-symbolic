@@ -174,3 +174,16 @@ def test_detached_equal_outputs_multi_in_out():
 
         assert torch.equal(o11, o21)
         assert torch.equal(o12, o22)
+
+
+def test_creating_named_layers():
+    inputs = Input((10,))
+    layer = nn.Linear(10, 10)
+
+    y1 = inputs(layer, custom_name="TEST_LAYER_777")
+    y2 = layer(inputs, custom_name="TEST_LAYER_888")
+    y = y1 + y2
+
+    model = SymbolicModel(inputs, y)
+    assert "TEST_LAYER_777" in str(model)
+    assert "TEST_LAYER_888" in str(model)
