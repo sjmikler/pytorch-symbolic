@@ -5,6 +5,8 @@
 
 .ipynb_checkpoints
 *.sh
+!check.sh
+
 .idea
 .coverage
 .obsidian
