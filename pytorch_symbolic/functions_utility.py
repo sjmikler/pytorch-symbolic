@@ -40,7 +40,7 @@ def _replace_symbolic_with_value(container, extracted, navigation):
     return container
 
 
-def add_to_graph(func: Callable | nn.Module, *args, **kwds):
+def add_to_graph(func: Callable | nn.Module, *args, custom_name: str | None = None, **kwds):
     """Register a custom func or a module in the computation graph.
 
     This works will arbitrary functions and modules iff at least one Symbolic Data is among ``*args, **kwds``.
@@ -93,4 +93,4 @@ def add_to_graph(func: Callable | nn.Module, *args, **kwds):
         name = str(func)
     module = useful_layers.NamedLambdaOpLayer(op=wrapper_function, name=f"wrap({name})")
     # This might be a Symbolic Callable, so we use `apply_module` instead of `__call__`
-    return extracted_symbols[0].apply_module(module, *extracted_symbols[1:])
+    return extracted_symbols[0].apply_module(module, *extracted_symbols[1:], custom_name=custom_name)

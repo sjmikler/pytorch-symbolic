@@ -114,7 +114,6 @@ class SymbolicModel(nn.Module):
         # Initialize helper variables
         self._layer_type_counts: Dict[str, int] = {}
         self._node_to_layer_name: Dict[SymbolicData, str] = {}
-        self._layer_name_to_node: Dict[str, SymbolicData] = {}
         self._execution_order_nodes: List[SymbolicData] = []
         self._execution_order_layers: List[nn.Module] = []
         self._figure_out_execution_order()
@@ -327,7 +326,11 @@ class SymbolicModel(nn.Module):
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
         for idx, node in enumerate(self._execution_order_nodes):
-            layer_name = node.layer._get_name()
+            if node._custom_provided_name is not None:
+                layer_name = node._custom_provided_name
+            else:
+                layer_name = node.layer._get_name()
+
             self._layer_type_counts.setdefault(layer_name, 0)
             self._layer_type_counts[layer_name] += 1
             full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"

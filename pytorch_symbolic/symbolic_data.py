@@ -22,6 +22,7 @@ class SymbolicData:
         depth: int = 0,
         layer: nn.Module | None = None,
         batch_size_known: bool = False,
+        custom_name: str | None = None,
     ):
         """Grandfather of all Symbolic datatypes.
 
@@ -38,6 +39,7 @@ class SymbolicData:
         depth
         layer
         batch_size_known
+        custom_name
 
         Attributes
         ----------
@@ -50,6 +52,8 @@ class SymbolicData:
         batch_size_known : bool
             In case of Input, whether batch size was provided by the user.
             For non-Input nodes, batch size is known iff all parents' batch sizes are known.
+        custom_name : str
+            Instead of using the default name for the undelying layer, user can provide his own.
         """
         global _SYMBOLIC_DATA_COUNTER
         self._execution_order_idx = _SYMBOLIC_DATA_COUNTER
@@ -60,6 +64,8 @@ class SymbolicData:
 
         self._value = value
         self._underlying_type_name = type(value).__name__
+        self._custom_provided_name = custom_name
+
         self.layer = layer
         self.depth = depth
         self.batch_size_known = batch_size_known
@@ -130,7 +136,10 @@ class SymbolicData:
         return tuple(self._children)
 
     def apply_module(
-        self, layer: nn.Module, *others: SymbolicData
+        self,
+        layer: nn.Module,
+        *others: SymbolicData,
+        custom_name: str | None = None,
     ) -> SymbolicData | Tuple[SymbolicData, ...]:
         """Register a new layer in the graph. Layer must be nn.Module."""
         assert all([isinstance(other, SymbolicData) for other in others]), "Works with SymbolicData only!"
@@ -148,6 +157,7 @@ class SymbolicData:
             layer=layer,
             depth=new_depth,
             batch_size_known=self.batch_size_known,
+            custom_name=custom_name,
         )
         for parent in parents:
             parent._children.append(new_layer_node)
@@ -250,8 +260,8 @@ class SymbolicData:
             layer = useful_layers.SliceLayer(idx)
             return layer(self)
 
-    def __call__(self, *args):
-        return self.apply_module(*args)
+    def __call__(self, *args, custom_name: str | None = None):
+        return self.apply_module(*args, custom_name=custom_name)
 
     def __repr__(self):
         addr = f"{self.__class__.__name__} at {hex(id(self))};"
@@ -538,9 +548,7 @@ def Input(
     return SymbolicTensor(value=value, batch_size_known=batch_size_known)
 
 
-def CustomInput(
-    data: Any,
-) -> SymbolicData:
+def CustomInput(data: Any) -> SymbolicData:
     """Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
 
     This should be used when Input won't work.

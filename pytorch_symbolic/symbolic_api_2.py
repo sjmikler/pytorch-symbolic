@@ -5,6 +5,8 @@ Enables Symbolic API 2, which allows for registering layers by calling
 layer(*symbolic) instead of symbolic_1(layer, *other_symbolic).
 """
 
+from __future__ import annotations
+
 import logging
 
 from torch import nn
@@ -15,16 +17,16 @@ __nn_module_old_new__ = nn.Module.__new__
 __nn_module_old_call__ = nn.Module.__call__
 
 
-def call_wrapper_for_api_2(self, *args, **kwds):
+def call_wrapper_for_api_2(self, *args, custom_name: str | None = None, **kwds):
     if not any(isinstance(x, SymbolicData) for x in args):
         return __nn_module_old_call__(self, *args, **kwds)
     elif len(kwds) == 0 and all(isinstance(x, SymbolicData) for x in args):
         node = args[0]
-        return node(self, *args[1:])
+        return node(self, *args[1:], custom_name=custom_name)
     else:
         msg = (
-            "Only unnamed SymbolicData are allowed as arguments! "
-            "If you need more flexibility, use `functions_utility.add_to_graph`!"
+            "Only *args are allowed as arguments! "
+            "If you need to use **kwds, try `functions_utility.add_to_graph`!"
         )
         raise UserWarning(msg)
 

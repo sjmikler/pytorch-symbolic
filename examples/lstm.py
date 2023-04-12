@@ -17,7 +17,7 @@ import torch.optim as optim
 from pytorch_symbolic import Input, SymbolicModel, add_to_graph
 
 
-def run():
+def run() -> None:
     """
     Example: An LSTM for Part-of-Speech Tagging
 
