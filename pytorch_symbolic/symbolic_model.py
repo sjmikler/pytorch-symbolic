@@ -337,10 +337,10 @@ class SymbolicModel(nn.Module):
             self._layer_type_counts.setdefault(layer_name, 0)
             self._layer_type_counts[layer_name] += 1
 
-            # Index duplicated names only if they weren't provided by the user
-            if node._custom_provided_name is None:
+            if node._custom_provided_name is None or self._layer_type_counts[layer_name] > 1:
                 full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
             else:
+                # Skip first index only if it was provided by the user
                 full_layer_name = layer_name
 
             self._node_to_layer_name[node] = full_layer_name
