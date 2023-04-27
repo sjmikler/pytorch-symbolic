@@ -198,19 +198,19 @@ model.summary()  # Keras-like summary
 ```
 
 ```stdout
-_____________________________________________________
-     Layer          Output shape   Params   Parent   
-=====================================================
-1    Input_1        (None, 784)    0                 
-2    Linear_1       (None, 100)    78500    1        
-3    Linear_2       (None, 100)    10100    2        
-4    Linear_3       (None, 100)    10100    3        
-5*   Classifier_1   (None, 10)     1010     4        
-=====================================================
+___________________________________________________
+     Layer        Output shape   Params   Parent   
+===================================================
+1    Input_1      (None, 784)    0                 
+2    Linear_1     (None, 100)    78500    1        
+3    Linear_2     (None, 100)    10100    2        
+4    Linear_3     (None, 100)    10100    3        
+5*   Classifier   (None, 10)     1010     4        
+===================================================
 Total params: 99710
 Trainable params: 99710
 Non-trainable params: 0
-_____________________________________________________
+___________________________________________________
 ```
 
 You can use the plotting utility directly on your model:
