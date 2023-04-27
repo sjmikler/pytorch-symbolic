@@ -327,18 +327,22 @@ class SymbolicModel(nn.Module):
 
         for idx, node in enumerate(self._execution_order_nodes):
             if node._custom_provided_name is not None:
+                # Use layer name provided by the user
                 layer_name = node._custom_provided_name
             else:
+                # Extract the default name of the layer provided by pytorch
                 layer_name = node.layer._get_name()
 
+            # Check how many layers with this name already exist
             self._layer_type_counts.setdefault(layer_name, 0)
-
-            if self._layer_type_counts[layer_name] == 0:
-                full_layer_name = f"{layer_name}"
-            else:
-                full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
-
             self._layer_type_counts[layer_name] += 1
+
+            # Index duplicated names only if they weren't provided by the user
+            if node._custom_provided_name is None:
+                full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
+            else:
+                full_layer_name = layer_name
+
             self._node_to_layer_name[node] = full_layer_name
             self.add_module(name=full_layer_name, module=node.layer)
 
