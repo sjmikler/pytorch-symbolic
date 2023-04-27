@@ -332,8 +332,13 @@ class SymbolicModel(nn.Module):
                 layer_name = node.layer._get_name()
 
             self._layer_type_counts.setdefault(layer_name, 0)
+
+            if self._layer_type_counts[layer_name] == 0:
+                full_layer_name = f"{layer_name}"
+            else:
+                full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
+
             self._layer_type_counts[layer_name] += 1
-            full_layer_name = f"{layer_name}_{self._layer_type_counts[layer_name]}"
             self._node_to_layer_name[node] = full_layer_name
             self.add_module(name=full_layer_name, module=node.layer)
 
