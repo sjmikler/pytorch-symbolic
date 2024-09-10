@@ -84,16 +84,13 @@ Install Pytorch Symbolic easily with pip:
 pip install pytorch-symbolic
 ```
 
+## Troubleshooting
+
+Please create an issue if you notice a problem!
+
 ## Links
 
 * [See Documentation](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start)
 * [See on GitHub](https://github.com/gahaalt/pytorch-symbolic/)
 * [See on PyPI](https://pypi.org/project/pytorch-symbolic/)
-
-
-Send me an e-mail if you want to get involved: [sjmikler@gmail.com](mailto:sjmikler@gmail.com).
-
-## Troubleshooting
-
-Please create an issue if you notice a problem!
 
