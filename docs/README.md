@@ -90,6 +90,10 @@ pip install pytorch-symbolic
 * [See on GitHub](https://github.com/gahaalt/pytorch-symbolic/)
 * [See on PyPI](https://pypi.org/project/pytorch-symbolic/)
 
-Create an issue if you noticed a problem!
 
 Send me an e-mail if you want to get involved: [sjmikler@gmail.com](mailto:sjmikler@gmail.com).
+
+## Troubleshooting
+
+Please create an issue if you notice a problem!
+
