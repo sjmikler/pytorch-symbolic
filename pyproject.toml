@@ -25,6 +25,10 @@ classifiers = [
 ]
 readme = "README.md"
 
+[project.optional-dependencies]
+dev = ["hatch", "twine", "pytest", "isort", "black", "mypy"]
+full = ["networkx", "matplotlib", "scipy"]
+
 [project.urls]
 Home = "https://github.com/gahaalt/pytorch-symbolic"
 Documentation = "https://github.com/sjmikler/pytorch-symbolic/blob/main/docs"
@@ -36,7 +40,7 @@ path = "progress_table/__init__.py"
 include = ["pytorch_symbolic", "examples", "docs", "README.md"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["progress_table"]
+packages = ["pytorch_symbolic"]
 
 # %%
 
