@@ -33,5 +33,5 @@ jobs:
       - name: Run ruff formatting
         run: ruff format . --check
       - name: Run pyright
-        run: pyright progress_table/
+        run: pyright pytorch_symbolic
 
