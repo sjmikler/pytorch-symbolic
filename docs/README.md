@@ -62,16 +62,16 @@ _______________________________________________________
 **See more examples
 in [Documentation Quick Start](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start/).**
 
-## Gentle introduction
+## How to start
 
-There's a jupyter notebook showing the basic usage of Pytorch Symbolic. With it you will:
+See Jupyter Notebook showing the basic usage of Pytorch Symbolic:
 
-* Learn Pytorch Symbolic in an interactive way
-* Try the package before installing it on your computer
-* See visualizations of graphs that are created under the hood
+* Learn Pytorch Symbolic in an interactive way.
+* Try the package before installing it on your computer.
+* See visualizations of graphs that are created under the hood.
 
-Click:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gahaalt/pytorch-symbolic/blob/develop/gentle-introduction.ipynb)
+Open in Colab:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gahaalt/pytorch-symbolic/blob/develop/introduction.ipynb)
 
 ## Installation
 

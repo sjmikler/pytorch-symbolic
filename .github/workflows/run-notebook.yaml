@@ -29,7 +29,7 @@ jobs:
                     pip install torch numpy jupyter
             -   name: Convert notebook to python
                 run: |
-                    jupyter nbconvert gentle-introduction.ipynb --to python
+                    jupyter nbconvert introduction.ipynb --to python
             -   name: Run script
                 run: |
                     ipython gentle-introduction.py
