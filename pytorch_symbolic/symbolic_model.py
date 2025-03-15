@@ -50,7 +50,7 @@ class DetachedSymbolicModel(nn.Module):
 
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
-        setattr(self, "forward", MethodType(scope["forward"], self))
+        self.forward = MethodType(scope["forward"], self)
 
 
 class SymbolicModel(nn.Module):

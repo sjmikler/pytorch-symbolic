@@ -10,6 +10,8 @@ from pytorch_symbolic import Input, SymbolicModel
 
 from .common import classifier
 
+relu = nn.ReLU()
+
 
 def VGG(
     input_shape,
@@ -18,7 +20,7 @@ def VGG(
     group_sizes=(1, 1, 2, 2, 2),
     channels=(64, 128, 256, 512, 512),
     pools=(2, 2, 2, 2, 2),
-    activation=nn.ReLU(),
+    activation=relu,
     final_pooling="avgpool",
     **kwargs,
 ):

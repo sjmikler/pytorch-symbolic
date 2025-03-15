@@ -36,7 +36,7 @@ def run() -> None:
     ]
     word_to_ix: Dict[str, int] = {}
     # For each words-list (sentence) and tags-list in each tuple of training_data
-    for sent, tags in training_data:
+    for sent, _tags in training_data:
         for word in sent:
             if word not in word_to_ix:  # word has not been assigned an index yet
                 word_to_ix[word] = len(word_to_ix)  # Assign each word with a unique index
