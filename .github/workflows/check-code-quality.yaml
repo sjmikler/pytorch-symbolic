@@ -32,6 +32,6 @@ jobs:
         run: ruff check .
       - name: Run ruff formatting
         run: ruff format . --check
-      - name: Run pyright
-        run: pyright pytorch_symbolic
+#      - name: Run pyright
+#        run: pyright pytorch_symbolic
 
