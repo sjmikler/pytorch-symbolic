@@ -142,7 +142,7 @@ class TaggedCollection(list):
 
     def common_keys(self):
         keys = None
-        for idx, row in enumerate(self):
+        for _idx, row in enumerate(self):
             if keys is None:
                 keys = set(row.keys())
             keys = keys.intersection(row.keys())

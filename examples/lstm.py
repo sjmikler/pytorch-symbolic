@@ -95,7 +95,7 @@ def run() -> None:
         tag_scores = model(inputs)
         print(tag_scores.argmax(1).tolist())
 
-    for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
+    for _epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in training_data:
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance

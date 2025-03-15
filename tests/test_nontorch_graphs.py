@@ -14,7 +14,7 @@ def test_set_opts():
     outs = ((x & y ^ z) | (x ^ z - y)) & u
     model = SymbolicModel((x, y, z), outs)
 
-    for case in range(10):
+    for _case in range(10):
         x = set(random.randint(0, 100) for _ in range(20))
         y = set(random.randint(0, 100) for _ in range(20))
         z = set(random.randint(0, 100) for _ in range(20))

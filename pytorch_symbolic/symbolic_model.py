@@ -325,7 +325,7 @@ class SymbolicModel(nn.Module):
         self._execution_order_nodes = execution_order_nodes
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
-        for idx, node in enumerate(self._execution_order_nodes):
+        for _idx, node in enumerate(self._execution_order_nodes):
             if node._custom_provided_name is not None:
                 # Use layer name provided by the user
                 layer_name = node._custom_provided_name
