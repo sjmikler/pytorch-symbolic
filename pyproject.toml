@@ -1,13 +1,72 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytorch-symbolic"
+dynamic = ["version"]
+description = "Symbolic API for model creation in PyTorch."
+dependencies = ["torch"]
+license = { text = "MIT" }
+requires-python = ">=3.7"
+authors = [
+    { name = "Szymon Mikler", email = "sjmikler@gmail.com" }
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = ["ruff", "pyright", "pytest", "pytest-cov", "hatch", "twine"]
+full = ["networkx", "matplotlib", "scipy"]
+
+[project.urls]
+Home = "https://github.com/gahaalt/pytorch-symbolic"
+Documentation = "https://github.com/sjmikler/pytorch-symbolic/blob/main/docs"
+
+[tool.hatch.version]
+path = "pytorch_symbolic/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["pytorch_symbolic", "examples", "docs", "README.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pytorch_symbolic"]
+
+# %%
+
+[tool.pyright]
+typeCheckingMode = "standard"
+exclude = ["devel", "build", "dist"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+# %%
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
 [tool.mypy]
 ignore_missing_imports = true
-exclude = ["devel", "benchmarks"]
+exclude = ["devel", "build", "dist"]
 
 [tool.isort]
 profile = "black"
-line_length = 110
+line_length = 120
 
 [tool.black]
-line_length = 110
+line_length = 120

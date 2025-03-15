@@ -3,7 +3,10 @@
 import torch
 from torch import nn
 
-import examples
+import examples.encoder_decoder
+import examples.lstm
+import examples.resnet
+import examples.vgg
 from pytorch_symbolic import Input, SymbolicModel, model_tools
 
 

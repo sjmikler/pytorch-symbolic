@@ -36,7 +36,7 @@ def run() -> None:
     ]
     word_to_ix: Dict[str, int] = {}
     # For each words-list (sentence) and tags-list in each tuple of training_data
-    for sent, tags in training_data:
+    for sent, _tags in training_data:
         for word in sent:
             if word not in word_to_ix:  # word has not been assigned an index yet
                 word_to_ix[word] = len(word_to_ix)  # Assign each word with a unique index
@@ -95,7 +95,7 @@ def run() -> None:
         tag_scores = model(inputs)
         print(tag_scores.argmax(1).tolist())
 
-    for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
+    for _epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in training_data:
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance

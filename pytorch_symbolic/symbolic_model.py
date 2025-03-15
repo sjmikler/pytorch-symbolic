@@ -50,7 +50,7 @@ class DetachedSymbolicModel(nn.Module):
 
         scope = {"self": self}
         exec(self._generated_forward_source, {}, scope)
-        setattr(self, "forward", MethodType(scope["forward"], self))
+        self.forward = MethodType(scope["forward"], self)
 
 
 class SymbolicModel(nn.Module):
@@ -58,7 +58,6 @@ class SymbolicModel(nn.Module):
         self,
         inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
         outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
-        enable_cuda_graphs=False,
         enable_forward_codegen=None,
     ):
         """A PyTorch model that replays operations defined in the graph.
@@ -84,12 +83,6 @@ class SymbolicModel(nn.Module):
             A collection of SymbolicTensors that will end the computations.
             These nodes return your final computation result.
             So if you have mulitple outputs, SymbolicModel will return a tuple of tensors.
-        enable_cuda_graphs
-            If True, after the model creation, model will be converted to CUDA Graph.
-            This requires CUDA capable device.
-            CUDA Graphs are greatly speeding up the execution of some of the models.
-            Not all models are compatible with CUDA Graphs. For example, if your model
-            includes non-deterministic behaviour, it likely won't work.
 
         Attributes
         ----------
@@ -123,10 +116,6 @@ class SymbolicModel(nn.Module):
         self._enable_forward_codegen = enable_forward_codegen
         if self._enable_forward_codegen:
             self._replace_forward_with_codegen()
-
-        self._enable_cuda_graphs = enable_cuda_graphs
-        if self._enable_cuda_graphs:
-            self._convert_to_cuda_graphs(self.inputs)
 
         self._clear_underlying_values()  # clear up after tracing to save memory
 
@@ -171,9 +160,6 @@ class SymbolicModel(nn.Module):
             self._replace_forward_with_codegen()
 
     def detach_from_graph(self) -> DetachedSymbolicModel:
-        if self._enable_cuda_graphs:
-            logging.warning("detach_from_graph might fail when used together with CUDA Graphs conversion!")
-
         names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
         forward_src = code_generator.generate_forward_with_loops(
             self.inputs,
@@ -276,20 +262,6 @@ class SymbolicModel(nn.Module):
         exec(self._generated_forward_source, {}, scope)
         self.forward = MethodType(scope["forward"], self)
 
-    def _convert_to_cuda_graphs(self, inputs: Tuple[SymbolicData, ...]):
-        msg = (
-            "CUDA Graphs can result in undefined behaviour! "
-            "Please read https://pytorch.org/docs/stable/notes/cuda.html#constraints."
-        )
-        logging.warning(msg)
-        assert torch.cuda.is_available(), "CUDA acceleration is not available!"
-        for x in inputs:
-            assert x.batch_size_known, "Must provide batch size for each input!"
-
-        self.cuda()
-        input_tensors = tuple(x.v.cuda() for x in inputs)
-        torch.cuda.make_graphed_callables(self, sample_args=input_tensors)
-
     def _used_nodes(self) -> Set[SymbolicData]:
         """Return a set of all nodes used in this model."""
         return figure_out_nodes_between(self.inputs, self.outputs)
@@ -325,7 +297,7 @@ class SymbolicModel(nn.Module):
         self._execution_order_nodes = execution_order_nodes
         self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
 
-        for idx, node in enumerate(self._execution_order_nodes):
+        for _idx, node in enumerate(self._execution_order_nodes):
             if node._custom_provided_name is not None:
                 # Use layer name provided by the user
                 layer_name = node._custom_provided_name

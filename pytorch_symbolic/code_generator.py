@@ -64,9 +64,7 @@ def generate_forward_with_loops(
     # We only count children in the graph. Thus the intersection.
     children = {node: list(nodes_in_subgraph.intersection(node.children)) for node in execution_order}
 
-    siblings = {
-        node: list(nodes_in_subgraph.intersection(node._layer_full_siblings)) for node in execution_order
-    }
+    siblings = {node: list(nodes_in_subgraph.intersection(node._layer_full_siblings)) for node in execution_order}
 
     for exec_id, node in enumerate(execution_order):
         if node in nodes_looped_over:

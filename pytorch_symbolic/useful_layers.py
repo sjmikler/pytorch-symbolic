@@ -9,13 +9,13 @@ from torch import nn
 class LambdaOpLayer(nn.Module):
     def __init__(self, op: Callable):
         super().__init__()
-        setattr(self, "forward", op)
+        self.forward = op
 
 
 class NamedLambdaOpLayer(nn.Module):
     def __init__(self, op: Callable, name: str):
         super().__init__()
-        setattr(self, "forward", op)
+        self.forward = op
         self.name = name
 
     def __repr__(self):
@@ -38,7 +38,7 @@ class CallbackLayer(nn.Module):
         It does not change anything in x, but prints its value.
         """
         super().__init__()
-        setattr(self, "callback", op)
+        self.callback = op
 
     def forward(self, arg):
         self.callback(arg)
@@ -125,7 +125,7 @@ class AggregateLayer(nn.Module):
         self.dim = dim
         self.keepdim = keepdim
         if self.dim is None:
-            setattr(self, "forward", self.forward_nodim)
+            self.forward = self.forward_nodim
 
     def forward(self, tensor):
         return self.op(input=tensor, dim=self.dim, keepdim=self.keepdim)

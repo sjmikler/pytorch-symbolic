@@ -69,9 +69,7 @@ def test_func_complicated_input():
             [[[other], [[[[other, other]]], [other, [sym3, [other]]]]]],
         ],
     )
-    summed2 = add_to_graph(
-        sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]]
-    )
+    summed2 = add_to_graph(sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]])
 
     model1 = SymbolicModel((sym1, sym2, sym3), outputs=summed1)
     model2 = SymbolicModel((sym1, sym2, sym3), outputs=summed2)
@@ -107,9 +105,7 @@ def test_detached_func_complicated_input():
             [[[other], [[[[other, other]]], [other, [sym3, [other]]]]]],
         ],
     )
-    summed2 = add_to_graph(
-        sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]]
-    )
+    summed2 = add_to_graph(sum_list_recursively, multiply_result=5, container=[[other] * 16, [sym1, [sym2, [sym3]]]])
 
     model1 = SymbolicModel((sym1, sym2, sym3), outputs=summed1).detach_from_graph()
     model2 = SymbolicModel((sym1, sym2, sym3), outputs=summed2).detach_from_graph()

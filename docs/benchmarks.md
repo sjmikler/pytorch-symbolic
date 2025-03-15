@@ -168,25 +168,6 @@ def _generated_forward(self, i00, i01):
     return o00
 ```
 
-## CUDA Graphs
-
-Additionaly, with Pytorch Symbolic it's very simple to enable CUDA Graphs
-when GPU runtime is available. CUDA Graphs are a novel feature in PyTorch that can greatly
-increase the performance of some models by reducing GPU idle time
-and removing the overhead caused by CPU making GPU calls.
-
-To enable CUDA Graphs, use:
-
-```python
-...
-model = SymbolicModel(inputs, outputs, enable_cuda_graphs=True)
-```
-
-When using CUDA Graphs, please remember to cast your inputs to GPU.
-In general, when using CUDA Graphs, you might get some silent errors, for example when you forget to cast your
-data to GPU.
-Always check if everything is working _without_ CUDA Graphs before enabling them.
-
 ## Hardware
 
 Unless stated otherwise, experiments were run on a following PC:

@@ -518,7 +518,6 @@ def Input(
         Optional batch size of the Tensor
     batch_shape
         Shape of the real data including the batch dimension.
-        Should be provided instead ``shape`` if cuda graphs will be used.
         If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
     dtype
         Dtype of the real data that will be the input of the network

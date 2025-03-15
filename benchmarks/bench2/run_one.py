@@ -42,11 +42,6 @@ BATCH_SIZE = args.batch_size
 DEVICE = args.device
 IMG_SIZE = args.img_size
 
-CUDA_GRAPHS = False
-
-if DEVICE == "cpu":
-    assert CUDA_GRAPHS is False
-
 try:
     dllogger.init(
         [

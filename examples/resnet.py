@@ -5,7 +5,6 @@ This is a flexible implementation of ResNet architecture.
 It allows for creation of standard ResNet v2 or Wide ResNet variants.
 """
 
-
 from torch import nn
 
 from pytorch_symbolic import Input, SymbolicModel
@@ -42,6 +41,9 @@ def ToyResNet(input_shape, n_classes):
     return model
 
 
+relu = nn.ReLU()
+
+
 def ResNet(
     input_shape,
     n_classes,
@@ -50,7 +52,7 @@ def ResNet(
     strides=(1, 2, 2),
     group_sizes=(2, 2, 2),
     channels=(16, 32, 64),
-    activation=nn.ReLU(),
+    activation=relu,
     final_pooling="avgpool",
     dropout=0,
     bn_ends_block=False,

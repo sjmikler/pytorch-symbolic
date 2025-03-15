@@ -88,7 +88,6 @@ ax = [ax]
 names = {
     "oct20,vanilla,call_optimization": "Inheriting from nn.Module",
     "oct20,symbolic,call_optimization": "SymbolicModel",
-    "oct20,symbolic,cuda_graphs,call_optimization": "SymbolicModel with CUDA Graphs",
 }
 
 for tags, group in tagged.groupby("tags", return_keys=True):

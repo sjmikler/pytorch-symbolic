@@ -52,7 +52,7 @@ class ToyResNet(nn.Module):
         return self.classifier(x)
 
 
-def functional_toy_resnet(bs, cuda_graphs, img_size):
+def functional_toy_resnet(bs, img_size):
     inputs = Input(batch_shape=(bs, 3, img_size, img_size))
 
     x = inputs(nn.Conv2d(inputs.channels, 32, 3))(nn.ReLU())
@@ -73,14 +73,13 @@ def functional_toy_resnet(bs, cuda_graphs, img_size):
     x = x(nn.Dropout(0.5))
     outputs = x(nn.Linear(x.features, 10))
 
-    return SymbolicModel(inputs, outputs, enable_cuda_graphs=cuda_graphs)
+    return SymbolicModel(inputs, outputs)
 
 
 def create_toy_resnets(bs, img_size):
     """ToyResNet example from https://www.tensorflow.org/guide/keras/functional#a_toy_resnet_model."""
     models = [
-        (("functional",), functional_toy_resnet(bs, cuda_graphs=False, img_size=img_size)),
-        (("functional", "cuda_graphs"), functional_toy_resnet(bs, cuda_graphs=True, img_size=img_size)),
+        (("functional",), functional_toy_resnet(bs, img_size=img_size)),
         (("vanilla",), ToyResNet()),
     ]
     return models

@@ -35,9 +35,9 @@ def check_for_missing_inputs(
         if node in inputs:
             continue
         for parent in node.parents:
-            assert (
-                parent in used_nodes
-            ), f"Node {node} depends on the output of a foreign node! Perhaps you set the wrong inputs?"
+            assert parent in used_nodes, (
+                f"Node {node} depends on the output of a foreign node! Perhaps you set the wrong inputs?"
+            )
 
 
 def figure_out_nodes_between(
@@ -224,9 +224,7 @@ def draw_graph(
         import matplotlib.pyplot as plt
         import networkx as nx
     except ImportError as e:
-        print(
-            "To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`."
-        )
+        print("To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`.")
         raise e
 
     from .symbolic_model import SymbolicModel
