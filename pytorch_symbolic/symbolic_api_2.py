@@ -24,7 +24,7 @@ def call_wrapper_for_api_2(self, *args, custom_name: str | None = None, **kwds):
         node = args[0]
         return node(self, *args[1:], custom_name=custom_name)
     else:
-        msg = "Only *args are allowed as arguments! " "If you need to use **kwds, try `functions_utility.add_to_graph`!"
+        msg = "Only *args are allowed as arguments! If you need to use **kwds, try `functions_utility.add_to_graph`!"
         raise UserWarning(msg)
 
 

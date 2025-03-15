@@ -5,7 +5,6 @@ This is a flexible implementation of ResNet architecture.
 It allows for creation of standard ResNet v2 or Wide ResNet variants.
 """
 
-
 from torch import nn
 
 from pytorch_symbolic import Input, SymbolicModel
