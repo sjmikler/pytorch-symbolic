@@ -34,7 +34,7 @@ Home = "https://github.com/gahaalt/pytorch-symbolic"
 Documentation = "https://github.com/sjmikler/pytorch-symbolic/blob/main/docs"
 
 [tool.hatch.version]
-path = "progress_table/__init__.py"
+path = "pytorch_symbolic/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = ["pytorch_symbolic", "examples", "docs", "README.md"]
