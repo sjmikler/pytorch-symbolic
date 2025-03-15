@@ -4,7 +4,6 @@
 
 [![PyPi version](https://img.shields.io/badge/dynamic/json?label=latest&query=info.version&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpytorch-symbolic%2Fjson)](https://pypi.org/project/pytorch-symbolic)
 [![PyPI license](https://img.shields.io/badge/dynamic/json?label=license&query=info.license&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpytorch-symbolic%2Fjson)](https://pypi.org/project/pytorch-symbolic)
-[![Documentation Status](https://readthedocs.org/projects/pytorch-symbolic/badge/?version=latest)](https://pytorch-symbolic.readthedocs.io/en/latest/?badge=latest)
 [![Notebook](https://github.com/gahaalt/pytorch-symbolic/actions/workflows/notebook.yaml/badge.svg)](https://github.com/gahaalt/pytorch-symbolic/actions/workflows/notebook.yaml)
 
 Pytorch Symbolic is MIT licensed library that adds symbolic API for model creation to PyTorch.
@@ -88,7 +87,7 @@ Please create an issue if you notice a problem!
 
 ## Links
 
-* [See Documentation](https://pytorch-symbolic.readthedocs.io/en/latest/quick_start)
+* [See Documentation](https://github.com/sjmikler/pytorch-symbolic/tree/main/docs)
 * [See on GitHub](https://github.com/gahaalt/pytorch-symbolic/)
 * [See on PyPI](https://pypi.org/project/pytorch-symbolic/)
 

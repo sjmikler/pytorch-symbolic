@@ -12,7 +12,7 @@ setup(
     version="1.0.7",
     url="https://github.com/gahaalt/pytorch-symbolic.git",
     project_urls={
-        "Documentation": "https://pytorch-symbolic.readthedocs.io/",
+        "Documentation": "https://github.com/sjmikler/pytorch-symbolic/tree/main/docs",
     },
     author="Szymon Mikler",
     author_email="sjmikler@gmail.com",
