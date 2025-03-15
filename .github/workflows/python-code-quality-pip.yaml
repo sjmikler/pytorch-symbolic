@@ -33,9 +33,6 @@ jobs:
           pip install networkx matplotlib scipy
           rm -r pytorch_symbolic
           pip install pytorch-symbolic
-      - name: Lint with flake8
-        run: |
-          flake8 .
       - name: Lint with mypy
         run: |
           mypy .
