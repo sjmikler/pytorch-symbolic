@@ -50,7 +50,7 @@ exclude = ["devel", "build", "dist"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py37"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
