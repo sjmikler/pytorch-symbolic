@@ -224,9 +224,7 @@ def draw_graph(
         import matplotlib.pyplot as plt
         import networkx as nx
     except ImportError as e:
-        print(
-            "To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`."
-        )
+        print("To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`.")
         raise e
 
     from .symbolic_model import SymbolicModel
