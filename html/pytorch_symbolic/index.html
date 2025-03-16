@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>pytorch_symbolic API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>pytorch_symbolic</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="pytorch_symbolic.code_generator" href="code_generator.md">pytorch_symbolic.code_generator</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.config" href="config.html">pytorch_symbolic.config</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.functions_utility" href="functions_utility.html">pytorch_symbolic.functions_utility</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.graph_algorithms" href="graph_algorithms.html">pytorch_symbolic.graph_algorithms</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.model_tools" href="model_tools.html">pytorch_symbolic.model_tools</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.symbolic_api_2" href="symbolic_api_2.html">pytorch_symbolic.symbolic_api_2</a></code></dt>
+<dd>
+<div class="desc"><p>Enables Symbolic API 2, which allows for registering layers by calling
+layer(<em>symbolic) instead of symbolic_1(layer, </em>other_symbolic).</p></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.symbolic_data" href="symbolic_data.html">pytorch_symbolic.symbolic_data</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.symbolic_model" href="symbolic_model.html">pytorch_symbolic.symbolic_model</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pytorch_symbolic.useful_layers" href="useful_layers.html">pytorch_symbolic.useful_layers</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pytorch_symbolic.CustomInput"><code class="name flex">
+<span>def <span class="ident">CustomInput</span></span>(<span>data: Any) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicData" href="symbolic_data.html#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def CustomInput(data: Any) -&gt; SymbolicData:
+    &#34;&#34;&#34;Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
+
+    This should be used when Input won&#39;t work.
+
+    Parameters
+    ----------
+    data
+        Speficic data that will be used during the graph tracing.
+        It can, but doesn&#39;t need to be a torch.Tensor.
+
+    Returns
+    -------
+    SymbolicData
+        Root node in the graph
+    &#34;&#34;&#34;
+    cls = _figure_out_symbolic_type(data)
+    return cls(value=data, batch_size_known=True)</code></pre>
+</details>
+<div class="desc"><p>Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.</p>
+<p>This should be used when Input won't work.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data</code></strong></dt>
+<dd>Speficic data that will be used during the graph tracing.
+It can, but doesn't need to be a torch.Tensor.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SymbolicData</code></dt>
+<dd>Root node in the graph</dd>
+</dl></div>
+</dd>
+<dt id="pytorch_symbolic.Input"><code class="name flex">
+<span>def <span class="ident">Input</span></span>(<span>shape: Tuple | List = (),<br>batch_size: int = 1,<br>batch_shape: Tuple | List | None = None,<br>dtype=torch.float32,<br>min_value: float = 0.0,<br>max_value: float = 1.0) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="symbolic_data.html#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Input(
+    shape: Tuple | List = (),
+    batch_size: int = 1,
+    batch_shape: Tuple | List | None = None,
+    dtype=torch.float32,
+    min_value: float = 0.0,
+    max_value: float = 1.0,
+) -&gt; SymbolicTensor:
+    &#34;&#34;&#34;Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.
+
+    Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.
+
+    Parameters
+    ----------
+    shape
+        Shape of the real data NOT including the batch dimension
+    batch_size
+        Optional batch size of the Tensor
+    batch_shape
+        Shape of the real data including the batch dimension.
+        If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
+    dtype
+        Dtype of the real data that will be the input of the network
+    min_value
+        In rare cases, if real world data is very specific and some values
+        cannot work with the model, this should be used to set a
+        reasonable minimal value that the model can take as an input.
+    max_value
+        As above, but the maximal value
+
+    Returns
+    -------
+    SymbolicTensor
+        Root node in the graph
+    &#34;&#34;&#34;
+    batch_size_known = True
+
+    if batch_shape is not None:
+        batch_size = batch_shape[0]
+        shape = batch_shape[1:]
+    else:
+        # By default, we use batch_size of 1 under the hood
+        batch_size_known = False
+
+    value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+    value = value.to(dtype)
+    return SymbolicTensor(value=value, batch_size_known=batch_size_known)</code></pre>
+</details>
+<div class="desc"><p>Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.</p>
+<p>Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>shape</code></strong></dt>
+<dd>Shape of the real data NOT including the batch dimension</dd>
+<dt><strong><code>batch_size</code></strong></dt>
+<dd>Optional batch size of the Tensor</dd>
+<dt><strong><code>batch_shape</code></strong></dt>
+<dd>Shape of the real data including the batch dimension.
+If both <code>shape</code> and <code>batch_shape</code> are given, <code>batch_shape</code> has higher priority.</dd>
+<dt><strong><code>dtype</code></strong></dt>
+<dd>Dtype of the real data that will be the input of the network</dd>
+<dt><strong><code>min_value</code></strong></dt>
+<dd>In rare cases, if real world data is very specific and some values
+cannot work with the model, this should be used to set a
+reasonable minimal value that the model can take as an input.</dd>
+<dt><strong><code>max_value</code></strong></dt>
+<dd>As above, but the maximal value</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SymbolicTensor</code></dt>
+<dd>Root node in the graph</dd>
+</dl></div>
+</dd>
+<dt id="pytorch_symbolic.add_to_graph"><code class="name flex">
+<span>def <span class="ident">add_to_graph</span></span>(<span>func: Callable | nn.Module, *args, custom_name: str | None = None, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_to_graph(func: Callable | nn.Module, *args, custom_name: str | None = None, **kwds):
+    &#34;&#34;&#34;Register a custom func or a module in the computation graph.
+
+    This works will arbitrary functions and modules iff at least one Symbolic Data is among ``*args, **kwds``.
+
+    This way of registering is flexible, but might add a small slowdown to the call,
+    because it adds a wrapper for parsing arguments.
+    If this is unacceptable, please create an torch.nn.Module that takes only Symbolic Data arguments.
+
+    Here all arguments, including Symbolic Data, should be passed after the ``func`` argument.
+    The arguments can be mixed and matched, even nested in lists, tuples and dictionaries.
+
+    Convolution func example::
+
+        inputs = Input(shape=(3, 32, 32))
+        kernel = Input(batch_size=(16, 3, 3, 3))
+        bias = Input(batch_size=(16,))
+        output = add_to_graph(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
+    &#34;&#34;&#34;
+    extracted_symbols: List[SymbolicData] = []
+
+    real_call_args = []
+    real_call_kwds = {}
+
+    navigation: List[List[Hashable]] = [[]]
+    real_call_args = _replace_symbolic_with_value(args, extracted_symbols, navigation)
+    real_call_kwds = _replace_symbolic_with_value(kwds, extracted_symbols, navigation)
+    navigation.pop()
+
+    assert len(extracted_symbols) &gt; 0, &#34;No Symbolic Data detected in the input!&#34;
+    assert all((isinstance(symbol, SymbolicData) for symbol in extracted_symbols))
+    assert len(extracted_symbols) == len(navigation)
+
+    def wrapper_function(*args):
+        assert len(args) == len(navigation), f&#34;Expected {len(navigation)} inputs, not {len(args)}!&#34;
+        for arg, navi in zip(args, navigation):
+            obj = real_call_kwds if isinstance(navi[0], str) else real_call_args
+
+            for idx in navi[:-1]:
+                obj = obj[idx]
+
+            obj[navi[-1]] = arg
+
+        return func(*real_call_args, **real_call_kwds)
+
+    if hasattr(func, &#34;__name__&#34;):
+        name = func.__name__
+    elif hasattr(func, &#34;__class__&#34;):
+        name = func.__class__.__name__
+    else:
+        name = str(func)
+    module = useful_layers.NamedLambdaOpLayer(op=wrapper_function, name=f&#34;wrap({name})&#34;)
+    # This might be a Symbolic Callable, so we use `apply_module` instead of `__call__`
+    return extracted_symbols[0].apply_module(module, *extracted_symbols[1:], custom_name=custom_name)</code></pre>
+</details>
+<div class="desc"><p>Register a custom func or a module in the computation graph.</p>
+<p>This works will arbitrary functions and modules iff at least one Symbolic Data is among <code>*args, **kwds</code>.</p>
+<p>This way of registering is flexible, but might add a small slowdown to the call,
+because it adds a wrapper for parsing arguments.
+If this is unacceptable, please create an torch.nn.Module that takes only Symbolic Data arguments.</p>
+<p>Here all arguments, including Symbolic Data, should be passed after the <code>func</code> argument.
+The arguments can be mixed and matched, even nested in lists, tuples and dictionaries.</p>
+<p>Convolution func example::</p>
+<pre><code>inputs = Input(shape=(3, 32, 32))
+kernel = Input(batch_size=(16, 3, 3, 3))
+bias = Input(batch_size=(16,))
+output = add_to_graph(F.conv2d, input=inputs, weight=k, bias=bias, padding=1)
+</code></pre></div>
+</dd>
+<dt id="pytorch_symbolic.optimize_module_calls"><code class="name flex">
+<span>def <span class="ident">optimize_module_calls</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def optimize_module_calls():
+    &#34;&#34;&#34;Remove the call wrapper from `torch.nn.Module`.&#34;&#34;&#34;
+    msg = &#34;Optimizing module calls! Reusing existing layers will not work with layer(*symbols) notation!&#34;
+    logging.warning(msg)
+    SymbolicAPI2ContextManager().__exit__(None, None, None)</code></pre>
+</details>
+<div class="desc"><p>Remove the call wrapper from <code>torch.nn.Module</code>.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pytorch_symbolic.SymbolicAPI2ContextManager"><code class="flex name class">
+<span>class <span class="ident">SymbolicAPI2ContextManager</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SymbolicAPI2ContextManager:
+    def __enter__(self):
+        logging.debug(&#34;Symbolic API has been enabled!&#34;)
+        nn.Module.__call__ = call_wrapper_for_api_2
+
+    def __exit__(self, exit_type, value, traceback):
+        logging.debug(&#34;Symbolic API has been disabled!&#34;)
+        nn.Module.__call__ = __nn_module_old_call__</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.SymbolicModel"><code class="flex name class">
+<span>class <span class="ident">SymbolicModel</span></span>
+<span>(</span><span>inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,<br>outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,<br>enable_forward_codegen=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SymbolicModel(nn.Module):
+    def __init__(
+        self,
+        inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
+        outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | SymbolicData,
+        enable_forward_codegen=None,
+    ):
+        &#34;&#34;&#34;A PyTorch model that replays operations defined in the graph.
+
+        All operations that were required to change ``inputs`` into ``outputs`` will be replayed
+        in the same order, but on the real data provided as input to this model.
+
+        Example::
+
+            input1 = Input((10,))
+            input2 = Input((10,))
+            x = input1 + input2
+            x = nn.Linear(x.features, 1)(x)
+            model = SymbolicModel((input1, input2), x)
+
+        Parameters
+        ----------
+        inputs
+            A collection of SymbolicData that represent the input data used by the model.
+            It is you who provide the specific data when the model is created.
+            If you have mulitple inputs here, be prepared to pass multiple inputs during training/inference.
+        outputs
+            A collection of SymbolicTensors that will end the computations.
+            These nodes return your final computation result.
+            So if you have mulitple outputs, SymbolicModel will return a tuple of tensors.
+
+        Attributes
+        ----------
+        inputs : tuple
+            Non-modifiable tuple of input nodes
+        outputs : tuple
+            Non-modifiable tuple of output nodes
+        &#34;&#34;&#34;
+        super().__init__()
+        logging.debug(&#34;Creating a SymbolicModel...&#34;)
+
+        if isinstance(inputs, SymbolicData):
+            inputs = (inputs,)
+        assert all(isinstance(x, SymbolicData) for x in inputs), &#34;Only SymbolicData allowed in inputs!&#34;
+        self.inputs: Tuple[SymbolicData, ...] = tuple(inputs)
+
+        if isinstance(outputs, SymbolicData):
+            outputs = (outputs,)
+        assert all(isinstance(x, SymbolicData) for x in outputs), &#34;Only SymbolicData allowed in outputs!&#34;
+        self.outputs: Tuple[SymbolicData, ...] = tuple(outputs)
+
+        # Initialize helper variables
+        self._layer_type_counts: Dict[str, int] = {}
+        self._node_to_layer_name: Dict[SymbolicData, str] = {}
+        self._execution_order_nodes: List[SymbolicData] = []
+        self._execution_order_layers: List[nn.Module] = []
+        self._figure_out_execution_order()
+
+        if enable_forward_codegen is None:
+            enable_forward_codegen = config.CODEGEN_BY_DEFAULT
+        self._enable_forward_codegen = enable_forward_codegen
+        if self._enable_forward_codegen:
+            self._replace_forward_with_codegen()
+
+        self._clear_underlying_values()  # clear up after tracing to save memory
+
+    def forward(self, *inputs: torch.Tensor) -&gt; Any:
+        &#34;&#34;&#34;This function is executed by __call__. Do not use this directly, use __call__ instead.
+
+        Warning!
+
+        This function will be overwritten by `_replace_forward_with_codegen` if `enable_forward_codegen`
+        is True. If this happened and you want to see your source, print `self._generated_forward_source`.
+        &#34;&#34;&#34;
+        assert len(inputs) == len(self.inputs), &#34;Number of inputs doesn&#39;t match!&#34;
+        for input_data, input_node in zip(inputs, self.inputs):
+            input_node._launch_input(input_data)
+
+        for node in self._execution_order_nodes:
+            node._launch()
+
+        if len(self.outputs) == 1:
+            return self.outputs[0]._value
+        else:
+            return tuple(output_leaf._value for output_leaf in self.outputs)
+
+    @property
+    def input_shape(self):
+        &#34;&#34;&#34;Return shape of the input or in case of multiple inputs - a tuple of them.&#34;&#34;&#34;
+        shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.inputs]
+        return tuple(shapes) if len(shapes) &gt; 1 else shapes[0]
+
+    @property
+    def output_shape(self):
+        &#34;&#34;&#34;Return shape of the output or in case of multiple outputs - a tuple of them.&#34;&#34;&#34;
+        shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.outputs]
+        return tuple(shapes) if len(shapes) &gt; 1 else shapes[0]
+
+    def add_output(self, node: SymbolicData):
+        assert node not in self.inputs, &#34;Node is an input of this SymbolicModel!&#34;
+        assert node in self._execution_order_nodes, &#34;Node is out of reach for this SymbolicModel!&#34;
+
+        self.outputs = (*self.outputs, node)
+        if self._enable_forward_codegen:
+            self._replace_forward_with_codegen()
+
+    def detach_from_graph(self) -&gt; DetachedSymbolicModel:
+        names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
+        forward_src = code_generator.generate_forward_with_loops(
+            self.inputs,
+            self.outputs,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
+            min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
+        )
+        return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)
+
+    def summary(self):
+        &#34;&#34;&#34;Print Keras-like model summary.&#34;&#34;&#34;
+        space_between_cols = 3
+
+        data = [[&#34;&#34;, &#34;Layer&#34;, &#34;Output shape&#34;, &#34;Params&#34;, &#34;Parent&#34;]]
+        ncols = len(data[0])
+        separators = [&#34;=&#34;]
+        node_to_idx = {}
+        for node in self.inputs:
+            node_to_idx[node] = len(data)
+            if isinstance(node, SymbolicTensor):
+                shape = list(node.shape)
+                if not node.batch_size_known:
+                    shape[0] = None
+                shape = tuple(shape)
+            else:
+                shape = node._underlying_type_name
+            data.append(
+                [
+                    f&#34;{len(data)}&#34; + (&#34;*&#34; if node in self.outputs else &#34;&#34;),
+                    f&#34;Input_{len(data)}&#34;,
+                    str(shape),
+                    &#34;0&#34;,
+                    &#34;&#34;,
+                ]
+            )
+            separators.append(None)
+
+        for node in self._execution_order_nodes:
+            node_to_idx[node] = len(data)
+            layer = node.layer
+            if isinstance(node, SymbolicTensor):
+                shape = list(node.shape)
+                if not node.batch_size_known:
+                    shape[0] = None
+                shape = tuple(shape)
+            else:
+                shape = node._underlying_type_name
+            data.append(
+                [
+                    f&#34;{len(data)}&#34; + (&#34;*&#34; if node in self.outputs else &#34;&#34;),
+                    f&#34;{self._node_to_layer_name[node]}&#34;,
+                    str(shape),
+                    str(get_parameter_count(layer)),
+                    &#34;,&#34;.join(str(node_to_idx[parent]) for parent in node.parents),
+                ]
+            )
+            separators.append(None)
+        separators[-1] = &#34;=&#34;
+
+        maxcolwidth = [0 for _ in range(ncols)]
+        for row in data:
+            for idx, col in enumerate(row):
+                if len(col) &gt; maxcolwidth[idx]:
+                    maxcolwidth[idx] = len(col)
+
+        print(&#34;_&#34; * (sum(maxcolwidth) + ncols * space_between_cols))
+        for sep, row in zip(separators, data):
+            for idx, col in enumerate(row):
+                s = col.ljust(maxcolwidth[idx] + space_between_cols, &#34; &#34;)
+                print(s, end=&#34;&#34;)
+            print()
+            if sep is not None:
+                print(sep * (sum(maxcolwidth) + ncols * space_between_cols))
+
+        parameter_count = get_parameter_count(self)
+        trainable_count = get_parameter_count(self, only_trainable=True)
+        print(f&#34;Total params: {parameter_count}&#34;)
+        print(f&#34;Trainable params: {trainable_count}&#34;)
+        print(f&#34;Non-trainable params: {parameter_count - trainable_count}&#34;)
+        print(&#34;_&#34; * (sum(maxcolwidth) + ncols * space_between_cols))
+
+    def _clear_underlying_values(self):
+        &#34;&#34;&#34;Clear values of the underlying nodes to save memory.
+
+        Does not clear the values of input nodes, as they might be needed.
+        &#34;&#34;&#34;
+        for node in self._used_nodes().difference(self.inputs):
+            node._clear_value()
+
+    def _replace_forward_with_codegen(self):
+        self._generated_forward_source = code_generator.generate_forward_with_loops(
+            self.inputs,
+            self.outputs,
+            execution_order=self._execution_order_nodes,
+            nodes_in_subgraph=self._used_nodes(),
+            min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
+        )
+        scope = {&#34;self&#34;: self}
+        exec(self._generated_forward_source, {}, scope)
+        self.forward = MethodType(scope[&#34;forward&#34;], self)
+
+    def _used_nodes(self) -&gt; Set[SymbolicData]:
+        &#34;&#34;&#34;Return a set of all nodes used in this model.&#34;&#34;&#34;
+        return figure_out_nodes_between(self.inputs, self.outputs)
+
+    def _remove_repeated_execution(self, execution_order_nodes: List[SymbolicData]) -&gt; List[SymbolicData]:
+        &#34;&#34;&#34;In case of multiple outputs, we need only one of the output node to launch the layer.&#34;&#34;&#34;
+        nodes_without_repeated_execution = []
+        used_nodes = self._used_nodes()
+
+        already_executed: Set[SymbolicData] = set()
+        for node in execution_order_nodes:
+            if node in already_executed:
+                continue
+            nodes_without_repeated_execution.append(node)
+            already_executed.update(used_nodes.intersection(node._layer_full_siblings))
+
+        assert len(already_executed) == len(execution_order_nodes)
+        return nodes_without_repeated_execution
+
+    def _figure_out_execution_order(self):
+        used_nodes = self._used_nodes()
+        sort_graph_and_check_DAG(used_nodes)
+        execution_order_nodes = sorted(self._used_nodes(), key=lambda node: node._execution_order_idx)
+        assert len(execution_order_nodes) == len(used_nodes)
+
+        for input_node in used_nodes.intersection(self.inputs):  # Not all inputs must be in `used_nodes`
+            execution_order_nodes.remove(input_node)  # Exclude inputs, as we don&#39;t execute any layers there
+
+        # To avoid calling layers twice when they have multiple outputs
+        # We remove all nodes with already executed layer from execution order
+        execution_order_nodes = self._remove_repeated_execution(execution_order_nodes)
+
+        self._execution_order_nodes = execution_order_nodes
+        self._execution_order_layers = [node.layer for node in self._execution_order_nodes]
+
+        for _idx, node in enumerate(self._execution_order_nodes):
+            if node._custom_provided_name is not None:
+                # Use layer name provided by the user
+                layer_name = node._custom_provided_name
+            else:
+                # Extract the default name of the layer provided by pytorch
+                layer_name = node.layer._get_name()
+
+            # Check how many layers with this name already exist
+            self._layer_type_counts.setdefault(layer_name, 0)
+            self._layer_type_counts[layer_name] += 1
+
+            if node._custom_provided_name is None or self._layer_type_counts[layer_name] &gt; 1:
+                full_layer_name = f&#34;{layer_name}_{self._layer_type_counts[layer_name]}&#34;
+            else:
+                # Skip first index only if it was provided by the user
+                full_layer_name = layer_name
+
+            self._node_to_layer_name[node] = full_layer_name
+            self.add_module(name=full_layer_name, module=node.layer)
+
+    def __deepcopy__(self, memo):
+        &#34;&#34;&#34;This copies a working Module, but the underlying graph structure is not copied!&#34;&#34;&#34;
+        obj = self.detach_from_graph()
+        memo[id(self)] = obj
+        return obj</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>A PyTorch model that replays operations defined in the graph.</p>
+<p>All operations that were required to change <code>inputs</code> into <code>outputs</code> will be replayed
+in the same order, but on the real data provided as input to this model.</p>
+<p>Example::</p>
+<pre><code>input1 = Input((10,))
+input2 = Input((10,))
+x = input1 + input2
+x = nn.Linear(x.features, 1)(x)
+model = SymbolicModel((input1, input2), x)
+</code></pre>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputs</code></strong></dt>
+<dd>A collection of SymbolicData that represent the input data used by the model.
+It is you who provide the specific data when the model is created.
+If you have mulitple inputs here, be prepared to pass multiple inputs during training/inference.</dd>
+<dt><strong><code>outputs</code></strong></dt>
+<dd>A collection of SymbolicTensors that will end the computations.
+These nodes return your final computation result.
+So if you have mulitple outputs, SymbolicModel will return a tuple of tensors.</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>inputs</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>Non-modifiable tuple of input nodes</dd>
+<dt><strong><code>outputs</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>Non-modifiable tuple of output nodes</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="pytorch_symbolic.SymbolicModel.input_shape"><code class="name">prop <span class="ident">input_shape</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def input_shape(self):
+    &#34;&#34;&#34;Return shape of the input or in case of multiple inputs - a tuple of them.&#34;&#34;&#34;
+    shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.inputs]
+    return tuple(shapes) if len(shapes) &gt; 1 else shapes[0]</code></pre>
+</details>
+<div class="desc"><p>Return shape of the input or in case of multiple inputs - a tuple of them.</p></div>
+</dd>
+<dt id="pytorch_symbolic.SymbolicModel.output_shape"><code class="name">prop <span class="ident">output_shape</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def output_shape(self):
+    &#34;&#34;&#34;Return shape of the output or in case of multiple outputs - a tuple of them.&#34;&#34;&#34;
+    shapes = [node.shape if isinstance(node, SymbolicTensor) else None for node in self.outputs]
+    return tuple(shapes) if len(shapes) &gt; 1 else shapes[0]</code></pre>
+</details>
+<div class="desc"><p>Return shape of the output or in case of multiple outputs - a tuple of them.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pytorch_symbolic.SymbolicModel.add_output"><code class="name flex">
+<span>def <span class="ident">add_output</span></span>(<span>self, node: SymbolicData)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_output(self, node: SymbolicData):
+    assert node not in self.inputs, &#34;Node is an input of this SymbolicModel!&#34;
+    assert node in self._execution_order_nodes, &#34;Node is out of reach for this SymbolicModel!&#34;
+
+    self.outputs = (*self.outputs, node)
+    if self._enable_forward_codegen:
+        self._replace_forward_with_codegen()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.SymbolicModel.detach_from_graph"><code class="name flex">
+<span>def <span class="ident">detach_from_graph</span></span>(<span>self) ‑> <a title="pytorch_symbolic.symbolic_model.DetachedSymbolicModel" href="symbolic_model.html#pytorch_symbolic.symbolic_model.DetachedSymbolicModel">DetachedSymbolicModel</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def detach_from_graph(self) -&gt; DetachedSymbolicModel:
+    names = [self._node_to_layer_name[node] for node in self._execution_order_nodes]
+    forward_src = code_generator.generate_forward_with_loops(
+        self.inputs,
+        self.outputs,
+        execution_order=self._execution_order_nodes,
+        nodes_in_subgraph=self._used_nodes(),
+        min_loop_length=config.CODEGEN_MIN_LOOP_LENGTH,
+    )
+    return DetachedSymbolicModel(names, self._execution_order_layers, forward_src)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.SymbolicModel.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, *inputs: torch.Tensor) ‑> Any</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, *inputs: torch.Tensor) -&gt; Any:
+    &#34;&#34;&#34;This function is executed by __call__. Do not use this directly, use __call__ instead.
+
+    Warning!
+
+    This function will be overwritten by `_replace_forward_with_codegen` if `enable_forward_codegen`
+    is True. If this happened and you want to see your source, print `self._generated_forward_source`.
+    &#34;&#34;&#34;
+    assert len(inputs) == len(self.inputs), &#34;Number of inputs doesn&#39;t match!&#34;
+    for input_data, input_node in zip(inputs, self.inputs):
+        input_node._launch_input(input_data)
+
+    for node in self._execution_order_nodes:
+        node._launch()
+
+    if len(self.outputs) == 1:
+        return self.outputs[0]._value
+    else:
+        return tuple(output_leaf._value for output_leaf in self.outputs)</code></pre>
+</details>
+<div class="desc"><p>This function is executed by <strong>call</strong>. Do not use this directly, use <strong>call</strong> instead.</p>
+<p>Warning!</p>
+<p>This function will be overwritten by <code>_replace_forward_with_codegen</code> if <code>enable_forward_codegen</code>
+is True. If this happened and you want to see your source, print <code>self._generated_forward_source</code>.</p></div>
+</dd>
+<dt id="pytorch_symbolic.SymbolicModel.summary"><code class="name flex">
+<span>def <span class="ident">summary</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def summary(self):
+    &#34;&#34;&#34;Print Keras-like model summary.&#34;&#34;&#34;
+    space_between_cols = 3
+
+    data = [[&#34;&#34;, &#34;Layer&#34;, &#34;Output shape&#34;, &#34;Params&#34;, &#34;Parent&#34;]]
+    ncols = len(data[0])
+    separators = [&#34;=&#34;]
+    node_to_idx = {}
+    for node in self.inputs:
+        node_to_idx[node] = len(data)
+        if isinstance(node, SymbolicTensor):
+            shape = list(node.shape)
+            if not node.batch_size_known:
+                shape[0] = None
+            shape = tuple(shape)
+        else:
+            shape = node._underlying_type_name
+        data.append(
+            [
+                f&#34;{len(data)}&#34; + (&#34;*&#34; if node in self.outputs else &#34;&#34;),
+                f&#34;Input_{len(data)}&#34;,
+                str(shape),
+                &#34;0&#34;,
+                &#34;&#34;,
+            ]
+        )
+        separators.append(None)
+
+    for node in self._execution_order_nodes:
+        node_to_idx[node] = len(data)
+        layer = node.layer
+        if isinstance(node, SymbolicTensor):
+            shape = list(node.shape)
+            if not node.batch_size_known:
+                shape[0] = None
+            shape = tuple(shape)
+        else:
+            shape = node._underlying_type_name
+        data.append(
+            [
+                f&#34;{len(data)}&#34; + (&#34;*&#34; if node in self.outputs else &#34;&#34;),
+                f&#34;{self._node_to_layer_name[node]}&#34;,
+                str(shape),
+                str(get_parameter_count(layer)),
+                &#34;,&#34;.join(str(node_to_idx[parent]) for parent in node.parents),
+            ]
+        )
+        separators.append(None)
+    separators[-1] = &#34;=&#34;
+
+    maxcolwidth = [0 for _ in range(ncols)]
+    for row in data:
+        for idx, col in enumerate(row):
+            if len(col) &gt; maxcolwidth[idx]:
+                maxcolwidth[idx] = len(col)
+
+    print(&#34;_&#34; * (sum(maxcolwidth) + ncols * space_between_cols))
+    for sep, row in zip(separators, data):
+        for idx, col in enumerate(row):
+            s = col.ljust(maxcolwidth[idx] + space_between_cols, &#34; &#34;)
+            print(s, end=&#34;&#34;)
+        print()
+        if sep is not None:
+            print(sep * (sum(maxcolwidth) + ncols * space_between_cols))
+
+    parameter_count = get_parameter_count(self)
+    trainable_count = get_parameter_count(self, only_trainable=True)
+    print(f&#34;Total params: {parameter_count}&#34;)
+    print(f&#34;Trainable params: {trainable_count}&#34;)
+    print(f&#34;Non-trainable params: {parameter_count - trainable_count}&#34;)
+    print(&#34;_&#34; * (sum(maxcolwidth) + ncols * space_between_cols))</code></pre>
+</details>
+<div class="desc"><p>Print Keras-like model summary.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="pytorch_symbolic.code_generator" href="code_generator.md">pytorch_symbolic.code_generator</a></code></li>
+<li><code><a title="pytorch_symbolic.config" href="config.html">pytorch_symbolic.config</a></code></li>
+<li><code><a title="pytorch_symbolic.functions_utility" href="functions_utility.html">pytorch_symbolic.functions_utility</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms" href="graph_algorithms.html">pytorch_symbolic.graph_algorithms</a></code></li>
+<li><code><a title="pytorch_symbolic.model_tools" href="model_tools.html">pytorch_symbolic.model_tools</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_api_2" href="symbolic_api_2.html">pytorch_symbolic.symbolic_api_2</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data" href="symbolic_data.html">pytorch_symbolic.symbolic_data</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_model" href="symbolic_model.html">pytorch_symbolic.symbolic_model</a></code></li>
+<li><code><a title="pytorch_symbolic.useful_layers" href="useful_layers.html">pytorch_symbolic.useful_layers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pytorch_symbolic.CustomInput" href="#pytorch_symbolic.CustomInput">CustomInput</a></code></li>
+<li><code><a title="pytorch_symbolic.Input" href="#pytorch_symbolic.Input">Input</a></code></li>
+<li><code><a title="pytorch_symbolic.add_to_graph" href="#pytorch_symbolic.add_to_graph">add_to_graph</a></code></li>
+<li><code><a title="pytorch_symbolic.optimize_module_calls" href="#pytorch_symbolic.optimize_module_calls">optimize_module_calls</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pytorch_symbolic.SymbolicAPI2ContextManager" href="#pytorch_symbolic.SymbolicAPI2ContextManager">SymbolicAPI2ContextManager</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pytorch_symbolic.SymbolicModel" href="#pytorch_symbolic.SymbolicModel">SymbolicModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="pytorch_symbolic.SymbolicModel.add_output" href="#pytorch_symbolic.SymbolicModel.add_output">add_output</a></code></li>
+<li><code><a title="pytorch_symbolic.SymbolicModel.detach_from_graph" href="#pytorch_symbolic.SymbolicModel.detach_from_graph">detach_from_graph</a></code></li>
+<li><code><a title="pytorch_symbolic.SymbolicModel.forward" href="#pytorch_symbolic.SymbolicModel.forward">forward</a></code></li>
+<li><code><a title="pytorch_symbolic.SymbolicModel.input_shape" href="#pytorch_symbolic.SymbolicModel.input_shape">input_shape</a></code></li>
+<li><code><a title="pytorch_symbolic.SymbolicModel.output_shape" href="#pytorch_symbolic.SymbolicModel.output_shape">output_shape</a></code></li>
+<li><code><a title="pytorch_symbolic.SymbolicModel.summary" href="#pytorch_symbolic.SymbolicModel.summary">summary</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>

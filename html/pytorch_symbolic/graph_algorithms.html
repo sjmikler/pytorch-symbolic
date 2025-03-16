@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>pytorch_symbolic.graph_algorithms API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pytorch_symbolic.graph_algorithms</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pytorch_symbolic.graph_algorithms.check_for_missing_inputs"><code class="name flex">
+<span>def <span class="ident">check_for_missing_inputs</span></span>(<span>used_nodes: Set[SymbolicData],<br>inputs: Tuple[SymbolicData, ...] | List[SymbolicData])</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_for_missing_inputs(
+    used_nodes: Set[SymbolicData],
+    inputs: Tuple[SymbolicData, ...] | List[SymbolicData],
+):
+    &#34;&#34;&#34;Check if there exist nodes which require input from outside of the graph.
+
+    It is forbidden, as it doesn&#39;t make sense.
+
+    Example of such violation::
+
+        x1 = Input(shape=(32,))
+        x2 = Input(shape=(32,))
+        x3 = x1 + x2
+        model = SymbolicModel(inputs=x1, outputs=x3)
+
+    Model cannot execute defined operations unless ``x2`` is given, because ``x3`` requires it.
+    &#34;&#34;&#34;
+    for node in used_nodes:
+        if node in inputs:
+            continue
+        for parent in node.parents:
+            assert parent in used_nodes, (
+                f&#34;Node {node} depends on the output of a foreign node! Perhaps you set the wrong inputs?&#34;
+            )</code></pre>
+</details>
+<div class="desc"><p>Check if there exist nodes which require input from outside of the graph.</p>
+<p>It is forbidden, as it doesn't make sense.</p>
+<p>Example of such violation::</p>
+<pre><code>x1 = Input(shape=(32,))
+x2 = Input(shape=(32,))
+x3 = x1 + x2
+model = SymbolicModel(inputs=x1, outputs=x3)
+</code></pre>
+<p>Model cannot execute defined operations unless <code>x2</code> is given, because <code>x3</code> requires it.</p></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.default_edge_text"><code class="name flex">
+<span>def <span class="ident">default_edge_text</span></span>(<span>layer: nn.Module) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default_edge_text(layer: nn.Module) -&gt; str:
+    if isinstance(layer, useful_layers.GetAttr):
+        return &#34;.&#34; + layer.name
+    else:
+        return layer._get_name()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.default_node_text"><code class="name flex">
+<span>def <span class="ident">default_node_text</span></span>(<span>sym: SymbolicData) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default_node_text(sym: SymbolicData) -&gt; str:
+    if isinstance(sym, SymbolicTensor):
+        return str(tuple(sym.v.shape))
+    # mypy hates the next line for some reason
+    if isinstance(sym.v, Callable):  # type: ignore
+        return &#34;callable&#34;
+    if hasattr(sym.v, &#34;__len__&#34;):
+        return f&#34;{type(sym.v).__name__}({len(sym.v)})&#34;
+    return type(sym.v).__name__</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.draw_graph"><code class="name flex">
+<span>def <span class="ident">draw_graph</span></span>(<span>*,<br>model: SymbolicModel | None = None,<br>inputs: Iterable[SymbolicData] | SymbolicData | None = None,<br>outputs: Iterable[SymbolicData] | SymbolicData | None = None,<br>node_text_func: Callable[[SymbolicData], str] | None = None,<br>edge_text_func: Callable[[nn.Module], str] | None = None,<br>node_text_namespace: Dict[str, Any] | None = None,<br>rotate_graph: bool = False,<br>rotate_labels: bool = False,<br>show: bool = False,<br>figsize=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw_graph(
+    *,
+    model: SymbolicModel | None = None,
+    inputs: Iterable[SymbolicData] | SymbolicData | None = None,
+    outputs: Iterable[SymbolicData] | SymbolicData | None = None,
+    node_text_func: Callable[[SymbolicData], str] | None = None,
+    edge_text_func: Callable[[nn.Module], str] | None = None,
+    node_text_namespace: Dict[str, Any] | None = None,
+    rotate_graph: bool = False,
+    rotate_labels: bool = False,
+    show: bool = False,
+    figsize=None,
+):
+    &#34;&#34;&#34;Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.
+
+    This is not suitable for large graphs or large neural networks. This is a simple tool that
+    was designed to demonstrate that Pytorch Symbolic creates sensible graphs that are nice
+    to visualize.
+
+    Parameters
+    ----------
+    model
+        A SymbolicModel to be plotted. This or ``inputs`` must be provided.
+    inputs
+        Input in the graph of Symbolic computations. This or ``model`` or/and ``inputs`` must be provided.
+    outputs
+        Output in the graph of Symbolic computations. This or ``model`` or/and ``outputs`` must be provided.
+    node_text_func
+        A function that returns text that will be written on Nodes.
+    edge_text_func
+        A function that returns text that will be written on Edges.
+    node_text_namespace
+        If used with ``globals()``, it will try to show variable name on each node.
+        Has an effect only if `node_text_func` is None.
+    rotate_labels
+        If True, text on edges will be rotated in the direction of the arrow.
+    rotate_graph
+        If True, the consecutive layers will be shown to the right, instead of downwards.
+    show
+        Call matplotlib.pyplot.show
+    &#34;&#34;&#34;
+    try:
+        import matplotlib.patches
+        import matplotlib.pyplot as plt
+        import networkx as nx
+    except ImportError as e:
+        print(&#34;To plot graphs, you need to install networkx, matplotlib and scipy. Run `pip install networkx`.&#34;)
+        raise e
+
+    from .symbolic_model import SymbolicModel
+
+    if node_text_func is None:
+        if node_text_namespace is not None:
+            node_text_func = variable_name_resolver(node_text_namespace)
+        else:
+            node_text_func = default_node_text
+
+    if edge_text_func is None:
+        edge_text_func = default_edge_text
+
+    if model is not None:
+        assert isinstance(model, SymbolicModel)
+        inputs = model.inputs
+        outputs = model.outputs
+
+    elif inputs is not None or outputs is not None:
+        if inputs is not None:
+            if isinstance(inputs, SymbolicData):
+                inputs = (inputs,)
+            assert all(isinstance(x, SymbolicData) for x in inputs)
+            inputs = tuple(inputs)
+        if outputs is not None:
+            if isinstance(outputs, SymbolicData):
+                outputs = (outputs,)
+            assert all(isinstance(x, SymbolicData) for x in outputs)
+            outputs = tuple(outputs)
+
+    else:
+        raise KeyError(&#34;Provide either `model` or `inputs` or/and `outputs`!&#34;)
+
+    used_nodes = figure_out_nodes_between(inputs, outputs)
+
+    graph = nx.DiGraph()
+    assert isinstance(inputs, Iterable)
+    to_visit = list(inputs)
+    visited = set(inputs)
+
+    node_labels = {}
+    node_colors = {}
+    edge_labels = {}
+
+    INPUT_COLOR = (1.0, 0.3, 0.3)
+    OUTPUT_COLOR = (0.3, 1.0, 0.3)
+    OTHER_COLOR = (0.0, 1.0, 1.0)
+
+    while to_visit:
+        node = to_visit.pop()
+        graph.add_node(node, depth=node.depth)
+
+        if inputs and node in inputs:
+            node_colors[node] = INPUT_COLOR
+        elif outputs and node in outputs:
+            node_colors[node] = OUTPUT_COLOR
+        else:
+            node_colors[node] = OTHER_COLOR
+
+        node_labels[node] = node_text_func(node)
+
+        for parent in node.parents:
+            if parent not in used_nodes:
+                continue
+            assert node.layer is not None
+            graph.add_edge(parent, node, layer=node.layer)
+            edge_labels[parent, node] = edge_text_func(node.layer)
+
+        for child in node.children:
+            if child in used_nodes and child not in visited:
+                to_visit.append(child)
+                visited.add(child)
+
+    scale = 1 if rotate_graph else -1
+    align = &#34;vertical&#34; if rotate_graph else &#34;horizontal&#34;
+    pos = nx.multipartite_layout(graph, subset_key=&#34;depth&#34;, align=align, scale=scale)
+    pos = _fix_positions_in_multipartite_layout(graph, pos, align=align)
+
+    nx.draw_networkx(
+        graph,
+        pos,
+        with_labels=True,
+        labels=node_labels,
+        node_size=1000,
+        arrowsize=20,
+        node_shape=&#34;o&#34;,
+        node_color=[node_colors[n] for n in graph.nodes],
+        font_weight=&#34;bold&#34;,
+        edge_color=&#34;grey&#34;,
+    )
+
+    nx.draw_networkx_edge_labels(
+        graph,
+        pos,
+        edge_labels,
+        label_pos=0.5,
+        rotate=rotate_labels,
+        clip_on=False,
+    )
+    handles = [
+        matplotlib.patches.Patch(color=INPUT_COLOR, label=&#34;Input node&#34;),
+        matplotlib.patches.Patch(color=OUTPUT_COLOR, label=&#34;Output node&#34;),
+        matplotlib.patches.Patch(color=OTHER_COLOR, label=&#34;Hidden node&#34;),
+    ]
+    plt.legend(handles=handles)
+
+    fig: plt.Figure = plt.gcf()
+    if figsize:
+        fig.set_size_inches(*figsize)
+
+    fig.tight_layout()
+    return fig
+    # if show:
+    #     fig.show()</code></pre>
+</details>
+<div class="desc"><p>Plot graph of the computations, nodes being placeholder variables and nn.Modules being edges.</p>
+<p>This is not suitable for large graphs or large neural networks. This is a simple tool that
+was designed to demonstrate that Pytorch Symbolic creates sensible graphs that are nice
+to visualize.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>model</code></strong></dt>
+<dd>A SymbolicModel to be plotted. This or <code>inputs</code> must be provided.</dd>
+<dt><strong><code>inputs</code></strong></dt>
+<dd>Input in the graph of Symbolic computations. This or <code>model</code> or/and <code>inputs</code> must be provided.</dd>
+<dt><strong><code>outputs</code></strong></dt>
+<dd>Output in the graph of Symbolic computations. This or <code>model</code> or/and <code>outputs</code> must be provided.</dd>
+<dt><strong><code>node_text_func</code></strong></dt>
+<dd>A function that returns text that will be written on Nodes.</dd>
+<dt><strong><code>edge_text_func</code></strong></dt>
+<dd>A function that returns text that will be written on Edges.</dd>
+<dt><strong><code>node_text_namespace</code></strong></dt>
+<dd>If used with <code>globals()</code>, it will try to show variable name on each node.
+Has an effect only if <code>node_text_func</code> is None.</dd>
+<dt><strong><code>rotate_labels</code></strong></dt>
+<dd>If True, text on edges will be rotated in the direction of the arrow.</dd>
+<dt><strong><code>rotate_graph</code></strong></dt>
+<dd>If True, the consecutive layers will be shown to the right, instead of downwards.</dd>
+<dt><strong><code>show</code></strong></dt>
+<dd>Call matplotlib.pyplot.show</dd>
+</dl></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.figure_out_nodes_between"><code class="name flex">
+<span>def <span class="ident">figure_out_nodes_between</span></span>(<span>inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None,<br>outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None) ‑> Set[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="symbolic_data.html#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def figure_out_nodes_between(
+    inputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None,
+    outputs: Tuple[SymbolicData, ...] | List[SymbolicData] | None = None,
+) -&gt; Set[SymbolicData]:
+    &#34;&#34;&#34;Returns intersection of predecessors tree of outputs and succesors tree of inputs.&#34;&#34;&#34;
+
+    all_nodes_above: List[SymbolicData] = []
+    if outputs is not None:
+        for output_leaf in outputs:
+            nodes_above = output_leaf._get_all_nodes_above()
+            all_nodes_above.extend(nodes_above)
+
+    all_nodes_below: List[SymbolicData] = []
+    if inputs is not None:
+        for input_leaf in inputs:
+            nodes_below = input_leaf._get_all_nodes_below()
+            all_nodes_below.extend(nodes_below)
+
+    # Get the intersection
+    if inputs is None or outputs is None:
+        used_nodes = set(all_nodes_above) | set(all_nodes_below)
+    else:
+        used_nodes = set(all_nodes_above) &amp; set(all_nodes_below)
+    if inputs is not None:
+        check_for_missing_inputs(used_nodes, inputs)
+    return used_nodes</code></pre>
+</details>
+<div class="desc"><p>Returns intersection of predecessors tree of outputs and succesors tree of inputs.</p></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.sort_graph_and_check_DAG"><code class="name flex">
+<span>def <span class="ident">sort_graph_and_check_DAG</span></span>(<span>nodes: Set[SymbolicData]) ‑> List[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="symbolic_data.html#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort_graph_and_check_DAG(nodes: Set[SymbolicData]) -&gt; List[SymbolicData]:
+    &#34;&#34;&#34;Sort graph topologically.
+
+    Wikipedia:
+    In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
+    linear ordering of its nodes in which each node comes before all nodes to which it has outbound edges.
+    Every DAG has one or more topological sorts.
+    &#34;&#34;&#34;
+
+    children = {node: set((c for c in node.children if c in nodes)) for node in nodes}
+    parents = {node: set((p for p in node.parents if p in nodes)) for node in nodes}
+    grandparents = [node for node in nodes if len(parents[node]) == 0]  # no incoming edges
+
+    n_edges = sum(len(v) for v in children.values()) + sum(len(v) for v in parents.values())
+
+    topologically_sorted = []
+
+    while grandparents:
+        node = grandparents.pop()
+        topologically_sorted.append(node)
+
+        for neighbor in tuple(children[node]):
+            children[node].remove(neighbor)
+            parents[neighbor].remove(node)
+
+            if len(parents[neighbor]) == 0:
+                grandparents.append(neighbor)
+
+    n_edges = sum(len(v) for v in children.values()) + sum(len(v) for v in parents.values())
+
+    assert n_edges == 0, &#34;Graph is not a DAG (directed acyclic graph)!&#34;
+    return topologically_sorted</code></pre>
+</details>
+<div class="desc"><p>Sort graph topologically.</p>
+<p>Wikipedia:
+In graph theory, a topological sort or topological ordering of a directed acyclic graph (DAG) is a
+linear ordering of its nodes in which each node comes before all nodes to which it has outbound edges.
+Every DAG has one or more topological sorts.</p></div>
+</dd>
+<dt id="pytorch_symbolic.graph_algorithms.variable_name_resolver"><code class="name flex">
+<span>def <span class="ident">variable_name_resolver</span></span>(<span>namespace)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def variable_name_resolver(namespace):
+    def resolver(x):
+        names = [name for name in namespace if namespace[name] is x]
+        return names[0] if names else &#34;?&#34;
+
+    return resolver</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pytorch_symbolic" href="index.html">pytorch_symbolic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pytorch_symbolic.graph_algorithms.check_for_missing_inputs" href="#pytorch_symbolic.graph_algorithms.check_for_missing_inputs">check_for_missing_inputs</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.default_edge_text" href="#pytorch_symbolic.graph_algorithms.default_edge_text">default_edge_text</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.default_node_text" href="#pytorch_symbolic.graph_algorithms.default_node_text">default_node_text</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.draw_graph" href="#pytorch_symbolic.graph_algorithms.draw_graph">draw_graph</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.figure_out_nodes_between" href="#pytorch_symbolic.graph_algorithms.figure_out_nodes_between">figure_out_nodes_between</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.sort_graph_and_check_DAG" href="#pytorch_symbolic.graph_algorithms.sort_graph_and_check_DAG">sort_graph_and_check_DAG</a></code></li>
+<li><code><a title="pytorch_symbolic.graph_algorithms.variable_name_resolver" href="#pytorch_symbolic.graph_algorithms.variable_name_resolver">variable_name_resolver</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>

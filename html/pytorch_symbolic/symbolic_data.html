@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>pytorch_symbolic.symbolic_data API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pytorch_symbolic.symbolic_data</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.CustomInput"><code class="name flex">
+<span>def <span class="ident">CustomInput</span></span>(<span>data: Any) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def CustomInput(data: Any) -&gt; SymbolicData:
+    &#34;&#34;&#34;Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.
+
+    This should be used when Input won&#39;t work.
+
+    Parameters
+    ----------
+    data
+        Speficic data that will be used during the graph tracing.
+        It can, but doesn&#39;t need to be a torch.Tensor.
+
+    Returns
+    -------
+    SymbolicData
+        Root node in the graph
+    &#34;&#34;&#34;
+    cls = _figure_out_symbolic_type(data)
+    return cls(value=data, batch_size_known=True)</code></pre>
+</details>
+<div class="desc"><p>Input to Symbolic Model. Creates Symbolic Data as a root node in the graph.</p>
+<p>This should be used when Input won't work.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data</code></strong></dt>
+<dd>Speficic data that will be used during the graph tracing.
+It can, but doesn't need to be a torch.Tensor.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></code></dt>
+<dd>Root node in the graph</dd>
+</dl></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.Input"><code class="name flex">
+<span>def <span class="ident">Input</span></span>(<span>shape: Tuple | List = (),<br>batch_size: int = 1,<br>batch_shape: Tuple | List | None = None,<br>dtype=torch.float32,<br>min_value: float = 0.0,<br>max_value: float = 1.0) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Input(
+    shape: Tuple | List = (),
+    batch_size: int = 1,
+    batch_shape: Tuple | List | None = None,
+    dtype=torch.float32,
+    min_value: float = 0.0,
+    max_value: float = 1.0,
+) -&gt; SymbolicTensor:
+    &#34;&#34;&#34;Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.
+
+    Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.
+
+    Parameters
+    ----------
+    shape
+        Shape of the real data NOT including the batch dimension
+    batch_size
+        Optional batch size of the Tensor
+    batch_shape
+        Shape of the real data including the batch dimension.
+        If both ``shape`` and ``batch_shape`` are given, ``batch_shape`` has higher priority.
+    dtype
+        Dtype of the real data that will be the input of the network
+    min_value
+        In rare cases, if real world data is very specific and some values
+        cannot work with the model, this should be used to set a
+        reasonable minimal value that the model can take as an input.
+    max_value
+        As above, but the maximal value
+
+    Returns
+    -------
+    SymbolicTensor
+        Root node in the graph
+    &#34;&#34;&#34;
+    batch_size_known = True
+
+    if batch_shape is not None:
+        batch_size = batch_shape[0]
+        shape = batch_shape[1:]
+    else:
+        # By default, we use batch_size of 1 under the hood
+        batch_size_known = False
+
+    value = torch.rand(batch_size, *shape) * (max_value - min_value) + min_value
+    value = value.to(dtype)
+    return SymbolicTensor(value=value, batch_size_known=batch_size_known)</code></pre>
+</details>
+<div class="desc"><p>Input to Symbolic Model. Create Symbolic Tensor as a root node in the graph.</p>
+<p>Symbolic Tensor returned by Input has no parents while every other Symbolic Tensor has at least one.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>shape</code></strong></dt>
+<dd>Shape of the real data NOT including the batch dimension</dd>
+<dt><strong><code>batch_size</code></strong></dt>
+<dd>Optional batch size of the Tensor</dd>
+<dt><strong><code>batch_shape</code></strong></dt>
+<dd>Shape of the real data including the batch dimension.
+If both <code>shape</code> and <code>batch_shape</code> are given, <code>batch_shape</code> has higher priority.</dd>
+<dt><strong><code>dtype</code></strong></dt>
+<dd>Dtype of the real data that will be the input of the network</dd>
+<dt><strong><code>min_value</code></strong></dt>
+<dd>In rare cases, if real world data is very specific and some values
+cannot work with the model, this should be used to set a
+reasonable minimal value that the model can take as an input.</dd>
+<dt><strong><code>max_value</code></strong></dt>
+<dd>As above, but the maximal value</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></code></dt>
+<dd>Root node in the graph</dd>
+</dl></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicFactory"><code class="name flex">
+<span>def <span class="ident">SymbolicFactory</span></span>(<span>dtype)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def SymbolicFactory(dtype):
+    global _SYMBOLIC_FACTORY_CACHE
+    dtype_name = dtype.__name__
+
+    if dtype_name not in _SYMBOLIC_FACTORY_CACHE:
+        logging.debug(f&#34;New underlying data detected: {dtype_name}!&#34;)
+        cls = type(f&#34;SymbolicData({dtype_name})&#34;, (SymbolicData,), {})
+        _SYMBOLIC_FACTORY_CACHE[dtype_name] = cls
+    return _SYMBOLIC_FACTORY_CACHE[dtype_name]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicCallable"><code class="flex name class">
+<span>class <span class="ident">SymbolicCallable</span></span>
+<span>(</span><span>value: Any,<br>parents: Tuple[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>, ...] = (),<br>depth: int = 0,<br>layer: nn.Module | None = None,<br>batch_size_known: bool = False,<br>custom_name: str | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SymbolicCallable(SymbolicData):
+    def __call__(self, *args, **kwds):
+        assert isinstance(self.v, Callable)
+        from . import add_to_graph
+
+        def __func__(obj, *args, **kwds):
+            return obj(*args, **kwds)
+
+        __func__.__name__ = self.v.__name__
+
+        returns = add_to_graph(__func__, self, *args, **kwds)
+        if returns.v is NotImplemented:
+            dtypes = [type(p.v).__name__ for p in returns.parents[1:]]
+            raise NotImplementedError(f&#34;Operation on {dtypes} returned NonImplemented object!&#34;)
+        return returns</code></pre>
+</details>
+<div class="desc"><p>Grandfather of all Symbolic datatypes.</p>
+<p>Underlying data is a normal Python object, for example a <code>dict</code>.
+You can use methods and operators of the underlying object.
+You can also unpack or index it, if only the underlying data allows it.</p>
+<p>If the underlying data is <code>torch.Tensor</code>, it should be created as <code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></code> instead.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>parents</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>depth</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>layer</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>batch_size_known</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>custom_name</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>v</code></strong> :&ensp;<code>Any</code></dt>
+<dd>Underlying data that is used during model tracing</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>nn.Module</code></dt>
+<dd>A torch.nn.Module that transforms parents' values into this value. Also it's the incoming edge.</dd>
+<dt><strong><code>depth</code></strong> :&ensp;<code>int</code></dt>
+<dd>Maximum of parents' depths plus one</dd>
+<dt><strong><code>batch_size_known</code></strong> :&ensp;<code>bool</code></dt>
+<dd>In case of Input, whether batch size was provided by the user.
+For non-Input nodes, batch size is known iff all parents' batch sizes are known.</dd>
+<dt><strong><code>custom_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Instead of using the default name for the undelying layer, user can provide his own.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.apply_module" href="#pytorch_symbolic.symbolic_data.SymbolicData.apply_module">apply_module</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.children" href="#pytorch_symbolic.symbolic_data.SymbolicData.children">children</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.parents" href="#pytorch_symbolic.symbolic_data.SymbolicData.parents">parents</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.v" href="#pytorch_symbolic.symbolic_data.SymbolicData.v">v</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicData"><code class="flex name class">
+<span>class <span class="ident">SymbolicData</span></span>
+<span>(</span><span>value: Any,<br>parents: Tuple[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>, ...] = (),<br>depth: int = 0,<br>layer: nn.Module | None = None,<br>batch_size_known: bool = False,<br>custom_name: str | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SymbolicData:
+    def __init__(
+        self,
+        value: Any,
+        parents: Tuple[SymbolicData, ...] = (),
+        depth: int = 0,
+        layer: nn.Module | None = None,
+        batch_size_known: bool = False,
+        custom_name: str | None = None,
+    ):
+        &#34;&#34;&#34;Grandfather of all Symbolic datatypes.
+
+        Underlying data is a normal Python object, for example a ``dict``.
+        You can use methods and operators of the underlying object.
+        You can also unpack or index it, if only the underlying data allows it.
+
+        If the underlying data is ``torch.Tensor``, it should be created as ``SymbolicTensor`` instead.
+
+        Parameters
+        ----------
+        value
+        parents
+        depth
+        layer
+        batch_size_known
+        custom_name
+
+        Attributes
+        ----------
+        v : Any
+            Underlying data that is used during model tracing
+        layer : nn.Module
+            A torch.nn.Module that transforms parents&#39; values into this value. Also it&#39;s the incoming edge.
+        depth : int
+            Maximum of parents&#39; depths plus one
+        batch_size_known : bool
+            In case of Input, whether batch size was provided by the user.
+            For non-Input nodes, batch size is known iff all parents&#39; batch sizes are known.
+        custom_name : str
+            Instead of using the default name for the undelying layer, user can provide his own.
+        &#34;&#34;&#34;
+        global _SYMBOLIC_DATA_COUNTER
+        self._execution_order_idx = _SYMBOLIC_DATA_COUNTER
+        _SYMBOLIC_DATA_COUNTER += 1
+
+        # We use Symbolic Data for inheriting only
+        assert self.__class__ is not SymbolicData, &#34;Symbolic Data should not be created directly!&#34;
+
+        self._value = value
+        self._underlying_type_name = type(value).__name__
+        self._custom_provided_name = custom_name
+
+        self.layer = layer
+        self.depth = depth
+        self.batch_size_known = batch_size_known
+
+        self._children: List[SymbolicData] = []
+        self._parents: Tuple[SymbolicData, ...] = parents
+        self._layer_full_siblings: Tuple[SymbolicData, ...] = (self,)
+
+        self._define_class_operators()
+
+    @property
+    def v(self):
+        &#34;&#34;&#34;Get the underlying value.&#34;&#34;&#34;
+        if self._value is None:
+            self._recalculate_value()
+        return self._value
+
+    def _define_class_operators(self):
+        &#34;&#34;&#34;Define basic operators, e.g. +, -, *, ...
+
+        This allows using operators for Symbolic Data if and only if the underlying data is compatible.
+        &#34;&#34;&#34;
+        operators = [
+            &#34;__abs__&#34;,
+            &#34;__neg__&#34;,
+            &#34;__add__&#34;,
+            &#34;__radd__&#34;,
+            &#34;__sub__&#34;,
+            &#34;__rsub__&#34;,
+            &#34;__mul__&#34;,
+            &#34;__rmul__&#34;,
+            &#34;__pow__&#34;,
+            &#34;__rpow__&#34;,
+            &#34;__mod__&#34;,
+            &#34;__rmod__&#34;,
+            &#34;__truediv__&#34;,
+            &#34;__rtruediv__&#34;,
+            &#34;__and__&#34;,
+            &#34;__rand__&#34;,
+            &#34;__or__&#34;,
+            &#34;__ror__&#34;,
+            &#34;__xor__&#34;,
+            &#34;__rxor__&#34;,
+            &#34;__matmul__&#34;,
+            &#34;__rmatmul__&#34;,
+        ]
+
+        for operator in operators:
+            if hasattr(self.v, operator) and (
+                not hasattr(self.__class__, operator)
+                or isinstance(getattr(self.__class__, operator), MethodWrapperType)
+            ):
+                logging.debug(f&#34;Adding new operator to {self.__class__.__name__}: {operator}&#34;)
+
+                def factory(op):
+                    return lambda self, *args, **kwds: self.__getattr__(op)(*args, **kwds)
+
+                setattr(self.__class__, operator, factory(operator))
+
+    @property
+    def parents(self) -&gt; Tuple[SymbolicData, ...]:
+        &#34;&#34;&#34;Acces the tuple of parents of this node.&#34;&#34;&#34;
+        return tuple(self._parents)
+
+    @property
+    def children(self) -&gt; Tuple[SymbolicData, ...]:
+        &#34;&#34;&#34;Acces the tuple of children of this node.&#34;&#34;&#34;
+        return tuple(self._children)
+
+    def apply_module(
+        self,
+        layer: nn.Module,
+        *others: SymbolicData,
+        custom_name: str | None = None,
+    ) -&gt; SymbolicData | Tuple[SymbolicData, ...]:
+        &#34;&#34;&#34;Register a new layer in the graph. Layer must be nn.Module.&#34;&#34;&#34;
+        assert all([isinstance(other, SymbolicData) for other in others]), &#34;Works with SymbolicData only!&#34;
+
+        parents = (self, *others)
+        new_depth = max(parent.depth for parent in parents) + 1
+        with torch.no_grad():
+            new_value = layer.__call__(self.v, *(o.v for o in others))
+
+        cls = _figure_out_symbolic_type(new_value)
+
+        new_layer_node = cls(
+            value=new_value,
+            parents=parents,
+            layer=layer,
+            depth=new_depth,
+            batch_size_known=self.batch_size_known,
+            custom_name=custom_name,
+        )
+        for parent in parents:
+            parent._children.append(new_layer_node)
+            logging.debug(f&#34;Added {new_layer_node} as child of {parent}&#34;)
+        return new_layer_node
+
+    def _recalculate_value(self):
+        &#34;&#34;&#34;Recalulate ._value if it is None.
+
+        Sometimes we remove ._value to reduce the memory footprint. This function restores it.
+        &#34;&#34;&#34;
+        for parent in self._parents:
+            if parent._value is None:
+                parent._recalculate_value()  # recursive call to parents
+        with torch.no_grad():
+            outputs = self.layer(*(parent._value for parent in self._parents))
+            if len(self._layer_full_siblings) == 1:
+                outputs = (outputs,)
+            for full_sibling, output in zip(self._layer_full_siblings, outputs):
+                full_sibling._value = output
+
+    def _clear_value(self):
+        &#34;&#34;&#34;Clear the underlying value to save memory.&#34;&#34;&#34;
+        assert len(self._parents) &gt; 0, &#34;Cannot clear the underlying value of input nodes!&#34;
+        self._value = None
+
+    def __iter__(self):
+        &#34;&#34;&#34;Creates the only layer that has multiple children: UnpackLayer.
+
+        Suitable for unpacking results, even nested ones.
+        &#34;&#34;&#34;
+        layer = useful_layers.UnpackLayer()
+        new_outputs = layer.__call__(*self.v)
+
+        new_layer_nodes = []
+        for new_value in new_outputs:
+            cls = _figure_out_symbolic_type(new_value)
+
+            new_layer_nodes.append(
+                cls(
+                    value=new_value,
+                    parents=(self,),
+                    layer=layer,
+                    depth=self.depth + 1,
+                    batch_size_known=self.batch_size_known,
+                )
+            )
+        for new_layer_node in new_layer_nodes:
+            new_layer_node._layer_full_siblings = tuple(new_layer_nodes)
+
+        self._children.extend(new_layer_nodes)
+        for new_layer_node in new_layer_nodes:
+            logging.debug(f&#34;Added {new_layer_node} as child of {self}&#34;)
+        for node in new_layer_nodes:
+            yield node
+
+    def _get_all_nodes_above(self) -&gt; Set[SymbolicData]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for parent in node._parents:
+                if parent not in nodes_seen:
+                    to_expand.append(parent)
+                    nodes_seen.add(parent)
+        return nodes_seen
+
+    def _get_all_nodes_below(self) -&gt; Set[SymbolicData]:
+        nodes_seen = {self}
+        to_expand = [self]
+        while to_expand:
+            node = to_expand.pop()
+            for child in node._children:
+                if child not in nodes_seen:
+                    to_expand.append(child)
+                    nodes_seen.add(child)
+        return nodes_seen
+
+    def _launch_input(self, x):
+        self._value = x
+
+    def _launch(self):
+        if len(self._layer_full_siblings) &gt; 1:
+            assert len(self._parents) == 1
+            outputs = self.layer(*self._parents[0]._value)
+            for node, output in zip(self._layer_full_siblings, outputs):
+                node._value = output
+        else:
+            self._value = self.layer(*(parent._value for parent in self._parents))
+
+    def __len__(self) -&gt; int:
+        &#34;&#34;&#34;Length of the symbolic data.&#34;&#34;&#34;
+        return len(self.v)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, SymbolicData):
+            layer = useful_layers.SliceLayerSymbolicIdx()
+            return layer(self, idx)
+        else:
+            layer = useful_layers.SliceLayer(idx)
+            return layer(self)
+
+    def __call__(self, *args, custom_name: str | None = None):
+        return self.apply_module(*args, custom_name=custom_name)
+
+    def __repr__(self):
+        addr = f&#34;{self.__class__.__name__} at {hex(id(self))};&#34;
+        info = f&#34;{len(self._parents)} parents; {len(self._children)} children&#34;
+        return &#34;&lt;&#34; + addr + &#34; &#34; + info + &#34;&gt;&#34;
+
+    def __hash__(self):
+        return id(self)
+
+    def __getattr__(self, item):
+        if (
+            hasattr(self.v, item)
+            and item != &#34;__torch_function__&#34;  # because pytorch is wrapping `+` and other operators
+        ):
+            return self(useful_layers.GetAttr(item))
+        else:
+            raise AttributeError</code></pre>
+</details>
+<div class="desc"><p>Grandfather of all Symbolic datatypes.</p>
+<p>Underlying data is a normal Python object, for example a <code>dict</code>.
+You can use methods and operators of the underlying object.
+You can also unpack or index it, if only the underlying data allows it.</p>
+<p>If the underlying data is <code>torch.Tensor</code>, it should be created as <code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></code> instead.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>parents</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>depth</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>layer</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>batch_size_known</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>custom_name</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>v</code></strong> :&ensp;<code>Any</code></dt>
+<dd>Underlying data that is used during model tracing</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>nn.Module</code></dt>
+<dd>A torch.nn.Module that transforms parents' values into this value. Also it's the incoming edge.</dd>
+<dt><strong><code>depth</code></strong> :&ensp;<code>int</code></dt>
+<dd>Maximum of parents' depths plus one</dd>
+<dt><strong><code>batch_size_known</code></strong> :&ensp;<code>bool</code></dt>
+<dd>In case of Input, whether batch size was provided by the user.
+For non-Input nodes, batch size is known iff all parents' batch sizes are known.</dd>
+<dt><strong><code>custom_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Instead of using the default name for the undelying layer, user can provide his own.</dd>
+</dl></div>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pytorch_symbolic.symbolic_data.SymbolicCallable" href="#pytorch_symbolic.symbolic_data.SymbolicCallable">SymbolicCallable</a></li>
+<li><a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicData.children"><code class="name">prop <span class="ident">children</span> : Tuple[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>, ...]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def children(self) -&gt; Tuple[SymbolicData, ...]:
+    &#34;&#34;&#34;Acces the tuple of children of this node.&#34;&#34;&#34;
+    return tuple(self._children)</code></pre>
+</details>
+<div class="desc"><p>Acces the tuple of children of this node.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicData.parents"><code class="name">prop <span class="ident">parents</span> : Tuple[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>, ...]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def parents(self) -&gt; Tuple[SymbolicData, ...]:
+    &#34;&#34;&#34;Acces the tuple of parents of this node.&#34;&#34;&#34;
+    return tuple(self._parents)</code></pre>
+</details>
+<div class="desc"><p>Acces the tuple of parents of this node.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicData.v"><code class="name">prop <span class="ident">v</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def v(self):
+    &#34;&#34;&#34;Get the underlying value.&#34;&#34;&#34;
+    if self._value is None:
+        self._recalculate_value()
+    return self._value</code></pre>
+</details>
+<div class="desc"><p>Get the underlying value.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicData.apply_module"><code class="name flex">
+<span>def <span class="ident">apply_module</span></span>(<span>self,<br>layer: nn.Module,<br>*others: <a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>,<br>custom_name: str | None = None) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a> | Tuple[<a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a>, ...]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_module(
+    self,
+    layer: nn.Module,
+    *others: SymbolicData,
+    custom_name: str | None = None,
+) -&gt; SymbolicData | Tuple[SymbolicData, ...]:
+    &#34;&#34;&#34;Register a new layer in the graph. Layer must be nn.Module.&#34;&#34;&#34;
+    assert all([isinstance(other, SymbolicData) for other in others]), &#34;Works with SymbolicData only!&#34;
+
+    parents = (self, *others)
+    new_depth = max(parent.depth for parent in parents) + 1
+    with torch.no_grad():
+        new_value = layer.__call__(self.v, *(o.v for o in others))
+
+    cls = _figure_out_symbolic_type(new_value)
+
+    new_layer_node = cls(
+        value=new_value,
+        parents=parents,
+        layer=layer,
+        depth=new_depth,
+        batch_size_known=self.batch_size_known,
+        custom_name=custom_name,
+    )
+    for parent in parents:
+        parent._children.append(new_layer_node)
+        logging.debug(f&#34;Added {new_layer_node} as child of {parent}&#34;)
+    return new_layer_node</code></pre>
+</details>
+<div class="desc"><p>Register a new layer in the graph. Layer must be nn.Module.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor"><code class="flex name class">
+<span>class <span class="ident">SymbolicTensor</span></span>
+<span>(</span><span>*args, **kwds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SymbolicTensor(SymbolicData):
+    def __init__(self, *args, **kwds):
+        &#34;&#34;&#34;Recommended to use Symbolic datatype. It mimics and extends ``torch.Tensor`` API.
+
+        Treat it as a placeholder that will be replaced with real data after the model is created.
+        For calculation purposes treat it as a normal ``torch.Tensor``: add, subtract, multiply,
+        take absolute value of, index, slice, etc.
+        &#34;&#34;&#34;
+        super().__init__(*args, **kwds)
+        assert isinstance(self.v, torch.Tensor)
+        self._shape = self.v.shape
+
+    @property
+    def features(self) -&gt; int:
+        &#34;&#34;&#34;Size of the last dimension.&#34;&#34;&#34;
+        return self._shape[-1]
+
+    @property
+    def C(self) -&gt; int:
+        &#34;&#34;&#34;Number of channels in Image data.&#34;&#34;&#34;
+        assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+        return self._shape[1]
+
+    @property
+    def channels(self) -&gt; int:
+        &#34;&#34;&#34;Same as ``.C``&#34;&#34;&#34;
+        return self.C
+
+    @property
+    def H(self) -&gt; int:
+        &#34;&#34;&#34;Height in Image data.&#34;&#34;&#34;
+        assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+        return self._shape[2]
+
+    @property
+    def W(self) -&gt; int:
+        &#34;&#34;&#34;Width in Image data.&#34;&#34;&#34;
+        assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+        return self._shape[3]
+
+    @property
+    def HW(self) -&gt; Tuple[int, int]:
+        &#34;&#34;&#34;Tuple of (height, width) in Image data.&#34;&#34;&#34;
+        return (self.H, self.W)
+
+    @property
+    def CHW(self) -&gt; Tuple[int, int, int]:
+        &#34;&#34;&#34;Tuple of (channels, height, width) in Image data.&#34;&#34;&#34;
+        return (self.C, self.H, self.W)
+
+    @property
+    def HWC(self) -&gt; Tuple[int, int, int]:
+        &#34;&#34;&#34;Tuple of (height, width, channels) in Image data.&#34;&#34;&#34;
+        return (self.H, self.W, self.C)
+
+    @property
+    def batch_size(self) -&gt; int | None:
+        &#34;&#34;&#34;Batch size of the data. Will be default if was not provided.&#34;&#34;&#34;
+        return self._shape[0]
+
+    @property
+    def shape(self) -&gt; Tuple[int | None, ...]:
+        &#34;&#34;&#34;Shape of the underlying Symbolic Tensor, including batch size.&#34;&#34;&#34;
+        return self._shape
+
+    @property
+    def numel(self) -&gt; int:
+        &#34;&#34;&#34;Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too.&#34;&#34;&#34;
+        return self._shape.numel()
+
+    # These methods do not need to be defined, because SymbolicData is redirecting __getattr__.
+    # However, we define basic methods to ensure they will be used without overhead of __getattr__.
+
+    def reshape(self, *shape) -&gt; SymbolicTensor:
+        reshape_layer = useful_layers.ReshapeLayer(shape, batch_size_included=True)
+        return reshape_layer(self)
+
+    def view(self, *shape) -&gt; SymbolicTensor:
+        view_copy_layer = useful_layers.ViewCopyLayer(shape, batch_size_included=True)
+        return view_copy_layer(self)
+
+    def t(self) -&gt; SymbolicTensor:
+        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.t())
+        return transpose_layer(self)
+
+    @property
+    def T(self) -&gt; SymbolicTensor:
+        transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.T)
+        return transpose_layer(self)
+
+    def mean(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def sum(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.sum, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def median(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.median, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def argmax(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.argmax, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def argmin(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+        layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
+        return layer(self)
+
+    def flatten(self, start_dim=0, end_dim=-1) -&gt; SymbolicTensor:
+        return nn.Flatten(start_dim, end_dim)(self)
+
+    # These operators do not need to be defined!
+    # However, we define basic operators to ensure they will be used without overhead of __getattr__.
+
+    def __abs__(self):
+        return self(useful_layers.LambdaOpLayer(lambda x: abs(x)))
+
+    def __neg__(self):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: -x))
+
+    def __add__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.AddOpLayer(), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x + other))
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __mul__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.MulOpLayer(), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x * other))
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __mod__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.ModOpLayer(), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x % other))
+
+    def __rmod__(self, other):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other % x))
+
+    def __pow__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x**y), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x**other))
+
+    def __rpow__(self, other):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other**x))
+
+    def __sub__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.SubOpLayer(), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x - other))
+
+    def __rsub__(self, other):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other - x))
+
+    def __truediv__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.LambdaOpLayer(op=lambda x, y: x / y), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x / other))
+
+    def __rtruediv__(self, other):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other / x))
+
+    def __matmul__(self, other):
+        if isinstance(other, SymbolicTensor):
+            return self(useful_layers.MatmulOpLayer(), other)
+        else:
+            return self(useful_layers.LambdaOpLayer(op=lambda x: x @ other))
+
+    def __rmatmul__(self, other):
+        return self(useful_layers.LambdaOpLayer(op=lambda x: other @ x))</code></pre>
+</details>
+<div class="desc"><p>Recommended to use Symbolic datatype. It mimics and extends <code>torch.Tensor</code> API.</p>
+<p>Treat it as a placeholder that will be replaced with real data after the model is created.
+For calculation purposes treat it as a normal <code>torch.Tensor</code>: add, subtract, multiply,
+take absolute value of, index, slice, etc.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.C"><code class="name">prop <span class="ident">C</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def C(self) -&gt; int:
+    &#34;&#34;&#34;Number of channels in Image data.&#34;&#34;&#34;
+    assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+    return self._shape[1]</code></pre>
+</details>
+<div class="desc"><p>Number of channels in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.CHW"><code class="name">prop <span class="ident">CHW</span> : Tuple[int, int, int]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def CHW(self) -&gt; Tuple[int, int, int]:
+    &#34;&#34;&#34;Tuple of (channels, height, width) in Image data.&#34;&#34;&#34;
+    return (self.C, self.H, self.W)</code></pre>
+</details>
+<div class="desc"><p>Tuple of (channels, height, width) in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.H"><code class="name">prop <span class="ident">H</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def H(self) -&gt; int:
+    &#34;&#34;&#34;Height in Image data.&#34;&#34;&#34;
+    assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+    return self._shape[2]</code></pre>
+</details>
+<div class="desc"><p>Height in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.HW"><code class="name">prop <span class="ident">HW</span> : Tuple[int, int]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def HW(self) -&gt; Tuple[int, int]:
+    &#34;&#34;&#34;Tuple of (height, width) in Image data.&#34;&#34;&#34;
+    return (self.H, self.W)</code></pre>
+</details>
+<div class="desc"><p>Tuple of (height, width) in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.HWC"><code class="name">prop <span class="ident">HWC</span> : Tuple[int, int, int]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def HWC(self) -&gt; Tuple[int, int, int]:
+    &#34;&#34;&#34;Tuple of (height, width, channels) in Image data.&#34;&#34;&#34;
+    return (self.H, self.W, self.C)</code></pre>
+</details>
+<div class="desc"><p>Tuple of (height, width, channels) in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.T"><code class="name">prop <span class="ident">T</span> : <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def T(self) -&gt; SymbolicTensor:
+    transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.T)
+    return transpose_layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.W"><code class="name">prop <span class="ident">W</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def W(self) -&gt; int:
+    &#34;&#34;&#34;Width in Image data.&#34;&#34;&#34;
+    assert len(self._shape) == 4, &#34;The data is not of [C,H,W] form!&#34;
+    return self._shape[3]</code></pre>
+</details>
+<div class="desc"><p>Width in Image data.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.batch_size"><code class="name">prop <span class="ident">batch_size</span> : int | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def batch_size(self) -&gt; int | None:
+    &#34;&#34;&#34;Batch size of the data. Will be default if was not provided.&#34;&#34;&#34;
+    return self._shape[0]</code></pre>
+</details>
+<div class="desc"><p>Batch size of the data. Will be default if was not provided.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.channels"><code class="name">prop <span class="ident">channels</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def channels(self) -&gt; int:
+    &#34;&#34;&#34;Same as ``.C``&#34;&#34;&#34;
+    return self.C</code></pre>
+</details>
+<div class="desc"><p>Same as <code>.C</code></p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.features"><code class="name">prop <span class="ident">features</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def features(self) -&gt; int:
+    &#34;&#34;&#34;Size of the last dimension.&#34;&#34;&#34;
+    return self._shape[-1]</code></pre>
+</details>
+<div class="desc"><p>Size of the last dimension.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.numel"><code class="name">prop <span class="ident">numel</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def numel(self) -&gt; int:
+    &#34;&#34;&#34;Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too.&#34;&#34;&#34;
+    return self._shape.numel()</code></pre>
+</details>
+<div class="desc"><p>Number of the values in underlying Symbolic Tensor. If batch size is known, it is used too.</p></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.shape"><code class="name">prop <span class="ident">shape</span> : Tuple[int | None, ...]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def shape(self) -&gt; Tuple[int | None, ...]:
+    &#34;&#34;&#34;Shape of the underlying Symbolic Tensor, including batch size.&#34;&#34;&#34;
+    return self._shape</code></pre>
+</details>
+<div class="desc"><p>Shape of the underlying Symbolic Tensor, including batch size.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.argmax"><code class="name flex">
+<span>def <span class="ident">argmax</span></span>(<span>self, dim=None, keepdim=False) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmax(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+    layer = useful_layers.AggregateLayer(torch.argmax, dim=dim, keepdim=keepdim)
+    return layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.argmin"><code class="name flex">
+<span>def <span class="ident">argmin</span></span>(<span>self, dim=None, keepdim=False) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmin(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+    layer = useful_layers.AggregateLayer(torch.argmin, dim=dim, keepdim=keepdim)
+    return layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.flatten"><code class="name flex">
+<span>def <span class="ident">flatten</span></span>(<span>self, start_dim=0, end_dim=-1) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def flatten(self, start_dim=0, end_dim=-1) -&gt; SymbolicTensor:
+    return nn.Flatten(start_dim, end_dim)(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.mean"><code class="name flex">
+<span>def <span class="ident">mean</span></span>(<span>self, dim=None, keepdim=False) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+    layer = useful_layers.AggregateLayer(torch.mean, dim=dim, keepdim=keepdim)
+    return layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.median"><code class="name flex">
+<span>def <span class="ident">median</span></span>(<span>self, dim=None, keepdim=False) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def median(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+    layer = useful_layers.AggregateLayer(torch.median, dim=dim, keepdim=keepdim)
+    return layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.reshape"><code class="name flex">
+<span>def <span class="ident">reshape</span></span>(<span>self, *shape) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reshape(self, *shape) -&gt; SymbolicTensor:
+    reshape_layer = useful_layers.ReshapeLayer(shape, batch_size_included=True)
+    return reshape_layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.sum"><code class="name flex">
+<span>def <span class="ident">sum</span></span>(<span>self, dim=None, keepdim=False) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum(self, dim=None, keepdim=False) -&gt; SymbolicTensor:
+    layer = useful_layers.AggregateLayer(torch.sum, dim=dim, keepdim=keepdim)
+    return layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.t"><code class="name flex">
+<span>def <span class="ident">t</span></span>(<span>self) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def t(self) -&gt; SymbolicTensor:
+    transpose_layer = useful_layers.LambdaOpLayer(op=lambda x: x.t())
+    return transpose_layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="pytorch_symbolic.symbolic_data.SymbolicTensor.view"><code class="name flex">
+<span>def <span class="ident">view</span></span>(<span>self, *shape) ‑> <a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def view(self, *shape) -&gt; SymbolicTensor:
+    view_copy_layer = useful_layers.ViewCopyLayer(shape, batch_size_included=True)
+    return view_copy_layer(self)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.apply_module" href="#pytorch_symbolic.symbolic_data.SymbolicData.apply_module">apply_module</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.children" href="#pytorch_symbolic.symbolic_data.SymbolicData.children">children</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.parents" href="#pytorch_symbolic.symbolic_data.SymbolicData.parents">parents</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.v" href="#pytorch_symbolic.symbolic_data.SymbolicData.v">v</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pytorch_symbolic" href="index.html">pytorch_symbolic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pytorch_symbolic.symbolic_data.CustomInput" href="#pytorch_symbolic.symbolic_data.CustomInput">CustomInput</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.Input" href="#pytorch_symbolic.symbolic_data.Input">Input</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicFactory" href="#pytorch_symbolic.symbolic_data.SymbolicFactory">SymbolicFactory</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pytorch_symbolic.symbolic_data.SymbolicCallable" href="#pytorch_symbolic.symbolic_data.SymbolicCallable">SymbolicCallable</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pytorch_symbolic.symbolic_data.SymbolicData" href="#pytorch_symbolic.symbolic_data.SymbolicData">SymbolicData</a></code></h4>
+<ul class="">
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.apply_module" href="#pytorch_symbolic.symbolic_data.SymbolicData.apply_module">apply_module</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.children" href="#pytorch_symbolic.symbolic_data.SymbolicData.children">children</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.parents" href="#pytorch_symbolic.symbolic_data.SymbolicData.parents">parents</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicData.v" href="#pytorch_symbolic.symbolic_data.SymbolicData.v">v</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor" href="#pytorch_symbolic.symbolic_data.SymbolicTensor">SymbolicTensor</a></code></h4>
+<ul class="two-column">
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.C" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.C">C</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.CHW" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.CHW">CHW</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.H" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.H">H</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.HW" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.HW">HW</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.HWC" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.HWC">HWC</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.T" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.T">T</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.W" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.W">W</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.argmax" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.argmax">argmax</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.argmin" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.argmin">argmin</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.batch_size" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.batch_size">batch_size</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.channels" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.channels">channels</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.features" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.features">features</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.flatten" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.flatten">flatten</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.mean" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.mean">mean</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.median" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.median">median</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.numel" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.numel">numel</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.reshape" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.reshape">reshape</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.shape" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.shape">shape</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.sum" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.sum">sum</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.t" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.t">t</a></code></li>
+<li><code><a title="pytorch_symbolic.symbolic_data.SymbolicTensor.view" href="#pytorch_symbolic.symbolic_data.SymbolicTensor.view">view</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>
